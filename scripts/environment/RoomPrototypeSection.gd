@@ -151,7 +151,7 @@ func _structure_visible_for_state(role: String) -> bool:
 		VisibilityState.VISIBLE:
 			return role != "partial_reveal"
 		VisibilityState.VISITED:
-			return role == "wall" or role == "floor" or role == "ceiling" or role == "baseboard" or role == "light_mesh" or role == "outline"
+			return role == "wall" or role == "floor" or role == "ceiling" or role == "baseboard" or role == "outline"
 		VisibilityState.PARTIAL_VISIBLE:
 			return role == "partial_reveal"
 		VisibilityState.UNKNOWN:
@@ -173,8 +173,8 @@ func _apply_light(light: Light3D) -> void:
 			light.visible = true
 			light.light_energy = original
 		VisibilityState.VISITED:
-			light.visible = true
-			light.light_energy = original * 0.22
+			light.visible = false
+			light.light_energy = 0.0
 		_:
 			light.visible = false
 			light.light_energy = 0.0

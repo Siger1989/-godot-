@@ -8,6 +8,7 @@
 - 地板颜色实时明暗变化已处理，地面改为稳定材质表现。
 - 门框顶部异常和地板偏暗问题已调整。
 - 门关闭后，门后房间进入静态记忆状态，不再显示实时灯光和灯板。
+- 小场景验证过的关门记忆规则已同步到主游戏：已访问但不可见房间只保留静态结构记忆，不再显示 `light_mesh`、真实灯光和 detail/dynamic 内容。
 - 主角已替换为用户提供的 GLB 模型，模型资源位于 `assets/models/player.glb`。
 - 主场景已加入 `人物展示` 调试窗口，可实时调整主角高度、朝向、上下、左右、前后偏移，并保存配置。
 - 主 Demo 和小测试场景的天花板面片已默认关闭，避免拉远镜头时半透明顶板闪烁。
@@ -20,6 +21,7 @@
 
 - `validate_all.bat` 已通过。
 - 关键验证包含 `VISIBILITY_CLOSED_MEMORY_OK`。
+- 主游戏关门记忆验证包含 `MAIN_CLOSED_MEMORY_OK`。
 - 主角模型验证包含 `PLAYER_MODEL_OK`。
 - 关门记忆截图已生成到 `screenshots/visibility_blend_closed_memory.png`。
 - 静止截图确认人物已不再保持 T-pose。
@@ -34,6 +36,7 @@
 - `scripts/player/PlayerModelVisual.gd`
 - `scripts/ui/PlayerModelAdjustPanel.gd`
 - `scripts/tools/ValidatePlayerModel.gd`
+- `scripts/tools/ValidateMainClosedMemory.gd`
 - `scripts/tools/ValidateVisibilityClosedMemory.gd`
 - `validate_all.bat`
 - `HANDOFF.md`
@@ -41,7 +44,7 @@
 
 ## 下一步
 
-- 继续在主 Demo 中目测人物模型比例、地板亮度、门框顶部和记忆房间显示效果。
+- 继续在主 Demo 中目测人物模型比例、地板亮度、门框顶部和主游戏关门记忆显示效果。
 - 如需微调人物比例，使用右侧 `人物展示` 面板滑条后点击保存。
 - 如仍有视觉问题，优先用截图定位，再做小范围调整并更新本文件。
 - 每次结束前更新 `HANDOFF.md` 或本文件，并提交推送到 GitHub。

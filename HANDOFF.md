@@ -18,6 +18,8 @@
 - 右侧 `人物展示` 面板可调整人物高度、朝向、上下、左右、前后偏移。
 - 天花板半透明面片已默认关闭，避免拉远镜头闪烁。
 - 门关闭后的房间记忆状态已处理，不再显示实时灯板和动态内容。
+- 小场景验证过的关门记忆规则已同步到主游戏 `RoomPrototypeSection`。
+- 主游戏中已访问但不可见房间只显示静态结构记忆，不显示 `light_mesh`、真实灯光和 detail/dynamic 内容。
 
 ### 验证
 
@@ -25,6 +27,7 @@
 - 关键结果包括：
   - `MAIN_SCENE_OK`
   - `PLAYER_MODEL_OK`
+  - `MAIN_CLOSED_MEMORY_OK`
   - `FOG_TEST_OK`
   - `ROOM_PROTOTYPE_OK`
   - `VISIBILITY_BLEND_OK`
@@ -36,4 +39,3 @@
 - 运行 `run_game.bat` 查看主 Demo。
 - 如要继续视觉调参，优先调整人物展示窗口、地板亮度、门框和记忆房间显示。
 - 每次完成一轮修改后，更新本文件或 `CURRENT_STATE.md`，提交并推送。
-

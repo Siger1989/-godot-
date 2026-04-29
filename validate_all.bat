@@ -9,6 +9,7 @@ set "FAILED=0"
 
 call :run_script res://scripts/tools/ValidateMainScene.gd
 call :run_script res://scripts/tools/ValidatePlayerModel.gd
+call :run_script res://scripts/tools/ValidateMainClosedMemory.gd
 call :run_script res://scripts/tools/ValidateFogTest.gd
 call :run_script res://scripts/tools/ValidateRoomPrototype.gd
 call :run_script res://scripts/tools/ValidateVisibilityBlendTest.gd
