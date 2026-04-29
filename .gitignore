@@ -1,0 +1,7 @@
+.godot/
+3D模型/
+exports/web/*
+!exports/web/.gitkeep
+screenshots/*.png
+screenshots/*.png.import
+!screenshots/.gitkeep

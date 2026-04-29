@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/FusePickup.gd" id="1"]
+
+[node name="FusePickup" type="Area3D"]
+script = ExtResource("1")
+
