@@ -20,6 +20,8 @@
 - 门关闭后的房间记忆状态已处理，不再显示实时灯板和动态内容。
 - 小场景验证过的关门记忆规则已同步到主游戏 `RoomPrototypeSection`。
 - 主游戏中已访问但不可见房间只显示静态结构记忆，不显示 `light_mesh`、真实灯光和 detail/dynamic 内容。
+- 小场景房间关系已同步到主游戏：开门邻房不直接切 `PARTIAL_VISIBLE`，未进入前保持 `UNKNOWN`。
+- `OutOfBoundsVoid` 视觉已隐藏，仅保留碰撞，避免灰色大块遮挡画面。
 
 ### 验证
 

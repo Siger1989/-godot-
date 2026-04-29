@@ -63,6 +63,7 @@ func _ready() -> void:
 	add_child(volumes_root)
 	_define_sections()
 	_build_out_of_bounds_void()
+	void_root.visible = false
 	_build_sections_and_volumes()
 	_build_wall_network()
 	_build_edge_disguises()

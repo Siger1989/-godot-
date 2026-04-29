@@ -28,7 +28,7 @@ func _run() -> void:
 		await process_frame
 	_expect("open_a_door", {
 		"RoomA": "VISIBLE",
-		"Corridor": "PARTIAL_VISIBLE",
+		"Corridor": "UNKNOWN",
 		"RoomB": "UNKNOWN",
 		"RoomC": "UNKNOWN"
 	})
@@ -38,7 +38,7 @@ func _run() -> void:
 	for i in 10:
 		await process_frame
 	_expect("enter_corridor", {
-		"RoomA": "PARTIAL_VISIBLE",
+		"RoomA": "VISITED",
 		"Corridor": "VISIBLE",
 		"RoomB": "UNKNOWN",
 		"RoomC": "UNKNOWN"
@@ -50,9 +50,9 @@ func _run() -> void:
 	for i in 10:
 		await process_frame
 	_expect("open_b_door", {
-		"RoomA": "PARTIAL_VISIBLE",
+		"RoomA": "VISITED",
 		"Corridor": "VISIBLE",
-		"RoomB": "PARTIAL_VISIBLE",
+		"RoomB": "UNKNOWN",
 		"RoomC": "UNKNOWN"
 	})
 
@@ -61,7 +61,7 @@ func _run() -> void:
 		await process_frame
 	_expect("enter_room_b", {
 		"RoomA": "VISITED",
-		"Corridor": "PARTIAL_VISIBLE",
+		"Corridor": "VISITED",
 		"RoomB": "VISIBLE",
 		"RoomC": "UNKNOWN"
 	})

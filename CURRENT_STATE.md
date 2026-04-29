@@ -9,6 +9,9 @@
 - 门框顶部异常和地板偏暗问题已调整。
 - 门关闭后，门后房间进入静态记忆状态，不再显示实时灯光和灯板。
 - 小场景验证过的关门记忆规则已同步到主游戏：已访问但不可见房间只保留静态结构记忆，不再显示 `light_mesh`、真实灯光和 detail/dynamic 内容。
+- 小场景的房间关系规则已同步到主游戏：开门邻房不会直接变成 `PARTIAL_VISIBLE`，未进入前保持 `UNKNOWN`，进入后才变 `VISIBLE`，离开后变 `VISITED`。
+- 主游戏 `OutOfBoundsVoid` 改为只保留碰撞、不渲染视觉，避免出现灰色大块遮挡。
+- 主游戏可见距离参数已对齐小场景：clear 7.5、dim 13.0、black 19.0。
 - 主角已替换为用户提供的 GLB 模型，模型资源位于 `assets/models/player.glb`。
 - 主场景已加入 `人物展示` 调试窗口，可实时调整主角高度、朝向、上下、左右、前后偏移，并保存配置。
 - 主 Demo 和小测试场景的天花板面片已默认关闭，避免拉远镜头时半透明顶板闪烁。
@@ -22,6 +25,7 @@
 - `validate_all.bat` 已通过。
 - 关键验证包含 `VISIBILITY_CLOSED_MEMORY_OK`。
 - 主游戏关门记忆验证包含 `MAIN_CLOSED_MEMORY_OK`。
+- 主游戏开门邻房保持 `UNKNOWN` 的关系已纳入 `MAIN_CLOSED_MEMORY_OK` 验证。
 - 主角模型验证包含 `PLAYER_MODEL_OK`。
 - 关门记忆截图已生成到 `screenshots/visibility_blend_closed_memory.png`。
 - 静止截图确认人物已不再保持 T-pose。

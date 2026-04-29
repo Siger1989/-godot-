@@ -47,8 +47,8 @@ func get_state_name() -> String:
 func _build_state_materials() -> void:
 	if _visited_material:
 		return
-	_visited_material = _make_material(Color(0.28, 0.29, 0.28), false)
-	_unknown_material = _make_material(Color(0.055, 0.055, 0.050), true)
+	_visited_material = _make_material(Color(0.25, 0.26, 0.25), false)
+	_unknown_material = _make_material(Color(0.045, 0.046, 0.043), true)
 	_partial_material = _make_material(Color(0.20, 0.20, 0.17), true)
 
 

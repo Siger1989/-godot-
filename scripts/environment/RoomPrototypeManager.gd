@@ -3,9 +3,9 @@ class_name RoomPrototypeManager
 
 enum VisibilityState { UNKNOWN, VISITED, PARTIAL_VISIBLE, VISIBLE }
 
-@export var clear_radius := 8.0
-@export var dim_radius := 14.0
-@export var black_radius := 20.0
+@export var clear_radius := 7.5
+@export var dim_radius := 13.0
+@export var black_radius := 19.0
 
 var rooms: Array[Node] = []
 var sections: Dictionary = {}
@@ -67,15 +67,12 @@ func _update_room_visibility() -> void:
 		var target_state: int = VisibilityState.UNKNOWN
 		if room_id == current_room:
 			target_state = VisibilityState.VISIBLE
-		elif _is_open_neighbor(current_room, room_id):
-			target_state = VisibilityState.PARTIAL_VISIBLE
 		elif visited.has(room_id):
 			target_state = VisibilityState.VISITED
 
 		var section := sections.get(room_id) as Node
 		if section and section.has_method("update_visibility"):
-			var partial_source := current_room if target_state == VisibilityState.PARTIAL_VISIBLE else ""
-			section.call("update_visibility", target_state, origin, self, clear_radius, dim_radius, black_radius, partial_source)
+			section.call("update_visibility", target_state, origin, self, clear_radius, dim_radius, black_radius, "")
 
 
 func _find_room_at(world_position: Vector3) -> String:

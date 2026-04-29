@@ -31,8 +31,19 @@ func _run() -> void:
 		_finish()
 		return
 
+	var void_root := root.find_child("OutOfBoundsVoid", true, false) as Node3D
+	if not void_root:
+		_fail("OutOfBoundsVoid was not found")
+	elif void_root.visible:
+		_fail("OutOfBoundsVoid visuals should be hidden in the main game")
+
 	_set_door(storage_door, true)
 	await _wait_frames(20)
+
+	var open_neighbor_state := _state_name(storage_section)
+	print("MAIN_CLOSED_MEMORY_open_neighbor_StorageRoom=%s" % open_neighbor_state)
+	if open_neighbor_state != "UNKNOWN":
+		_fail("StorageRoom should remain logical UNKNOWN when only the door is opened")
 
 	player.global_position = Vector3(-72.0, 0.0, -27.0)
 	await _wait_frames(30)
@@ -43,9 +54,7 @@ func _run() -> void:
 	player.global_position = Vector3(-74.0, 0.0, 0.0)
 	await _wait_frames(40)
 
-	var state := "MISSING"
-	if storage_section.has_method("get_state_name"):
-		state = String(storage_section.call("get_state_name"))
+	var state := _state_name(storage_section)
 	print("MAIN_CLOSED_MEMORY_StorageRoom=%s" % state)
 	if state != "VISITED":
 		_fail("StorageRoom should be VISITED after returning to StartHall with door closed")
@@ -76,6 +85,12 @@ func _set_door(door: Node, open: bool) -> void:
 		return
 	if door.has_method("interact"):
 		door.call("interact", null)
+
+
+func _state_name(section: Node) -> String:
+	if section and section.has_method("get_state_name"):
+		return String(section.call("get_state_name"))
+	return "MISSING"
 
 
 func _count_visible_light_meshes(node: Node) -> int:
