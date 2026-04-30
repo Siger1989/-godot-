@@ -11,6 +11,8 @@ const SIGHT_RAY_HEIGHT := 1.15
 const LIGHT_SURFACE_RAY_HEIGHT := 1.05
 const FLOOR_TILE := 1.0
 const WALL_PANEL_LENGTH := 0.75
+const WALL_TEXTURE_U_METERS := 1.25
+const WALL_TEXTURE_V_METERS := WALL_HEIGHT
 const CAMERA_FADE_RADIUS := 3.10
 const CAMERA_FADE_CORE_RADIUS := 0.42
 const CAMERA_FADE_MIN_ALPHA := 0.28
@@ -49,6 +51,7 @@ var _wall_fade_targets: Dictionary = {}
 var _wall_fade_alphas: Dictionary = {}
 var _wall_fade_centers: Dictionary = {}
 var _camera_fade_materials: Dictionary = {}
+var _camera_fade_restore_materials: Dictionary = {}
 
 var mat_floor: StandardMaterial3D
 var mat_floor_dark: StandardMaterial3D
@@ -218,8 +221,8 @@ func _make_materials() -> void:
 	mat_floor_dark = _textured_material(Color(0.38, 0.33, 0.20), _load_texture(TEXTURE_CARPET + ".png"), 1.0, Vector3(7.0, 7.0, 1.0), _load_texture(TEXTURE_CARPET + "_normal.png"), _load_texture(TEXTURE_CARPET + "_roughness.png"), 0.2)
 	mat_visible_floor = _vertex_material(2, true)
 	mat_memory_floor = _vertex_material(-1, true)
-	mat_wall = _textured_material(Color(0.82, 0.77, 0.47), _load_texture(TEXTURE_WALL + ".png"), 0.93, Vector3(2.4, 1.0, 1.0), _load_texture(TEXTURE_WALL + "_normal.png"), _load_texture(TEXTURE_WALL + "_roughness.png"), 0.22)
-	mat_wall_dirty = _textured_material(Color(0.58, 0.53, 0.32), _load_texture(TEXTURE_WALL_DIRTY + ".png"), 0.96, Vector3(2.4, 1.0, 1.0), _load_texture(TEXTURE_WALL_DIRTY + "_normal.png"), _load_texture(TEXTURE_WALL_DIRTY + "_roughness.png"), 0.3)
+	mat_wall = _wall_textured_material(Color(0.82, 0.77, 0.47), TEXTURE_WALL, 0.93, 0.22)
+	mat_wall_dirty = _wall_textured_material(Color(0.58, 0.53, 0.32), TEXTURE_WALL_DIRTY, 0.96, 0.3)
 	mat_ceiling = _textured_material(Color(0.76, 0.73, 0.60), _load_texture(TEXTURE_CEILING + ".png"), 0.94, Vector3(1.0, 1.0, 1.0), _load_texture(TEXTURE_CEILING + "_normal.png"), _load_texture(TEXTURE_CEILING + "_roughness.png"), 0.14)
 	mat_baseboard = _material(Color(0.34, 0.29, 0.17), 0.92)
 	mat_light = _material(Color(1.0, 0.98, 0.78), 0.34)
@@ -732,6 +735,7 @@ func _set_wall_alpha(wall: Node, alpha: float, fade_center: Vector3) -> void:
 			if String(mesh.get_meta("visibility_role", "")) == "camera_cutline":
 				continue
 			if alpha >= 0.995:
+				_restore_camera_fade_material(mesh)
 				continue
 			_apply_camera_fade_material(mesh, alpha, fade_center)
 	_set_wall_cutline_visible(wall, false)
@@ -747,6 +751,8 @@ func _apply_camera_fade_material(mesh: MeshInstance3D, center_alpha: float, fade
 		material.shader = camera_fade_shader
 		material.render_priority = 8
 		_camera_fade_materials[mesh] = material
+	if base and not _camera_fade_restore_materials.has(mesh):
+		_camera_fade_restore_materials[mesh] = base
 	if base:
 		material.set_shader_parameter("albedo_color", base.albedo_color)
 		material.set_shader_parameter("use_texture", base.albedo_texture != null)
@@ -760,6 +766,12 @@ func _apply_camera_fade_material(mesh: MeshInstance3D, center_alpha: float, fade
 	material.set_shader_parameter("fade_outer", CAMERA_FADE_RADIUS)
 	material.set_shader_parameter("center_alpha", clamp(center_alpha, 0.0, 1.0))
 	mesh.material_override = material
+
+
+func _restore_camera_fade_material(mesh: MeshInstance3D) -> void:
+	if mesh.material_override is ShaderMaterial and _camera_fade_restore_materials.has(mesh):
+		mesh.material_override = _camera_fade_restore_materials[mesh] as Material
+	_camera_fade_restore_materials.erase(mesh)
 
 
 func _set_wall_fade_target(wall: Node, alpha: float, fade_center: Vector3 = Vector3.ZERO) -> void:
@@ -866,6 +878,102 @@ func _add_wall_v(section_id: String, x: float, z1: float, z2: float) -> void:
 		cursor = next_z
 
 
+func _box_mesh_for_role(size: Vector3, world_position: Vector3, role: String) -> Mesh:
+	if _uses_world_wall_uv(role):
+		return _world_uv_wall_box_mesh(size, world_position)
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	return mesh
+
+
+func _uses_world_wall_uv(role: String) -> bool:
+	return role == "wall" or role == "wall_trim"
+
+
+func _world_uv_wall_box_mesh(size: Vector3, world_position: Vector3) -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+	if size.x <= 0.0 or size.y <= 0.0 or size.z <= 0.0:
+		return mesh
+
+	var hx := size.x * 0.5
+	var hy := size.y * 0.5
+	var hz := size.z * 0.5
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+
+	_append_world_uv_wall_face(vertices, normals, uvs, indices, [
+		Vector3(-hx, -hy, hz),
+		Vector3(hx, -hy, hz),
+		Vector3(hx, hy, hz),
+		Vector3(-hx, hy, hz)
+	], Vector3(0.0, 0.0, 1.0), world_position)
+	_append_world_uv_wall_face(vertices, normals, uvs, indices, [
+		Vector3(hx, -hy, -hz),
+		Vector3(-hx, -hy, -hz),
+		Vector3(-hx, hy, -hz),
+		Vector3(hx, hy, -hz)
+	], Vector3(0.0, 0.0, -1.0), world_position)
+	_append_world_uv_wall_face(vertices, normals, uvs, indices, [
+		Vector3(hx, -hy, hz),
+		Vector3(hx, -hy, -hz),
+		Vector3(hx, hy, -hz),
+		Vector3(hx, hy, hz)
+	], Vector3(1.0, 0.0, 0.0), world_position)
+	_append_world_uv_wall_face(vertices, normals, uvs, indices, [
+		Vector3(-hx, -hy, -hz),
+		Vector3(-hx, -hy, hz),
+		Vector3(-hx, hy, hz),
+		Vector3(-hx, hy, -hz)
+	], Vector3(-1.0, 0.0, 0.0), world_position)
+	_append_world_uv_wall_face(vertices, normals, uvs, indices, [
+		Vector3(-hx, hy, hz),
+		Vector3(hx, hy, hz),
+		Vector3(hx, hy, -hz),
+		Vector3(-hx, hy, -hz)
+	], Vector3(0.0, 1.0, 0.0), world_position)
+	_append_world_uv_wall_face(vertices, normals, uvs, indices, [
+		Vector3(-hx, -hy, -hz),
+		Vector3(hx, -hy, -hz),
+		Vector3(hx, -hy, hz),
+		Vector3(-hx, -hy, hz)
+	], Vector3(0.0, -1.0, 0.0), world_position)
+
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
+
+func _append_world_uv_wall_face(vertices: PackedVector3Array, normals: PackedVector3Array, uvs: PackedVector2Array, indices: PackedInt32Array, corners: Array, normal: Vector3, world_position: Vector3) -> void:
+	var base := vertices.size()
+	for corner_value in corners:
+		var corner: Vector3 = corner_value
+		vertices.append(corner)
+		normals.append(normal)
+		uvs.append(_wall_world_uv_for_point(corner, world_position, normal))
+	indices.append(base)
+	indices.append(base + 1)
+	indices.append(base + 2)
+	indices.append(base)
+	indices.append(base + 2)
+	indices.append(base + 3)
+
+
+func _wall_world_uv_for_point(local_point: Vector3, world_position: Vector3, normal: Vector3) -> Vector2:
+	var world_point := world_position + local_point
+	if abs(normal.y) > 0.5:
+		return Vector2(world_point.x / WALL_TEXTURE_U_METERS, world_point.z / WALL_TEXTURE_U_METERS)
+	if abs(normal.x) > 0.5:
+		return Vector2(world_point.z / WALL_TEXTURE_U_METERS, world_point.y / WALL_TEXTURE_V_METERS)
+	return Vector2(world_point.x / WALL_TEXTURE_U_METERS, world_point.y / WALL_TEXTURE_V_METERS)
+
+
 func _add_box(parent: Node, node_name: String, position: Vector3, size: Vector3, material: Material, collision: bool, role: String) -> Node3D:
 	var container: Node3D = StaticBody3D.new() if collision else Node3D.new()
 	container.name = node_name
@@ -880,9 +988,7 @@ func _add_box(parent: Node, node_name: String, position: Vector3, size: Vector3,
 	var mesh_instance := MeshInstance3D.new()
 	mesh_instance.name = node_name + "Mesh"
 	mesh_instance.set_meta("visibility_role", role)
-	var mesh := BoxMesh.new()
-	mesh.size = size
-	mesh_instance.mesh = mesh
+	mesh_instance.mesh = _box_mesh_for_role(size, position, role)
 	mesh_instance.material_override = material
 	container.add_child(mesh_instance)
 
@@ -966,6 +1072,12 @@ func _textured_material(color: Color, texture: Texture2D, roughness: float, uv_s
 		material.normal_scale = normal_scale
 	if roughness_texture:
 		material.roughness_texture = roughness_texture
+	return material
+
+
+func _wall_textured_material(color: Color, texture_base: String, roughness: float, normal_scale: float) -> StandardMaterial3D:
+	var material := _textured_material(color, _load_texture(texture_base + ".png"), roughness, Vector3.ONE, _load_texture(texture_base + "_normal.png"), _load_texture(texture_base + "_roughness.png"), normal_scale)
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	return material
 
 

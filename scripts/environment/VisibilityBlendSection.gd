@@ -3,6 +3,23 @@ class_name VisibilityBlendSection
 
 enum LogicState { UNKNOWN, VISITED, VISIBLE }
 
+const FLOOR_MEMORY_TINT_STRENGTH := 0.62
+const STRUCTURE_MEMORY_TINT_STRENGTH := 1.0
+
+const MEMORY_BRIGHTNESS_FLOOR := 0.58
+const MEMORY_BRIGHTNESS_FLOOR_UNKNOWN := 0.26
+const MEMORY_BRIGHTNESS_BASEBOARD := 0.42
+const MEMORY_BRIGHTNESS_BASEBOARD_UNKNOWN := 0.20
+const MEMORY_BRIGHTNESS_WALL := 0.60
+const MEMORY_BRIGHTNESS_WALL_UNKNOWN := 0.22
+
+const MEMORY_TINT_FLOOR := Color(0.40, 0.40, 0.34)
+const MEMORY_TINT_FLOOR_UNKNOWN := Color(0.22, 0.23, 0.21)
+const MEMORY_TINT_BASEBOARD := Color(0.21, 0.21, 0.18)
+const MEMORY_TINT_BASEBOARD_UNKNOWN := Color(0.13, 0.13, 0.11)
+const MEMORY_TINT_WALL := Color(0.42, 0.43, 0.34)
+const MEMORY_TINT_WALL_UNKNOWN := Color(0.20, 0.22, 0.18)
+
 @export var section_id := ""
 
 var logic_state: int = LogicState.UNKNOWN
@@ -282,8 +299,8 @@ func _can_show_structure_memory(mesh: MeshInstance3D, role: String, current_memo
 
 func _memory_tint_amount_for_role(role: String, amount: float) -> float:
 	if role == "floor":
-		return clamp(amount * 0.30, 0.0, 0.30)
-	return clamp(amount, 0.0, 1.0)
+		return clamp(amount * FLOOR_MEMORY_TINT_STRENGTH, 0.0, FLOOR_MEMORY_TINT_STRENGTH)
+	return clamp(amount * STRUCTURE_MEMORY_TINT_STRENGTH, 0.0, STRUCTURE_MEMORY_TINT_STRENGTH)
 
 
 func _smooth_weight(store: Dictionary, key: Variant, target: float, rise_time: float, fall_time: float) -> float:
@@ -553,18 +570,18 @@ func _apply_original_tinted(mesh: MeshInstance3D, brightness: float, alpha: floa
 
 func _static_brightness_for_role(role: String, is_unseen_unknown: bool) -> float:
 	if role == "floor":
-		return 0.54 if is_unseen_unknown else 0.82
+		return MEMORY_BRIGHTNESS_FLOOR_UNKNOWN if is_unseen_unknown else MEMORY_BRIGHTNESS_FLOOR
 	if role == "baseboard":
-		return 0.42 if is_unseen_unknown else 0.60
-	return 0.58 if is_unseen_unknown else 0.76
+		return MEMORY_BRIGHTNESS_BASEBOARD_UNKNOWN if is_unseen_unknown else MEMORY_BRIGHTNESS_BASEBOARD
+	return MEMORY_BRIGHTNESS_WALL_UNKNOWN if is_unseen_unknown else MEMORY_BRIGHTNESS_WALL
 
 
 func _static_tint_for_role(role: String, is_unseen_unknown: bool) -> Color:
 	if role == "floor":
-		return Color(0.44, 0.44, 0.39) if is_unseen_unknown else Color(0.58, 0.58, 0.52)
+		return MEMORY_TINT_FLOOR_UNKNOWN if is_unseen_unknown else MEMORY_TINT_FLOOR
 	if role == "baseboard":
-		return Color(0.27, 0.27, 0.23) if is_unseen_unknown else Color(0.36, 0.36, 0.31)
-	return Color(0.50, 0.51, 0.46) if is_unseen_unknown else Color(0.58, 0.58, 0.52)
+		return MEMORY_TINT_BASEBOARD_UNKNOWN if is_unseen_unknown else MEMORY_TINT_BASEBOARD
+	return MEMORY_TINT_WALL_UNKNOWN if is_unseen_unknown else MEMORY_TINT_WALL
 
 
 func _apply_flat_material(mesh: MeshInstance3D, material: StandardMaterial3D, alpha: float) -> void:

@@ -138,3 +138,18 @@
 - 门板新增独立 `DoorSightBlocker` 碰撞体，放在单独碰撞层，只服务视线/灯光射线。
 - 门打开后原门板通行碰撞仍会关闭，玩家可以通过；但门板仍会挡住背后的门边盲区，避免盲区墙面保持亮色。
 - 验证：`validate_all.bat` 通过。
+
+## 2026-04-30 墙体 UV 与黑墙回归修正
+
+- 墙体/转角件改用世界尺寸 UV，避免不同墙段贴图压缩不一致。
+- 墙体材质和墙体 mesh 创建已封装，后续调墙纸密度主要看 `VisibilityBlendTest.gd` 顶部 `WALL_TEXTURE_U_METERS` / `WALL_TEXTURE_V_METERS`。
+- 已见但当前遮挡区域的墙/地板记忆色改为深色静态贴图，但不再黑到看不出墙布；未知区域仍保持全黑。
+- 摄像机挡墙淡出 shader 增加原材质恢复，避免走过后墙体残留透明/发黑材质。
+- 新增长帧数巡检脚本 `scripts/tools/ValidateVisibilityBlendLongRun.gd`，覆盖移动路径和 4 个镜头方向。
+- 验证：`validate_all.bat` 通过；`ValidateVisibilityBlendLongRun.gd` 输出 `VISIBILITY_LONG_OK`。
+
+## 2026-04-30 备选怪物资源占位
+
+- `assets/models/characters/creature_devourer/` 已建立为待导入资源目录。
+- 已记录 Sketchfab 来源、作者、许可证和模型元数据到 `README.md` / `asset_info.json`。
+- 该 Sketchfab 模型需要登录授权下载，当前未放入 GLB 本体；下载后目标路径为 `assets/models/characters/creature_devourer/creature_devourer.glb`。

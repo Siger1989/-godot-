@@ -1,0 +1,23 @@
+{
+  "asset_id": "creature_devourer",
+  "display_name": "Creature Devourer",
+  "status": "pending_authenticated_download",
+  "source_url": "https://sketchfab.com/3d-models/creature-devourer-reupload-430644514c434e2e8e136ecb31cb586c",
+  "sketchfab_uid": "430644514c434e2e8e136ecb31cb586c",
+  "original_title": "Creature_devourer (reupload)",
+  "author": "John Doe",
+  "author_username": "AdamTheSigma",
+  "author_profile": "https://sketchfab.com/AdamTheSigma",
+  "license": "Creative Commons Attribution 4.0",
+  "license_url": "http://creativecommons.org/licenses/by/4.0/",
+  "expected_file": "creature_devourer.glb",
+  "metadata": {
+    "source_file": "source/creature_devourer.glb",
+    "source_size_bytes": 9209244,
+    "vertex_count": 3339,
+    "face_count": 6638,
+    "is_rigged": true,
+    "animation_count": 10,
+    "texture_count": 3
+  }
+}

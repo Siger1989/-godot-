@@ -86,3 +86,18 @@
 - 已撤回错误的大面积遮罩方案：摄像机挡墙现在只处理射线真正命中的同一条前景墙平面，背景墙不再透明；前景墙改用世界坐标 shader 蒙版做中心透明、边缘平滑恢复，避免相邻墙板出现不同 alpha 的块状接缝。灰色记忆区整体加深一档。
 - 已修正开门后的门板视线遮挡：门板现在有独立的 `DoorSightBlocker`，开门后玩家通行碰撞会关闭，但视线/灯光射线仍会被门板阻挡，避免门后和门边盲区被误判为实时亮面。
 - 本轮验证：`validate_all.bat` 通过；新增 `VISIBILITY_BLEND_open_door_light_reaches_visible_floor` 回归检查；无头截图脚本当前拿到空 viewport，已改为空图保护，视觉效果以启动窗口目测为准。
+
+## 2026-04-30 墙体 UV 与黑墙回归修正
+
+- 小场景墙体和转角件已改为按世界尺寸生成 UV，横墙、竖墙、门上墙块和短墙块的墙纸密度保持一致，不再使用 `BoxMesh` 默认 0-1 UV 拉伸。
+- 墙体材质创建集中到 `_wall_textured_material()`，墙体 mesh 创建集中到 `_box_mesh_for_role()` / `_world_uv_wall_box_mesh()`，方便后续单独调整贴图密度。
+- 已见但当前遮挡的墙/地板记忆色提成命名常量，并调成“深色但能读出墙布”，避免走过去后整片墙接近黑色；从未见过区域仍保持全黑未知。
+- 摄像机挡墙淡出结束后现在会恢复原材质，避免 shader 材质残留造成墙面继续发黑。
+- 新增 `scripts/tools/ValidateVisibilityBlendLongRun.gd`，用逐帧移动和 4 个镜头方向巡检门口、墙角、走廊、回退路径。
+- 本轮验证：`validate_all.bat` 通过；`ValidateVisibilityBlendLongRun.gd` 输出 `VISIBILITY_LONG_OK`。
+
+## 2026-04-30 备选怪物资源占位
+
+- 已为 Sketchfab 模型 `Creature_devourer (reupload)` 建立待导入资源位：`assets/models/characters/creature_devourer/`。
+- 已保存 `README.md` 和 `asset_info.json`，记录来源、作者、CC Attribution 4.0 许可证、模型元数据和目标文件名。
+- Sketchfab 官方下载接口当前返回 `401`，页面元数据也显示匿名状态 `mayDownloadThisModel=false`；因此仓库里只放合法署名/占位信息，未放 GLB 本体。
