@@ -24,8 +24,11 @@ var _lights: Array[Light3D] = []
 var _base_materials: Dictionary = {}
 var _runtime_materials: Dictionary = {}
 var _base_light_energy: Dictionary = {}
+var _light_visibility_weights: Dictionary = {}
+var _light_mesh_visibility_weights: Dictionary = {}
 var _unknown_material: StandardMaterial3D
 var _visited_material: StandardMaterial3D
+var _last_delta := 0.016
 
 
 func _ready() -> void:
@@ -66,6 +69,7 @@ func set_door_reveal(door_point: Vector3, target_amount: float, radius: float, p
 
 func tick(delta: float, player_eye: Vector3) -> void:
 	_player_eye = player_eye
+	_last_delta = max(delta, 0.001)
 	var visible_target := 1.0 if _target_state == LogicState.VISIBLE else 0.0
 	var memory_target := 1.0 if _target_state != LogicState.UNKNOWN else 0.0
 	var unknown_target := 1.0 if _target_state == LogicState.UNKNOWN else 0.0
@@ -153,9 +157,14 @@ func _apply_render() -> void:
 
 func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	if role == "light_mesh":
-		var light_visible: float = max(_physical_visibility_at(mesh.global_position), reveal)
-		if light_visible > 0.02 and _target_state == LogicState.VISIBLE:
-			_apply_original(mesh, max(0.75, light_visible), 1.0)
+		var target_light_visible: float = max(_physical_visibility_for_structure(mesh, 0.18), reveal)
+		var light_visible: float = float(_light_mesh_visibility_weights.get(mesh, 0.0))
+		light_visible = move_toward(light_visible, clamp(target_light_visible, 0.0, 1.0), _last_delta / 0.36)
+		_light_mesh_visibility_weights[mesh] = light_visible
+		if light_visible > 0.02:
+			var light_alpha: float = clamp(light_visible * 1.35, 0.0, 1.0)
+			var light_brightness: float = lerp(0.25, 1.0, clamp(light_visible, 0.0, 1.0))
+			_apply_original(mesh, light_brightness, light_alpha)
 			mesh.visible = true
 		else:
 			mesh.visible = false
@@ -163,6 +172,8 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 
 	var physical_visible := _physical_visibility_for_mesh(mesh, role)
 	var current_visible: float = max(physical_visible, reveal)
+	if _target_state == LogicState.VISIBLE:
+		current_visible = max(current_visible, visible_weight)
 	var current_memory: float = memory_weight * (1.0 - current_visible)
 	if _is_structure_role(role):
 		if current_visible > 0.025:
@@ -171,11 +182,8 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 			mesh.visible = true
 			return
 		if current_memory > 0.025 and _role_visible_in_memory(role):
-			_apply_flat_material(mesh, _visited_material, clamp(current_memory, 0.0, 1.0))
-			mesh.visible = true
-			return
-		if unknown_weight > 0.025 and (role == "wall" or role == "outline"):
-			_apply_flat_material(mesh, _unknown_material, clamp(unknown_weight, 0.0, 1.0))
+			var memory_brightness := 1.0 if role == "floor" else 0.62
+			_apply_original(mesh, memory_brightness, 1.0)
 			mesh.visible = true
 			return
 		mesh.visible = false
@@ -202,11 +210,12 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 
 func _apply_light(light: Light3D) -> void:
 	var original: float = float(_base_light_energy.get(light, light.light_energy))
-	var light_weight: float = max(_physical_visibility_at(light.global_position), door_reveal_weight * 0.35)
-	if _target_state != LogicState.VISIBLE:
-		light_weight = 0.0
-	light.visible = light_weight > 0.03
-	light.light_energy = original * clamp(light_weight, 0.0, 1.0)
+	var target_weight: float = max(_physical_visibility_at(light.global_position), door_reveal_weight * 0.35)
+	var current_weight: float = float(_light_visibility_weights.get(light, 0.0))
+	current_weight = move_toward(current_weight, clamp(target_weight, 0.0, 1.0), _last_delta / 0.45)
+	_light_visibility_weights[light] = current_weight
+	light.visible = current_weight > 0.025
+	light.light_energy = original * current_weight
 
 
 func _role_visible_in_memory(role: String) -> bool:
@@ -258,8 +267,44 @@ func _physical_visibility_for_mesh(mesh: MeshInstance3D, role: String) -> float:
 	if role == "detail" or role == "dynamic":
 		return _physical_visibility_at(mesh.global_position)
 	if role == "wall" or role == "wall_trim" or role == "baseboard" or role == "ceiling" or role == "light_mesh":
-		return _physical_visibility_at(mesh.global_position + Vector3(0.0, 0.18, 0.0))
+		return _physical_visibility_for_structure(mesh, 0.18)
+	if role == "floor":
+		return _physical_visibility_for_structure(mesh, 0.03)
 	return _physical_visibility_at(mesh.global_position)
+
+
+func _physical_visibility_for_structure(mesh: MeshInstance3D, vertical_offset: float) -> float:
+	var samples := _mesh_visibility_samples(mesh, vertical_offset)
+	var best := 0.0
+	for sample in samples:
+		best = max(best, _physical_visibility_at(sample))
+	return best
+
+
+func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float) -> Array[Vector3]:
+	var samples: Array[Vector3] = []
+	var local_center := Vector3.ZERO
+	var local_min := Vector3.ZERO
+	var local_max := Vector3.ZERO
+	if mesh.mesh:
+		var bounds := mesh.mesh.get_aabb()
+		local_center = bounds.get_center()
+		local_min = bounds.position
+		local_max = bounds.position + bounds.size
+
+	samples.append(mesh.global_transform * local_center + Vector3(0.0, vertical_offset, 0.0))
+	var local_size := local_max - local_min
+	if local_size.x >= local_size.z:
+		samples.append(mesh.global_transform * Vector3(local_min.x, local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
+		samples.append(mesh.global_transform * Vector3(local_max.x, local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
+		samples.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.25), local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
+		samples.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.75), local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
+	else:
+		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, local_min.z) + Vector3(0.0, vertical_offset, 0.0))
+		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, local_max.z) + Vector3(0.0, vertical_offset, 0.0))
+		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, lerp(local_min.z, local_max.z, 0.25)) + Vector3(0.0, vertical_offset, 0.0))
+		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, lerp(local_min.z, local_max.z, 0.75)) + Vector3(0.0, vertical_offset, 0.0))
+	return samples
 
 
 func _physical_visibility_at(position: Vector3) -> float:
