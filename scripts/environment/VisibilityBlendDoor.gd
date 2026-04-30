@@ -1,6 +1,8 @@
 extends Node3D
 class_name VisibilityBlendDoor
 
+const LOS_COLLISION_LAYER := 1 << 2
+
 @export var door_width := 1.56
 @export var door_height := 2.18
 @export var open_angle_degrees := 92.0
@@ -11,6 +13,7 @@ var open_amount := 0.0
 var _target_open_amount := 0.0
 var _hinge: Node3D
 var _panel_collision: CollisionShape3D
+var _sight_blocker: StaticBody3D
 var _player_near := false
 
 
@@ -62,6 +65,7 @@ func _build_door() -> void:
 	_hinge.add_child(panel)
 	_add_box(panel, "DoorSlab", Vector3.ZERO, Vector3(door_width, door_height, 0.11), mat_door, true, "door")
 	_panel_collision = panel.get_node_or_null("DoorSlab/CollisionShape3D") as CollisionShape3D
+	_add_sight_blocker(panel, Vector3.ZERO, Vector3(door_width, door_height, 0.16))
 
 	_add_box(self, "FrameLeft", Vector3(-door_width * 0.62, door_height * 0.5, 0.0), Vector3(0.18, door_height + 0.24, 0.34), mat_frame, true, "wall")
 	_add_box(self, "FrameRight", Vector3(door_width * 0.62, door_height * 0.5, 0.0), Vector3(0.18, door_height + 0.24, 0.34), mat_frame, true, "wall")
@@ -80,6 +84,22 @@ func _build_interaction_area() -> void:
 	add_child(area)
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)
+
+
+func _add_sight_blocker(parent: Node, local_position: Vector3, size: Vector3) -> void:
+	_sight_blocker = StaticBody3D.new()
+	_sight_blocker.name = "DoorSightBlocker"
+	_sight_blocker.position = local_position
+	_sight_blocker.collision_layer = LOS_COLLISION_LAYER
+	_sight_blocker.collision_mask = 0
+	_sight_blocker.add_to_group("visibility_blend_los_blocker")
+	parent.add_child(_sight_blocker)
+
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	_sight_blocker.add_child(shape)
 
 
 func _on_body_entered(body: Node) -> void:
