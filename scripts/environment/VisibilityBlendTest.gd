@@ -10,6 +10,11 @@ const WALL_THICKNESS := 0.3
 const SIGHT_RAY_HEIGHT := 1.15
 const FLOOR_TILE := 1.0
 const WALL_PANEL_LENGTH := 0.75
+const CAMERA_FADE_RADIUS := 2.45
+const CAMERA_FADE_CORE_RADIUS := 0.42
+const CAMERA_FADE_MIN_ALPHA := 0.34
+const CAMERA_FADE_EDGE_ALPHA := 0.94
+const CAMERA_FADE_SPEED := 0.34
 const TEXTURE_ROOT := "res://assets/textures/backrooms/"
 const TEXTURE_WALL := TEXTURE_ROOT + "wallpaper_yellow_green"
 const TEXTURE_WALL_DIRTY := TEXTURE_ROOT + "wallpaper_dirty"
@@ -215,7 +220,7 @@ func _make_materials() -> void:
 	mat_light.emission_enabled = true
 	mat_light.emission = Color(1.0, 0.96, 0.74)
 	mat_light.emission_energy_multiplier = 2.0
-	mat_camera_cutline = _material(Color(0.13, 0.095, 0.03, 0.78), 1.0)
+	mat_camera_cutline = _material(Color(0.13, 0.095, 0.03, 0.34), 1.0)
 	mat_camera_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat_camera_cutline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat_camera_cutline.render_priority = 8
@@ -456,17 +461,42 @@ func _update_foreground_wall_fade(delta: float) -> void:
 		if not collider:
 			break
 		if collider.is_in_group("visibility_blend_foreground_wall"):
-			active_walls[collider] = true
-			_set_wall_fade_target(collider, 0.62)
+			var hit_position := hit.get("position") as Vector3
+			_add_foreground_fade_zone(active_walls, collider, hit_position)
 		if collider is CollisionObject3D:
 			exclude.append((collider as CollisionObject3D).get_rid())
 		else:
 			break
 
+	for wall in active_walls.keys():
+		_set_wall_fade_target(wall as Node, float(active_walls[wall]))
 	for wall in _wall_fade_targets.keys():
 		if not active_walls.has(wall):
 			_set_wall_fade_target(wall as Node, 1.0)
 	_apply_wall_fades(delta)
+
+
+func _add_foreground_fade_zone(active_walls: Dictionary, center_wall: Node, hit_position: Vector3) -> void:
+	var center := Vector2(hit_position.x, hit_position.z)
+	for candidate in get_tree().get_nodes_in_group("visibility_blend_foreground_wall"):
+		var wall := candidate as Node3D
+		if not wall or not is_instance_valid(wall):
+			continue
+		var distance := center.distance_to(Vector2(wall.global_position.x, wall.global_position.z))
+		if distance > CAMERA_FADE_RADIUS:
+			continue
+		var fade_t: float = smoothstep(CAMERA_FADE_CORE_RADIUS, CAMERA_FADE_RADIUS, distance)
+		var alpha: float = lerp(CAMERA_FADE_MIN_ALPHA, CAMERA_FADE_EDGE_ALPHA, fade_t)
+		_remember_active_wall_alpha(active_walls, wall, alpha)
+	_remember_active_wall_alpha(active_walls, center_wall, CAMERA_FADE_MIN_ALPHA)
+
+
+func _remember_active_wall_alpha(active_walls: Dictionary, wall: Node, alpha: float) -> void:
+	if not is_instance_valid(wall):
+		return
+	if active_walls.has(wall):
+		alpha = min(float(active_walls[wall]), alpha)
+	active_walls[wall] = alpha
 
 
 func _update_visibility_floor(delta: float) -> void:
@@ -677,7 +707,7 @@ func _set_wall_alpha(wall: Node, alpha: float) -> void:
 				color.a = alpha
 				material.albedo_color = color
 				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.99 else BaseMaterial3D.TRANSPARENCY_DISABLED
-	_set_wall_cutline_visible(wall, alpha < 0.985)
+	_set_wall_cutline_visible(wall, alpha < 0.72)
 
 
 func _set_wall_fade_target(wall: Node, alpha: float) -> void:
@@ -696,7 +726,7 @@ func _apply_wall_fades(delta: float) -> void:
 			continue
 		var target: float = float(_wall_fade_targets[wall])
 		var current: float = float(_wall_fade_alphas.get(wall, 1.0))
-		current = move_toward(current, target, delta / 0.20)
+		current = move_toward(current, target, delta / CAMERA_FADE_SPEED)
 		_wall_fade_alphas[wall] = current
 		_set_wall_alpha(wall as Node, current)
 		if current >= 0.995 and target >= 0.995:
@@ -728,7 +758,7 @@ func _ensure_wall_cutlines(wall: Node) -> void:
 
 	var bounds := source_mesh.mesh.get_aabb()
 	var size: Vector3 = bounds.size
-	var thickness := 0.035
+	var thickness := 0.018
 	var lift := 0.024
 	if size.x >= size.z:
 		_add_camera_cutline(wall, "CameraCutlineTop", Vector3(0.0, size.y * 0.5 + lift, 0.0), Vector3(size.x + thickness, thickness, thickness))

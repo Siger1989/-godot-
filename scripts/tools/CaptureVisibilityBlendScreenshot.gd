@@ -34,5 +34,16 @@ func _wait_frames(count: int) -> void:
 
 
 func _save_png(path: String) -> void:
-	var image: Image = root.get_texture().get_image()
-	image.save_png(path)
+	var texture := root.get_texture()
+	if not texture:
+		push_warning("Screenshot texture is unavailable: %s" % path)
+		return
+	var image := texture.get_image()
+	if not image or image.is_empty():
+		push_warning("Screenshot image is empty: %s" % path)
+		return
+	var error := image.save_png(path)
+	if error != OK:
+		push_error("Failed to save screenshot %s: %s" % [path, error])
+	else:
+		print("Saved screenshot: %s" % path)
