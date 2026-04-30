@@ -194,7 +194,7 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	var current_memory: float = memory_weight * (1.0 - live_weight)
 	if _is_structure_role(role):
 		var can_show_memory: bool = _can_show_structure_memory(mesh, role, 1.0 - live_weight)
-		if live_weight > 0.015:
+		if live_weight > _live_threshold_for_role(role):
 			var live_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
 			var edge_memory_amount: float = (1.0 - smoothstep(0.015, 0.08, live_weight)) * 0.22
 			_apply_original_tinted(mesh, live_brightness, 1.0, _static_tint_for_role(role, false), edge_memory_amount)
@@ -241,6 +241,16 @@ func _role_visible_in_memory(role: String) -> bool:
 
 func _is_structure_role(role: String) -> bool:
 	return role == "floor" or role == "wall" or role == "wall_trim" or role == "ceiling" or role == "baseboard"
+
+
+func _is_wall_like_role(role: String) -> bool:
+	return role == "wall" or role == "wall_trim" or role == "baseboard" or role == "ceiling"
+
+
+func _live_threshold_for_role(role: String) -> float:
+	if _is_wall_like_role(role):
+		return 0.28
+	return 0.015
 
 
 func _can_show_structure_memory(mesh: MeshInstance3D, role: String, current_memory: float) -> bool:
@@ -308,6 +318,8 @@ func _physical_visibility_for_mesh(mesh: MeshInstance3D, role: String) -> float:
 
 
 func _physical_visibility_for_structure(mesh: MeshInstance3D, vertical_offset: float, role: String = "") -> float:
+	if _is_wall_like_role(role):
+		return _physical_visibility_for_wall_structure(mesh, vertical_offset, role)
 	var samples := _mesh_visibility_samples(mesh, vertical_offset, role)
 	var best := 0.0
 	var hit_tolerance := _visibility_hit_tolerance(role)
@@ -316,9 +328,29 @@ func _physical_visibility_for_structure(mesh: MeshInstance3D, vertical_offset: f
 	return best
 
 
+func _physical_visibility_for_wall_structure(mesh: MeshInstance3D, vertical_offset: float, role: String) -> float:
+	var samples := _mesh_visibility_samples(mesh, vertical_offset, role)
+	var probes := _wall_front_probe_samples(mesh, vertical_offset, role)
+	var hit_tolerance := _visibility_hit_tolerance(role)
+	var total := 0.0
+	var visible_count := 0
+	var sample_count: int = min(samples.size(), probes.size())
+	for i in sample_count:
+		if _physical_visibility_at(probes[i], 0.012) <= 0.0:
+			continue
+		var sample_visible := _physical_visibility_at(samples[i], hit_tolerance)
+		if sample_visible <= 0.0:
+			continue
+		total += sample_visible
+		visible_count += 1
+	if visible_count < min(3, sample_count):
+		return 0.0
+	return total / float(max(sample_count, 1))
+
+
 func _visibility_hit_tolerance(role: String) -> float:
 	if role == "wall" or role == "wall_trim" or role == "baseboard" or role == "ceiling":
-		return 0.055
+		return 0.035
 	return 0.012
 
 
@@ -376,6 +408,42 @@ func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float, role
 		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, local_min.z) + Vector3(0.0, vertical_offset, 0.0))
 		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, local_max.z) + Vector3(0.0, vertical_offset, 0.0))
 	return samples
+
+
+func _wall_front_probe_samples(mesh: MeshInstance3D, vertical_offset: float, role: String = "") -> Array[Vector3]:
+	var probes: Array[Vector3] = []
+	var local_center := Vector3.ZERO
+	var local_min := Vector3.ZERO
+	var local_max := Vector3.ZERO
+	if mesh.mesh:
+		var bounds := mesh.mesh.get_aabb()
+		local_center = bounds.get_center()
+		local_min = bounds.position
+		local_max = bounds.position + bounds.size
+
+	var local_size := local_max - local_min
+	var local_eye := mesh.global_transform.affine_inverse() * _player_eye
+	var sample_y := local_center.y
+	if role == "wall" or role == "wall_trim":
+		sample_y = clamp(local_eye.y, local_min.y + 0.35, local_max.y - 0.18)
+	var probe_offset := 0.26
+	if local_size.x >= local_size.z:
+		var face_z := local_min.z if local_eye.z < local_center.z else local_max.z
+		var probe_z := face_z - probe_offset if local_eye.z < local_center.z else face_z + probe_offset
+		probes.append(mesh.global_transform * Vector3(local_center.x, sample_y, probe_z))
+		probes.append(mesh.global_transform * Vector3(local_min.x + 0.02, sample_y, probe_z))
+		probes.append(mesh.global_transform * Vector3(local_max.x - 0.02, sample_y, probe_z))
+		probes.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.33), sample_y, probe_z))
+		probes.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.67), sample_y, probe_z))
+	else:
+		var face_x := local_min.x if local_eye.x < local_center.x else local_max.x
+		var probe_x := face_x - probe_offset if local_eye.x < local_center.x else face_x + probe_offset
+		probes.append(mesh.global_transform * Vector3(probe_x, sample_y, local_center.z))
+		probes.append(mesh.global_transform * Vector3(probe_x, sample_y, local_min.z + 0.02))
+		probes.append(mesh.global_transform * Vector3(probe_x, sample_y, local_max.z - 0.02))
+		probes.append(mesh.global_transform * Vector3(probe_x, sample_y, lerp(local_min.z, local_max.z, 0.33)))
+		probes.append(mesh.global_transform * Vector3(probe_x, sample_y, lerp(local_min.z, local_max.z, 0.67)))
+	return probes
 
 
 func _physical_visibility_at(position: Vector3, hit_tolerance: float = 0.02) -> float:
