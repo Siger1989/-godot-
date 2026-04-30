@@ -119,6 +119,8 @@ func _capture_tree(node: Node) -> void:
 	for child in node.get_children():
 		if child is MeshInstance3D:
 			var mesh := child as MeshInstance3D
+			if String(mesh.get_meta("visibility_role", "")) == "camera_cutline":
+				continue
 			if not _meshes.has(mesh):
 				_meshes.append(mesh)
 			if not _base_materials.has(mesh):

@@ -49,6 +49,7 @@ var mat_wall_dirty: StandardMaterial3D
 var mat_ceiling: StandardMaterial3D
 var mat_baseboard: StandardMaterial3D
 var mat_light: StandardMaterial3D
+var mat_camera_cutline: StandardMaterial3D
 var visible_floor_mesh: MeshInstance3D
 var memory_floor_mesh: MeshInstance3D
 var last_visibility_ray_count := 0
@@ -174,6 +175,10 @@ func _make_materials() -> void:
 	mat_light.emission_enabled = true
 	mat_light.emission = Color(1.0, 0.96, 0.74)
 	mat_light.emission_energy_multiplier = 2.0
+	mat_camera_cutline = _material(Color(0.13, 0.095, 0.03, 0.78), 1.0)
+	mat_camera_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat_camera_cutline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_camera_cutline.render_priority = 8
 
 
 func _build_level() -> void:
@@ -528,6 +533,8 @@ func _set_wall_alpha(wall: Node, alpha: float) -> void:
 	for child in wall.get_children():
 		if child is MeshInstance3D:
 			var mesh := child as MeshInstance3D
+			if String(mesh.get_meta("visibility_role", "")) == "camera_cutline":
+				continue
 			var material := mesh.material_override as StandardMaterial3D
 			if not material:
 				continue
@@ -541,6 +548,7 @@ func _set_wall_alpha(wall: Node, alpha: float) -> void:
 				color.a = alpha
 				material.albedo_color = color
 				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.99 else BaseMaterial3D.TRANSPARENCY_DISABLED
+	_set_wall_cutline_visible(wall, alpha < 0.985)
 
 
 func _set_wall_fade_target(wall: Node, alpha: float) -> void:
@@ -565,6 +573,55 @@ func _apply_wall_fades(delta: float) -> void:
 		if current >= 0.995 and target >= 0.995:
 			_wall_fade_targets.erase(wall)
 			_wall_fade_alphas.erase(wall)
+
+
+func _set_wall_cutline_visible(wall: Node, visible: bool) -> void:
+	if not is_instance_valid(wall):
+		return
+	_ensure_wall_cutlines(wall)
+	for child in wall.get_children():
+		if child is MeshInstance3D and String(child.get_meta("visibility_role", "")) == "camera_cutline":
+			(child as MeshInstance3D).visible = visible
+
+
+func _ensure_wall_cutlines(wall: Node) -> void:
+	for child in wall.get_children():
+		if child is MeshInstance3D and String(child.get_meta("visibility_role", "")) == "camera_cutline":
+			return
+
+	var source_mesh: MeshInstance3D
+	for child in wall.get_children():
+		if child is MeshInstance3D:
+			source_mesh = child as MeshInstance3D
+			break
+	if not source_mesh or not source_mesh.mesh:
+		return
+
+	var bounds := source_mesh.mesh.get_aabb()
+	var size: Vector3 = bounds.size
+	var thickness := 0.035
+	var lift := 0.024
+	if size.x >= size.z:
+		_add_camera_cutline(wall, "CameraCutlineTop", Vector3(0.0, size.y * 0.5 + lift, 0.0), Vector3(size.x + thickness, thickness, thickness))
+		_add_camera_cutline(wall, "CameraCutlineLeft", Vector3(-size.x * 0.5, 0.0, 0.0), Vector3(thickness, size.y + thickness, thickness))
+		_add_camera_cutline(wall, "CameraCutlineRight", Vector3(size.x * 0.5, 0.0, 0.0), Vector3(thickness, size.y + thickness, thickness))
+	else:
+		_add_camera_cutline(wall, "CameraCutlineTop", Vector3(0.0, size.y * 0.5 + lift, 0.0), Vector3(thickness, thickness, size.z + thickness))
+		_add_camera_cutline(wall, "CameraCutlineNear", Vector3(0.0, 0.0, -size.z * 0.5), Vector3(thickness, size.y + thickness, thickness))
+		_add_camera_cutline(wall, "CameraCutlineFar", Vector3(0.0, 0.0, size.z * 0.5), Vector3(thickness, size.y + thickness, thickness))
+
+
+func _add_camera_cutline(parent: Node, node_name: String, local_position: Vector3, size: Vector3) -> void:
+	var line := MeshInstance3D.new()
+	line.name = node_name
+	line.set_meta("visibility_role", "camera_cutline")
+	line.visible = false
+	line.position = local_position
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	line.mesh = mesh
+	line.material_override = mat_camera_cutline
+	parent.add_child(line)
 
 
 func _add_wall_h(section_id: String, x1: float, x2: float, z: float) -> void:
