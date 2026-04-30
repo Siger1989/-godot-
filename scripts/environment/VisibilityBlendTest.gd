@@ -7,6 +7,7 @@ const PlayerScript := preload("res://scripts/player/VisibilityBlendPlayer.gd")
 
 const WALL_HEIGHT := 2.7
 const WALL_THICKNESS := 0.3
+const SIGHT_RAY_HEIGHT := 1.15
 const FLOOR_TILE := 1.0
 const WALL_PANEL_LENGTH := 0.75
 const TEXTURE_ROOT := "res://assets/textures/backrooms/"
@@ -120,7 +121,9 @@ func _process(delta: float) -> void:
 
 
 func has_line_of_sight(origin: Vector3, target: Vector3) -> bool:
-	var params := PhysicsRayQueryParameters3D.create(origin, target)
+	var from := Vector3(origin.x, SIGHT_RAY_HEIGHT, origin.z)
+	var to := Vector3(target.x, SIGHT_RAY_HEIGHT, target.z)
+	var params := PhysicsRayQueryParameters3D.create(from, to)
 	var exclude: Array[RID] = []
 	var player_collision := player as CollisionObject3D
 	if player_collision:
@@ -131,7 +134,7 @@ func has_line_of_sight(origin: Vector3, target: Vector3) -> bool:
 	if hit.is_empty():
 		return true
 	var hit_position := hit.get("position") as Vector3
-	return hit_position.distance_to(target) < 0.28
+	return hit_position.distance_to(to) < 0.32
 
 
 func get_section_debug(section_id: String) -> Dictionary:

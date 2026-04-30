@@ -16,9 +16,28 @@ func _run() -> void:
 		"RoomA": "VISIBLE",
 		"RoomB": "UNKNOWN"
 	})
+	_expect_visible_light("initial_corridor_lamp", "Corridor")
 
 	var player := root.find_child("VisibilityBlendPlayer", true, false) as Node3D
 	var door := root.find_child("BlendDoor_Corridor_RoomB", true, false)
+	if player:
+		player.global_position = Vector3(2.6, 0.0, 0.0)
+	await _wait_frames(70)
+	_expect_state("corridor_keeps_room_a_memory", {
+		"RoomA": "VISITED",
+		"Corridor": "VISIBLE"
+	})
+	_expect_visible_light("corridor_still_sees_room_a_lamp", "RoomA")
+
+	if player:
+		player.global_position = Vector3(-5.5, 0.0, 0.0)
+	await _wait_frames(70)
+	_expect_state("return_keeps_corridor_memory", {
+		"RoomA": "VISIBLE",
+		"Corridor": "VISITED"
+	})
+	_expect_visible_light("return_still_sees_corridor_lamp", "Corridor")
+
 	if door and door.has_method("force_open"):
 		door.call("force_open", true)
 	if player:
@@ -86,6 +105,47 @@ func _visibility_debug() -> Dictionary:
 	if scene and scene.has_method("get_visibility_debug"):
 		return scene.call("get_visibility_debug")
 	return {}
+
+
+func _expect_visible_light(label: String, section_id: String) -> void:
+	var section := root.find_child(section_id, true, false)
+	if not section:
+		_fail("%s expected section %s to exist" % [label, section_id])
+		return
+	var visible_light_meshes := _count_visible_light_meshes(section)
+	var active_lights := _count_active_lights(section)
+	print("VISIBILITY_BLEND_%s %s light_mesh=%d active_lights=%d" % [
+		label,
+		section_id,
+		visible_light_meshes,
+		active_lights
+	])
+	if visible_light_meshes <= 0:
+		_fail("%s expected at least one visible lamp panel in %s" % [label, section_id])
+	if active_lights <= 0:
+		_fail("%s expected at least one active light in %s" % [label, section_id])
+
+
+func _count_visible_light_meshes(node: Node) -> int:
+	var count := 0
+	if node is MeshInstance3D:
+		var mesh := node as MeshInstance3D
+		if String(mesh.get_meta("visibility_role", "")) == "light_mesh" and mesh.visible:
+			count += 1
+	for child in node.get_children():
+		count += _count_visible_light_meshes(child)
+	return count
+
+
+func _count_active_lights(node: Node) -> int:
+	var count := 0
+	if node is Light3D:
+		var light := node as Light3D
+		if light.visible and light.light_energy > 0.001:
+			count += 1
+	for child in node.get_children():
+		count += _count_active_lights(child)
+	return count
 
 
 func _wait_frames(count: int) -> void:

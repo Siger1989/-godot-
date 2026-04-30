@@ -63,3 +63,11 @@
 - 墙面小块可见性已改为采样朝向玩家的墙面表面，避免采样点落在墙体中心导致墙板被自身碰撞误挡、整片变灰黑。
 - 未知/遮挡墙面的兜底材质保持灰暗墙布，不再隐藏成黑洞；本轮提高了灰暗墙布亮度，减少黑块感。
 - 验证：`validate_all.bat` 通过，并重新生成 `screenshots/visibility_blend_initial.png`、`screenshots/visibility_blend_door_reveal.png`、`screenshots/visibility_blend_room_b_memory.png`。
+
+## 2026-04-30 物理视线灯光回归修正
+
+- 已修正小场景里灯光重新变成“房间触发”的问题：`VISITED` 状态不再直接关掉视线内的灯板和真实灯。
+- 灯板可见性、真实灯开关统一由水平物理视线决定；玩家走到走廊后仍能看到身后的 RoomA 灯，返回初始点后仍能看到走廊灯。
+- 关门后的已访问房间仍保持静态记忆：灯板、真实灯和动态内容关闭，不出现实时变化。
+- 新增回归验证到 `ValidateVisibilityBlendTest.gd`，覆盖初始点、走廊、返回初始点的灯光连续性。
+- 验证：`validate_all.bat` 通过，关键结果包含 `VISIBILITY_BLEND_OK` 和 `VISIBILITY_CLOSED_MEMORY_OK`。
