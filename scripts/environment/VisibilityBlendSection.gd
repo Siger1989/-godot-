@@ -189,15 +189,20 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 		_floor_light_target = max(_floor_light_target, raw_visible)
 		_section_light_target = max(_section_light_target, raw_visible)
 	var live_weight := _smooth_weight(_mesh_live_weights, mesh, raw_visible, 0.12, 0.24)
-	if live_weight > 0.08:
+	if live_weight > 0.035:
+		_mesh_seen_as_memory[mesh] = true
+	if _is_structure_role(role) and not _mesh_seen_as_memory.has(mesh) and _memory_visibility_for_mesh(mesh, role) > 0.015:
 		_mesh_seen_as_memory[mesh] = true
 	var current_memory: float = memory_weight * (1.0 - live_weight)
 	if _is_structure_role(role):
 		var can_show_memory: bool = _can_show_structure_memory(mesh, role, 1.0 - live_weight)
-		if live_weight > _live_threshold_for_role(role):
+		if live_weight > 0.015:
+			var live_mix: float = _live_mix_for_role(role, live_weight)
 			var live_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
-			var edge_memory_amount: float = (1.0 - smoothstep(0.015, 0.08, live_weight)) * 0.22
-			_apply_original_tinted(mesh, live_brightness, 1.0, _static_tint_for_role(role, false), edge_memory_amount)
+			var static_brightness: float = _static_brightness_for_role(role, false)
+			var brightness: float = lerp(static_brightness, live_brightness, live_mix)
+			var memory_amount: float = lerp(1.0, 0.0, live_mix)
+			_apply_original_tinted(mesh, brightness, 1.0, _static_tint_for_role(role, false), memory_amount)
 			mesh.visible = true
 			return
 		if can_show_memory:
@@ -251,6 +256,13 @@ func _live_threshold_for_role(role: String) -> float:
 	if _is_wall_like_role(role):
 		return 0.28
 	return 0.015
+
+
+func _live_mix_for_role(role: String, live_weight: float) -> float:
+	if not _is_wall_like_role(role):
+		return clamp(live_weight, 0.0, 1.0)
+	var threshold := _live_threshold_for_role(role)
+	return smoothstep(threshold * 0.48, threshold, live_weight)
 
 
 func _can_show_structure_memory(mesh: MeshInstance3D, role: String, current_memory: float) -> bool:
@@ -315,6 +327,27 @@ func _physical_visibility_for_mesh(mesh: MeshInstance3D, role: String) -> float:
 	if role == "floor":
 		return _physical_visibility_for_structure(mesh, 0.03, role)
 	return _physical_visibility_at(mesh.global_position)
+
+
+func _memory_visibility_for_mesh(mesh: MeshInstance3D, role: String) -> float:
+	if _is_wall_like_role(role):
+		return _memory_visibility_for_wall_structure(mesh, 0.18, role)
+	if role == "floor":
+		return _physical_visibility_for_structure(mesh, 0.03, role)
+	return 0.0
+
+
+func _memory_visibility_for_wall_structure(mesh: MeshInstance3D, vertical_offset: float, role: String) -> float:
+	var samples := _mesh_visibility_samples(mesh, vertical_offset, role)
+	var probes := _wall_front_probe_samples(mesh, vertical_offset, role)
+	var hit_tolerance := _visibility_hit_tolerance(role)
+	var best := 0.0
+	var sample_count: int = min(samples.size(), probes.size())
+	for i in sample_count:
+		var probe_visible := _physical_visibility_at(probes[i], 0.012)
+		var surface_visible := _physical_visibility_at(samples[i], hit_tolerance)
+		best = max(best, max(probe_visible, surface_visible))
+	return best
 
 
 func _physical_visibility_for_structure(mesh: MeshInstance3D, vertical_offset: float, role: String = "") -> float:
@@ -505,18 +538,18 @@ func _apply_original_tinted(mesh: MeshInstance3D, brightness: float, alpha: floa
 
 func _static_brightness_for_role(role: String, is_unseen_unknown: bool) -> float:
 	if role == "floor":
-		return 0.54 if is_unseen_unknown else 0.70
+		return 0.54 if is_unseen_unknown else 0.86
 	if role == "baseboard":
-		return 0.42 if is_unseen_unknown else 0.52
-	return 0.58 if is_unseen_unknown else 0.70
+		return 0.42 if is_unseen_unknown else 0.68
+	return 0.58 if is_unseen_unknown else 0.84
 
 
 func _static_tint_for_role(role: String, is_unseen_unknown: bool) -> Color:
 	if role == "floor":
-		return Color(0.44, 0.44, 0.39) if is_unseen_unknown else Color(0.56, 0.56, 0.50)
+		return Color(0.44, 0.44, 0.39) if is_unseen_unknown else Color(0.64, 0.64, 0.58)
 	if role == "baseboard":
-		return Color(0.27, 0.27, 0.23) if is_unseen_unknown else Color(0.32, 0.32, 0.27)
-	return Color(0.50, 0.51, 0.46) if is_unseen_unknown else Color(0.58, 0.59, 0.52)
+		return Color(0.27, 0.27, 0.23) if is_unseen_unknown else Color(0.40, 0.40, 0.34)
+	return Color(0.50, 0.51, 0.46) if is_unseen_unknown else Color(0.66, 0.66, 0.58)
 
 
 func _apply_flat_material(mesh: MeshInstance3D, material: StandardMaterial3D, alpha: float) -> void:
