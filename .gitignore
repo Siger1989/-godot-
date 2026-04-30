@@ -1,5 +1,6 @@
 .godot/
 3D模型/
+logs/*.log
 exports/web/*
 !exports/web/.gitkeep
 screenshots/*.png

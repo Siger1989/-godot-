@@ -101,3 +101,13 @@
 - 已为 Sketchfab 模型 `Creature_devourer (reupload)` 建立待导入资源位：`assets/models/characters/creature_devourer/`。
 - 已保存 `README.md` 和 `asset_info.json`，记录来源、作者、CC Attribution 4.0 许可证、模型元数据和目标文件名。
 - Sketchfab 官方下载接口当前返回 `401`，页面元数据也显示匿名状态 `mayDownloadThisModel=false`；因此仓库里只放合法署名/占位信息，未放 GLB 本体。
+
+## 2026-04-30 本机 Godot 启动配置
+
+- 当前目标：修复家里电脑双击 `run_visibility_blend_test.bat` / `run_game.bat` 找不到 Godot 的问题。
+- 当前进度：`tools/godot_env.bat` 已从写死旧电脑路径改为自动查找本机 WinGet 安装的 Godot，同时仍支持外部环境变量 `GODOT_CONSOLE_EXE` / `GODOT_EDITOR_EXE` 覆盖。
+- 文件变更：`tools/godot_env.bat`、`.gitignore`、`CURRENT_STATE.md`。
+- 命令运行：确认本机 Godot 路径，运行 `Godot_v4.6.2-stable_win64_console.exe --version`，并 headless 执行 `ValidateVisibilityBlendTest.gd`。
+- 验证结果：PASS，日志 `logs/visibility_check_20260430_201714.log`，关键输出 `VISIBILITY_BLEND_OK`。
+- 当前阻塞：无；但工程原目标版本是 Godot 4.3，当前本机自动找到的是 Godot 4.6.2，后续如出现兼容问题再安装/指定 Godot 4.3。
+- 下一步：双击 `run_game.bat` 运行主 Demo，或双击 `run_visibility_blend_test.bat` 运行小场景。
