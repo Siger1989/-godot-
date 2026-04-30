@@ -185,7 +185,8 @@ func _make_materials() -> void:
 	mat_camera_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat_camera_cutline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat_camera_cutline.render_priority = 8
-	mat_vision_cutline = _material(Color(0.08, 0.075, 0.055, 0.86), 1.0)
+	mat_vision_cutline = _material(Color(1.0, 1.0, 1.0, 1.0), 1.0)
+	mat_vision_cutline.vertex_color_use_as_albedo = true
 	mat_vision_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat_vision_cutline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat_vision_cutline.render_priority = 9
@@ -561,6 +562,7 @@ func _update_visibility_cutline(points: PackedVector3Array) -> void:
 		return
 	var vertices := PackedVector3Array()
 	var colors := PackedColorArray()
+	var indices := PackedInt32Array()
 	var origin := Vector2(player.global_position.x, player.global_position.z)
 	for i in points.size():
 		var next_i := (i + 1) % points.size()
@@ -570,19 +572,41 @@ func _update_visibility_cutline(points: PackedVector3Array) -> void:
 		var distance_b := origin.distance_to(Vector2(point_b.x, point_b.z))
 		if distance_a > 18.85 and distance_b > 18.85:
 			continue
-		vertices.append(Vector3(point_a.x, 0.052, point_a.z))
-		vertices.append(Vector3(point_b.x, 0.052, point_b.z))
-		colors.append(Color(0.08, 0.075, 0.055, 0.78))
-		colors.append(Color(0.08, 0.075, 0.055, 0.78))
+		if abs(distance_a - distance_b) < 0.75:
+			continue
+		_append_soft_cutline(vertices, colors, indices, Vector3(point_a.x, 0.052, point_a.z), Vector3(point_b.x, 0.052, point_b.z), 0.055, Color(0.20, 0.20, 0.18, 0.16))
+		_append_soft_cutline(vertices, colors, indices, Vector3(point_a.x, 0.051, point_a.z), Vector3(point_b.x, 0.051, point_b.z), 0.16, Color(0.20, 0.20, 0.18, 0.055))
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_COLOR] = colors
+	arrays[Mesh.ARRAY_INDEX] = indices
 	var mesh := ArrayMesh.new()
-	if vertices.size() >= 2:
-		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINES, arrays)
+	if indices.size() >= 3:
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	vision_cutline_mesh.mesh = mesh
-	vision_cutline_mesh.visible = vertices.size() >= 2
+	vision_cutline_mesh.visible = indices.size() >= 3
+
+
+func _append_soft_cutline(vertices: PackedVector3Array, colors: PackedColorArray, indices: PackedInt32Array, start: Vector3, end: Vector3, width: float, color: Color) -> void:
+	var direction := Vector2(end.x - start.x, end.z - start.z)
+	if direction.length() < 0.08:
+		return
+	direction = direction.normalized()
+	var normal := Vector3(-direction.y, 0.0, direction.x) * width * 0.5
+	var base := vertices.size()
+	vertices.append(start - normal)
+	vertices.append(start + normal)
+	vertices.append(end + normal)
+	vertices.append(end - normal)
+	for i in 4:
+		colors.append(color)
+	indices.append(base)
+	indices.append(base + 1)
+	indices.append(base + 2)
+	indices.append(base)
+	indices.append(base + 2)
+	indices.append(base + 3)
 
 
 func _visibility_alpha_for_distance(distance: float) -> float:

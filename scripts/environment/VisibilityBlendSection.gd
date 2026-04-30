@@ -193,18 +193,16 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 		_mesh_seen_as_memory[mesh] = true
 	var current_memory: float = memory_weight * (1.0 - live_weight)
 	if _is_structure_role(role):
-		var can_show_memory: bool = _can_show_structure_memory(mesh, role, current_memory)
-		var can_show_static_unknown := _target_state == LogicState.UNKNOWN
+		var can_show_memory: bool = _can_show_structure_memory(mesh, role, 1.0 - live_weight)
 		if live_weight > 0.015:
 			var live_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
 			var edge_memory_amount: float = (1.0 - smoothstep(0.015, 0.08, live_weight)) * 0.22
 			_apply_original_tinted(mesh, live_brightness, 1.0, _static_tint_for_role(role, false), edge_memory_amount)
 			mesh.visible = true
 			return
-		if can_show_memory or can_show_static_unknown:
-			var is_unseen_unknown := can_show_static_unknown and not _mesh_seen_as_memory.has(mesh)
-			var static_brightness: float = _static_brightness_for_role(role, is_unseen_unknown)
-			_apply_original_tinted(mesh, static_brightness, 1.0, _static_tint_for_role(role, is_unseen_unknown), 1.0)
+		if can_show_memory:
+			var static_brightness: float = _static_brightness_for_role(role, false)
+			_apply_original_tinted(mesh, static_brightness, 1.0, _static_tint_for_role(role, false), 1.0)
 			mesh.visible = true
 			return
 		mesh.visible = false
