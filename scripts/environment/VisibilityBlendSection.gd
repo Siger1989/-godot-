@@ -165,7 +165,7 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	if role == "light_mesh":
 		var target_light_visible := 0.0
 		if _target_state != LogicState.VISITED:
-			target_light_visible = max(_physical_visibility_for_structure(mesh, 0.18), reveal)
+			target_light_visible = max(_physical_visibility_for_structure(mesh, 0.18, role), reveal)
 		var light_visible := _smooth_weight(_light_mesh_visibility_weights, mesh, target_light_visible, 0.16, 0.36)
 		if light_visible > 0.02:
 			var light_alpha: float = clamp(light_visible * 1.35, 0.0, 1.0)
@@ -291,21 +291,21 @@ func _physical_visibility_for_mesh(mesh: MeshInstance3D, role: String) -> float:
 	if role == "detail" or role == "dynamic":
 		return _physical_visibility_at(mesh.global_position)
 	if role == "wall" or role == "wall_trim" or role == "baseboard" or role == "ceiling" or role == "light_mesh":
-		return _physical_visibility_for_structure(mesh, 0.18)
+		return _physical_visibility_for_structure(mesh, 0.18, role)
 	if role == "floor":
-		return _physical_visibility_for_structure(mesh, 0.03)
+		return _physical_visibility_for_structure(mesh, 0.03, role)
 	return _physical_visibility_at(mesh.global_position)
 
 
-func _physical_visibility_for_structure(mesh: MeshInstance3D, vertical_offset: float) -> float:
-	var samples := _mesh_visibility_samples(mesh, vertical_offset)
+func _physical_visibility_for_structure(mesh: MeshInstance3D, vertical_offset: float, role: String = "") -> float:
+	var samples := _mesh_visibility_samples(mesh, vertical_offset, role)
 	var best := 0.0
 	for sample in samples:
 		best = max(best, _physical_visibility_at(sample))
 	return best
 
 
-func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float) -> Array[Vector3]:
+func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float, role: String = "") -> Array[Vector3]:
 	var samples: Array[Vector3] = []
 	var local_center := Vector3.ZERO
 	var local_min := Vector3.ZERO
@@ -316,18 +316,44 @@ func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float) -> A
 		local_min = bounds.position
 		local_max = bounds.position + bounds.size
 
-	samples.append(mesh.global_transform * local_center + Vector3(0.0, vertical_offset, 0.0))
 	var local_size := local_max - local_min
+	var local_eye := mesh.global_transform.affine_inverse() * _player_eye
+	if role == "wall" or role == "wall_trim" or role == "baseboard":
+		var sample_y := local_center.y
+		if role == "wall" or role == "wall_trim":
+			sample_y = clamp(local_eye.y, local_min.y + 0.35, local_max.y - 0.18)
+		if local_size.x >= local_size.z:
+			var face_z := local_min.z if local_eye.z < local_center.z else local_max.z
+			samples.append(mesh.global_transform * Vector3(local_center.x, sample_y, face_z))
+			samples.append(mesh.global_transform * Vector3(local_min.x + 0.02, sample_y, face_z))
+			samples.append(mesh.global_transform * Vector3(local_max.x - 0.02, sample_y, face_z))
+			samples.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.33), sample_y, face_z))
+			samples.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.67), sample_y, face_z))
+		else:
+			var face_x := local_min.x if local_eye.x < local_center.x else local_max.x
+			samples.append(mesh.global_transform * Vector3(face_x, sample_y, local_center.z))
+			samples.append(mesh.global_transform * Vector3(face_x, sample_y, local_min.z + 0.02))
+			samples.append(mesh.global_transform * Vector3(face_x, sample_y, local_max.z - 0.02))
+			samples.append(mesh.global_transform * Vector3(face_x, sample_y, lerp(local_min.z, local_max.z, 0.33)))
+			samples.append(mesh.global_transform * Vector3(face_x, sample_y, lerp(local_min.z, local_max.z, 0.67)))
+		return samples
+
+	if role == "floor":
+		var top_y := local_max.y + vertical_offset
+		samples.append(mesh.global_transform * Vector3(local_center.x, top_y, local_center.z))
+		samples.append(mesh.global_transform * Vector3(local_min.x + 0.03, top_y, local_min.z + 0.03))
+		samples.append(mesh.global_transform * Vector3(local_max.x - 0.03, top_y, local_min.z + 0.03))
+		samples.append(mesh.global_transform * Vector3(local_min.x + 0.03, top_y, local_max.z - 0.03))
+		samples.append(mesh.global_transform * Vector3(local_max.x - 0.03, top_y, local_max.z - 0.03))
+		return samples
+
+	samples.append(mesh.global_transform * local_center + Vector3(0.0, vertical_offset, 0.0))
 	if local_size.x >= local_size.z:
 		samples.append(mesh.global_transform * Vector3(local_min.x, local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
 		samples.append(mesh.global_transform * Vector3(local_max.x, local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
-		samples.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.25), local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
-		samples.append(mesh.global_transform * Vector3(lerp(local_min.x, local_max.x, 0.75), local_center.y, local_center.z) + Vector3(0.0, vertical_offset, 0.0))
 	else:
 		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, local_min.z) + Vector3(0.0, vertical_offset, 0.0))
 		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, local_max.z) + Vector3(0.0, vertical_offset, 0.0))
-		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, lerp(local_min.z, local_max.z, 0.25)) + Vector3(0.0, vertical_offset, 0.0))
-		samples.append(mesh.global_transform * Vector3(local_center.x, local_center.y, lerp(local_min.z, local_max.z, 0.75)) + Vector3(0.0, vertical_offset, 0.0))
 	return samples
 
 
