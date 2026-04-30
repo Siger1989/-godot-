@@ -32,7 +32,12 @@ func _run() -> void:
 	if scene and scene.has_method("get_section_debug"):
 		room_b_debug = scene.call("get_section_debug", "RoomB")
 	var room_b_state := String(room_b_debug.get("state", "MISSING"))
-	print("VISIBILITY_CLOSED_MEMORY RoomB=%s" % room_b_state)
+	print("VISIBILITY_CLOSED_MEMORY RoomB=%s light_target=%.3f floor=%.3f lamp=%.3f" % [
+		room_b_state,
+		float(room_b_debug.get("light_target", -1.0)),
+		float(room_b_debug.get("floor_light_target", -1.0)),
+		float(room_b_debug.get("lamp_light_target", -1.0))
+	])
 	if room_b_state != "VISITED":
 		_fail("RoomB should be VISITED after the door is closed from the corridor")
 

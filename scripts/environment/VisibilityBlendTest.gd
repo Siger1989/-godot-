@@ -120,7 +120,7 @@ func _process(delta: float) -> void:
 	_update_foreground_wall_fade(delta)
 
 
-func has_line_of_sight(origin: Vector3, target: Vector3) -> bool:
+func has_line_of_sight(origin: Vector3, target: Vector3, hit_tolerance: float = 0.02) -> bool:
 	var from := Vector3(origin.x, SIGHT_RAY_HEIGHT, origin.z)
 	var to := Vector3(target.x, SIGHT_RAY_HEIGHT, target.z)
 	var params := PhysicsRayQueryParameters3D.create(from, to)
@@ -134,7 +134,7 @@ func has_line_of_sight(origin: Vector3, target: Vector3) -> bool:
 	if hit.is_empty():
 		return true
 	var hit_position := hit.get("position") as Vector3
-	return hit_position.distance_to(to) < 0.32
+	return hit_position.distance_to(to) <= hit_tolerance
 
 
 func get_section_debug(section_id: String) -> Dictionary:

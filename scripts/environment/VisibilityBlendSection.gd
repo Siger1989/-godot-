@@ -32,6 +32,8 @@ var _unknown_material: StandardMaterial3D
 var _visited_material: StandardMaterial3D
 var _last_delta := 0.016
 var _section_light_target := 0.0
+var _floor_light_target := 0.0
+var _lamp_light_target := 0.0
 
 
 func _ready() -> void:
@@ -99,7 +101,10 @@ func get_debug_weights() -> Dictionary:
 		"memory": memory_weight,
 		"unknown": unknown_weight,
 		"door_reveal": door_reveal_weight,
-		"average_reveal": last_average_reveal
+		"average_reveal": last_average_reveal,
+		"light_target": _section_light_target,
+		"floor_light_target": _floor_light_target,
+		"lamp_light_target": _lamp_light_target
 	}
 
 
@@ -114,6 +119,7 @@ func _build_state_materials() -> void:
 	_visited_material = StandardMaterial3D.new()
 	_visited_material.albedo_color = Color(0.25, 0.26, 0.25)
 	_visited_material.roughness = 1.0
+	_visited_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 
 
 func _capture_tree(node: Node) -> void:
@@ -144,7 +150,9 @@ func _capture_tree(node: Node) -> void:
 func _apply_render() -> void:
 	var reveal_sum := 0.0
 	var reveal_count := 0
-	_section_light_target = visible_weight if _target_state == LogicState.VISIBLE else 0.0
+	_section_light_target = 0.0
+	_floor_light_target = 0.0
+	_lamp_light_target = 0.0
 	for mesh in _meshes:
 		if not is_instance_valid(mesh):
 			continue
@@ -164,6 +172,7 @@ func _apply_render() -> void:
 func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	if role == "light_mesh":
 		var target_light_visible: float = max(_physical_visibility_for_structure(mesh, 0.18, role), reveal)
+		_lamp_light_target = max(_lamp_light_target, target_light_visible)
 		_section_light_target = max(_section_light_target, target_light_visible)
 		var light_visible := _smooth_weight(_light_mesh_visibility_weights, mesh, target_light_visible, 0.16, 0.36)
 		if light_visible > 0.02:
@@ -176,6 +185,9 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 		return
 
 	var raw_visible: float = max(_physical_visibility_for_mesh(mesh, role), reveal)
+	if role == "floor":
+		_floor_light_target = max(_floor_light_target, raw_visible)
+		_section_light_target = max(_section_light_target, raw_visible)
 	var live_weight := _smooth_weight(_mesh_live_weights, mesh, raw_visible, 0.12, 0.24)
 	if live_weight > 0.08:
 		_mesh_seen_as_memory[mesh] = true
@@ -183,13 +195,16 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	if _is_structure_role(role):
 		var can_show_memory: bool = _can_show_structure_memory(mesh, role, current_memory)
 		var can_show_static_unknown := _target_state == LogicState.UNKNOWN
-		if live_weight > 0.015 or can_show_memory or can_show_static_unknown:
-			var is_unseen_unknown := can_show_static_unknown and live_weight <= 0.015 and not _mesh_seen_as_memory.has(mesh)
+		if live_weight > 0.015:
 			var live_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
+			var edge_memory_amount: float = (1.0 - smoothstep(0.015, 0.08, live_weight)) * 0.22
+			_apply_original_tinted(mesh, live_brightness, 1.0, _static_tint_for_role(role, false), edge_memory_amount)
+			mesh.visible = true
+			return
+		if can_show_memory or can_show_static_unknown:
+			var is_unseen_unknown := can_show_static_unknown and not _mesh_seen_as_memory.has(mesh)
 			var static_brightness: float = _static_brightness_for_role(role, is_unseen_unknown)
-			var brightness: float = lerp(static_brightness, live_brightness, clamp(live_weight, 0.0, 1.0))
-			var memory_amount: float = 1.0 - clamp(live_weight * 1.65, 0.0, 1.0)
-			_apply_original_tinted(mesh, brightness, 1.0, _static_tint_for_role(role, is_unseen_unknown), memory_amount)
+			_apply_original_tinted(mesh, static_brightness, 1.0, _static_tint_for_role(role, is_unseen_unknown), 1.0)
 			mesh.visible = true
 			return
 		mesh.visible = false
@@ -233,9 +248,7 @@ func _is_structure_role(role: String) -> bool:
 func _can_show_structure_memory(mesh: MeshInstance3D, role: String, current_memory: float) -> bool:
 	if not _is_structure_role(role):
 		return false
-	if current_memory > 0.025 and _target_state != LogicState.UNKNOWN:
-		return true
-	return _mesh_seen_as_memory.has(mesh)
+	return current_memory > 0.025 and _mesh_seen_as_memory.has(mesh)
 
 
 func _smooth_weight(store: Dictionary, key: Variant, target: float, rise_time: float, fall_time: float) -> float:
@@ -299,9 +312,16 @@ func _physical_visibility_for_mesh(mesh: MeshInstance3D, role: String) -> float:
 func _physical_visibility_for_structure(mesh: MeshInstance3D, vertical_offset: float, role: String = "") -> float:
 	var samples := _mesh_visibility_samples(mesh, vertical_offset, role)
 	var best := 0.0
+	var hit_tolerance := _visibility_hit_tolerance(role)
 	for sample in samples:
-		best = max(best, _physical_visibility_at(sample))
+		best = max(best, _physical_visibility_at(sample, hit_tolerance))
 	return best
+
+
+func _visibility_hit_tolerance(role: String) -> float:
+	if role == "wall" or role == "wall_trim" or role == "baseboard" or role == "ceiling":
+		return 0.055
+	return 0.012
 
 
 func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float, role: String = "") -> Array[Vector3]:
@@ -339,11 +359,15 @@ func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float, role
 
 	if role == "floor":
 		var top_y := local_max.y + vertical_offset
+		var inset_x: float = min(0.18, max(0.03, local_size.x * 0.25))
+		var inset_z: float = min(0.18, max(0.03, local_size.z * 0.25))
+		inset_x = min(inset_x, local_size.x * 0.45)
+		inset_z = min(inset_z, local_size.z * 0.45)
 		samples.append(mesh.global_transform * Vector3(local_center.x, top_y, local_center.z))
-		samples.append(mesh.global_transform * Vector3(local_min.x + 0.03, top_y, local_min.z + 0.03))
-		samples.append(mesh.global_transform * Vector3(local_max.x - 0.03, top_y, local_min.z + 0.03))
-		samples.append(mesh.global_transform * Vector3(local_min.x + 0.03, top_y, local_max.z - 0.03))
-		samples.append(mesh.global_transform * Vector3(local_max.x - 0.03, top_y, local_max.z - 0.03))
+		samples.append(mesh.global_transform * Vector3(local_min.x + inset_x, top_y, local_min.z + inset_z))
+		samples.append(mesh.global_transform * Vector3(local_max.x - inset_x, top_y, local_min.z + inset_z))
+		samples.append(mesh.global_transform * Vector3(local_min.x + inset_x, top_y, local_max.z - inset_z))
+		samples.append(mesh.global_transform * Vector3(local_max.x - inset_x, top_y, local_max.z - inset_z))
 		return samples
 
 	samples.append(mesh.global_transform * local_center + Vector3(0.0, vertical_offset, 0.0))
@@ -356,10 +380,10 @@ func _mesh_visibility_samples(mesh: MeshInstance3D, vertical_offset: float, role
 	return samples
 
 
-func _physical_visibility_at(position: Vector3) -> float:
+func _physical_visibility_at(position: Vector3, hit_tolerance: float = 0.02) -> float:
 	if not _manager:
 		return _distance_visibility(position)
-	if _manager.has_method("has_line_of_sight") and not bool(_manager.call("has_line_of_sight", _player_eye, position)):
+	if _manager.has_method("has_line_of_sight") and not bool(_manager.call("has_line_of_sight", _player_eye, position, hit_tolerance)):
 		return 0.0
 	return _distance_visibility(position)
 
@@ -401,7 +425,7 @@ func _apply_original_tinted(mesh: MeshInstance3D, brightness: float, alpha: floa
 	runtime.texture_repeat = base.texture_repeat
 	runtime.roughness = base.roughness
 	runtime.roughness_texture = base.roughness_texture
-	runtime.shading_mode = base.shading_mode
+	runtime.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED if tint_amount > 0.55 else base.shading_mode
 	runtime.emission_enabled = base.emission_enabled
 	if base.emission_enabled:
 		runtime.emission = base.emission.lerp(tint, clamp(tint_amount, 0.0, 1.0)).darkened(1.0 - clamp(brightness, 0.0, 1.0))

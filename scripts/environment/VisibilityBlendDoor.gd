@@ -1,7 +1,7 @@
 extends Node3D
 class_name VisibilityBlendDoor
 
-@export var door_width := 1.25
+@export var door_width := 1.56
 @export var door_height := 2.18
 @export var open_angle_degrees := 92.0
 
