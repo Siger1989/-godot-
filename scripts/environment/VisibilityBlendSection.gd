@@ -24,6 +24,8 @@ var _lights: Array[Light3D] = []
 var _base_materials: Dictionary = {}
 var _runtime_materials: Dictionary = {}
 var _base_light_energy: Dictionary = {}
+var _mesh_live_weights: Dictionary = {}
+var _mesh_seen_as_memory: Dictionary = {}
 var _light_visibility_weights: Dictionary = {}
 var _light_mesh_visibility_weights: Dictionary = {}
 var _unknown_material: StandardMaterial3D
@@ -158,9 +160,7 @@ func _apply_render() -> void:
 func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	if role == "light_mesh":
 		var target_light_visible: float = max(_physical_visibility_for_structure(mesh, 0.18), reveal)
-		var light_visible: float = float(_light_mesh_visibility_weights.get(mesh, 0.0))
-		light_visible = move_toward(light_visible, clamp(target_light_visible, 0.0, 1.0), _last_delta / 0.36)
-		_light_mesh_visibility_weights[mesh] = light_visible
+		var light_visible := _smooth_weight(_light_mesh_visibility_weights, mesh, target_light_visible, 0.16, 0.36)
 		if light_visible > 0.02:
 			var light_alpha: float = clamp(light_visible * 1.35, 0.0, 1.0)
 			var light_brightness: float = lerp(0.25, 1.0, clamp(light_visible, 0.0, 1.0))
@@ -170,28 +170,26 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 			mesh.visible = false
 		return
 
-	var physical_visible := _physical_visibility_for_mesh(mesh, role)
-	var current_visible: float = max(physical_visible, reveal)
-	if _target_state == LogicState.VISIBLE:
-		current_visible = max(current_visible, visible_weight)
-	var current_memory: float = memory_weight * (1.0 - current_visible)
+	var raw_visible: float = max(_physical_visibility_for_mesh(mesh, role), reveal)
+	var live_weight := _smooth_weight(_mesh_live_weights, mesh, raw_visible, 0.12, 0.24)
+	if live_weight > 0.08:
+		_mesh_seen_as_memory[mesh] = true
+	var current_memory: float = memory_weight * (1.0 - live_weight)
 	if _is_structure_role(role):
-		if current_visible > 0.025:
-			var structural_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
-			_apply_original(mesh, structural_brightness, 1.0)
-			mesh.visible = true
-			return
-		if current_memory > 0.025 and _role_visible_in_memory(role):
-			var memory_brightness := 1.0 if role == "floor" else 0.62
-			_apply_original(mesh, memory_brightness, 1.0)
+		var can_show_memory: bool = _can_show_structure_memory(mesh, role, current_memory)
+		if live_weight > 0.015 or can_show_memory:
+			var live_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
+			var memory_brightness: float = 1.0 if role == "floor" else 0.58
+			var brightness: float = lerp(memory_brightness, live_brightness, clamp(live_weight, 0.0, 1.0))
+			_apply_original(mesh, brightness, 1.0)
 			mesh.visible = true
 			return
 		mesh.visible = false
 		return
 
-	if current_visible > 0.025 and _target_state == LogicState.VISIBLE:
-		var brightness: float = _distance_brightness(mesh.global_position) * lerp(0.58, 1.0, current_visible)
-		_apply_original(mesh, brightness, clamp(current_visible, 0.0, 1.0))
+	if live_weight > 0.025 and _target_state == LogicState.VISIBLE:
+		var brightness: float = _distance_brightness(mesh.global_position) * lerp(0.58, 1.0, live_weight)
+		_apply_original(mesh, brightness, clamp(live_weight, 0.0, 1.0))
 		mesh.visible = true
 		return
 
@@ -211,9 +209,7 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 func _apply_light(light: Light3D) -> void:
 	var original: float = float(_base_light_energy.get(light, light.light_energy))
 	var target_weight: float = max(_physical_visibility_at(light.global_position), door_reveal_weight * 0.35)
-	var current_weight: float = float(_light_visibility_weights.get(light, 0.0))
-	current_weight = move_toward(current_weight, clamp(target_weight, 0.0, 1.0), _last_delta / 0.45)
-	_light_visibility_weights[light] = current_weight
+	var current_weight := _smooth_weight(_light_visibility_weights, light, target_weight, 0.18, 0.45)
 	light.visible = current_weight > 0.025
 	light.light_energy = original * current_weight
 
@@ -224,6 +220,25 @@ func _role_visible_in_memory(role: String) -> bool:
 
 func _is_structure_role(role: String) -> bool:
 	return role == "floor" or role == "wall" or role == "wall_trim" or role == "ceiling" or role == "baseboard"
+
+
+func _can_show_structure_memory(mesh: MeshInstance3D, role: String, current_memory: float) -> bool:
+	if not _is_structure_role(role):
+		return false
+	if current_memory > 0.025 and _target_state != LogicState.UNKNOWN:
+		return true
+	return _mesh_seen_as_memory.has(mesh)
+
+
+func _smooth_weight(store: Dictionary, key: Variant, target: float, rise_time: float, fall_time: float) -> float:
+	target = clamp(target, 0.0, 1.0)
+	var current: float = float(store.get(key, 0.0))
+	var duration: float = rise_time if target > current else fall_time
+	current = move_toward(current, target, _last_delta / max(duration, 0.001))
+	if current < 0.001:
+		current = 0.0
+	store[key] = current
+	return current
 
 
 func _door_reveal_for_mesh(mesh: MeshInstance3D, role: String) -> float:

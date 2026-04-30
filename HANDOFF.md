@@ -55,4 +55,6 @@
 - 物理视线能看到的地板/墙/踢脚线/转角件现在保留原始贴图，不再被 `UNKNOWN` 状态刷成黑色。
 - 转角柱改为同墙布材质、缩小尺寸，用于弱化墙布转角黑边。
 - 同类 bug 已继续处理：基础结构不再使用黑灰状态材质，大墙块可见性改为多点采样，灯板/灯光改为平滑权重，避免范围边界瞬间亮起。
+- 已进一步修正物理视线遮挡：当前房间结构不再绕过射线强制实时显示；遮挡后基础结构保持静态记忆贴图，灯和动态内容不进入记忆，只平滑淡出。
+- 摄像机挡墙透明度改为平滑过渡，减少移动时闪烁。
 - 验证：`validate_all.bat` 通过，并重新生成 `screenshots/visibility_blend_initial.png`、`screenshots/visibility_blend_door_reveal.png`、`screenshots/visibility_blend_room_b_memory.png`。

@@ -37,6 +37,8 @@ var target_camera_distance := 7.4
 var _dragging_camera := false
 var _touch_drag_index := -1
 var _faded_walls: Dictionary = {}
+var _wall_fade_targets: Dictionary = {}
+var _wall_fade_alphas: Dictionary = {}
 
 var mat_floor: StandardMaterial3D
 var mat_floor_dark: StandardMaterial3D
@@ -110,7 +112,7 @@ func _process(delta: float) -> void:
 	_update_camera()
 	_update_visibility(delta)
 	_update_visibility_floor(delta)
-	_update_foreground_wall_fade()
+	_update_foreground_wall_fade(delta)
 
 
 func has_line_of_sight(origin: Vector3, target: Vector3) -> bool:
@@ -352,7 +354,7 @@ func _cycle_zoom() -> void:
 		target_camera_distance = 5.8
 
 
-func _update_foreground_wall_fade() -> void:
+func _update_foreground_wall_fade(delta: float) -> void:
 	if not player or not camera:
 		return
 	var active_walls: Dictionary = {}
@@ -375,15 +377,16 @@ func _update_foreground_wall_fade() -> void:
 			break
 		if collider.is_in_group("visibility_blend_foreground_wall"):
 			active_walls[collider] = true
-			_set_wall_alpha(collider, 0.32)
+			_set_wall_fade_target(collider, 0.62)
 		if collider is CollisionObject3D:
 			exclude.append((collider as CollisionObject3D).get_rid())
 		else:
 			break
 
-	for wall in _faded_walls.keys():
+	for wall in _wall_fade_targets.keys():
 		if not active_walls.has(wall):
-			_set_wall_alpha(wall as Node, 1.0)
+			_set_wall_fade_target(wall as Node, 1.0)
+	_apply_wall_fades(delta)
 
 
 func _update_visibility_floor(delta: float) -> void:
@@ -538,6 +541,30 @@ func _set_wall_alpha(wall: Node, alpha: float) -> void:
 				color.a = alpha
 				material.albedo_color = color
 				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.99 else BaseMaterial3D.TRANSPARENCY_DISABLED
+
+
+func _set_wall_fade_target(wall: Node, alpha: float) -> void:
+	if not is_instance_valid(wall):
+		return
+	_wall_fade_targets[wall] = clamp(alpha, 0.0, 1.0)
+	if not _wall_fade_alphas.has(wall):
+		_wall_fade_alphas[wall] = 1.0
+
+
+func _apply_wall_fades(delta: float) -> void:
+	for wall in _wall_fade_targets.keys():
+		if not is_instance_valid(wall):
+			_wall_fade_targets.erase(wall)
+			_wall_fade_alphas.erase(wall)
+			continue
+		var target: float = float(_wall_fade_targets[wall])
+		var current: float = float(_wall_fade_alphas.get(wall, 1.0))
+		current = move_toward(current, target, delta / 0.20)
+		_wall_fade_alphas[wall] = current
+		_set_wall_alpha(wall as Node, current)
+		if current >= 0.995 and target >= 0.995:
+			_wall_fade_targets.erase(wall)
+			_wall_fade_alphas.erase(wall)
 
 
 func _add_wall_h(section_id: String, x1: float, x2: float, z: float) -> void:
