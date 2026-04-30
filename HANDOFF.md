@@ -58,4 +58,5 @@
 - 已进一步修正物理视线遮挡：当前房间结构不再绕过射线强制实时显示；遮挡后基础结构保持静态记忆贴图，灯和动态内容不进入记忆，只平滑淡出。
 - 摄像机挡墙透明度改为平滑过渡，减少移动时闪烁。
 - 摄像机切墙时新增轻微深色切线，只作为设计辅助边界，不纳入记忆系统和遮挡系统。
+- 灯光和灯板显示已拆开：灯光可以照亮玩家可见墙面，即使灯板本体被遮挡；灯板被拆成多段，只显示视线能看到的部分。记忆房间仍关闭灯光和灯板。
 - 验证：`validate_all.bat` 通过，并重新生成 `screenshots/visibility_blend_initial.png`、`screenshots/visibility_blend_door_reveal.png`、`screenshots/visibility_blend_room_b_memory.png`。

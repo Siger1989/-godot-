@@ -31,6 +31,7 @@ var _light_mesh_visibility_weights: Dictionary = {}
 var _unknown_material: StandardMaterial3D
 var _visited_material: StandardMaterial3D
 var _last_delta := 0.016
+var _section_light_target := 0.0
 
 
 func _ready() -> void:
@@ -143,6 +144,7 @@ func _capture_tree(node: Node) -> void:
 func _apply_render() -> void:
 	var reveal_sum := 0.0
 	var reveal_count := 0
+	_section_light_target = visible_weight if _target_state == LogicState.VISIBLE else 0.0
 	for mesh in _meshes:
 		if not is_instance_valid(mesh):
 			continue
@@ -161,7 +163,9 @@ func _apply_render() -> void:
 
 func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	if role == "light_mesh":
-		var target_light_visible: float = max(_physical_visibility_for_structure(mesh, 0.18), reveal)
+		var target_light_visible := 0.0
+		if _target_state != LogicState.VISITED:
+			target_light_visible = max(_physical_visibility_for_structure(mesh, 0.18), reveal)
 		var light_visible := _smooth_weight(_light_mesh_visibility_weights, mesh, target_light_visible, 0.16, 0.36)
 		if light_visible > 0.02:
 			var light_alpha: float = clamp(light_visible * 1.35, 0.0, 1.0)
@@ -173,6 +177,8 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 		return
 
 	var raw_visible: float = max(_physical_visibility_for_mesh(mesh, role), reveal)
+	if _is_structure_role(role) and _target_state != LogicState.VISITED:
+		_section_light_target = max(_section_light_target, raw_visible)
 	var live_weight := _smooth_weight(_mesh_live_weights, mesh, raw_visible, 0.12, 0.24)
 	if live_weight > 0.08:
 		_mesh_seen_as_memory[mesh] = true
@@ -210,7 +216,7 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 
 func _apply_light(light: Light3D) -> void:
 	var original: float = float(_base_light_energy.get(light, light.light_energy))
-	var target_weight: float = max(_physical_visibility_at(light.global_position), door_reveal_weight * 0.35)
+	var target_weight: float = max(_section_light_target, door_reveal_weight * 0.35)
 	var current_weight := _smooth_weight(_light_visibility_weights, light, target_weight, 0.18, 0.45)
 	light.visible = current_weight > 0.025
 	light.light_energy = original * current_weight

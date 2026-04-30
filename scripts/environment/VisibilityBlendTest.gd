@@ -223,14 +223,30 @@ func _add_ceiling_edges(section: Node3D, rect: Rect2) -> void:
 func _add_fluorescent_light(section: Node3D, rect: Rect2) -> void:
 	var center := _rect_center(rect)
 	var panel_size := Vector3(2.8, 0.07, 0.9) if rect.size.x >= rect.size.y else Vector3(0.9, 0.07, 2.8)
-	_add_box(section, "FluorescentPanel", center + Vector3(0.0, WALL_HEIGHT + 0.08, 0.0), panel_size, mat_light, false, "light_mesh")
+	_add_fluorescent_panel(section, center + Vector3(0.0, WALL_HEIGHT + 0.08, 0.0), panel_size)
 	var light := OmniLight3D.new()
 	light.name = "FluorescentLight"
 	light.light_color = Color(1.0, 0.96, 0.75)
 	light.light_energy = 1.9
 	light.omni_range = 8.0
+	light.shadow_enabled = true
 	light.position = center + Vector3(0.0, WALL_HEIGHT - 0.25, 0.0)
 	section.add_child(light)
+
+
+func _add_fluorescent_panel(section: Node3D, center: Vector3, panel_size: Vector3) -> void:
+	var segment_count := 8
+	var gap := 0.018
+	if panel_size.x >= panel_size.z:
+		var segment_width := (panel_size.x - gap * float(segment_count - 1)) / float(segment_count)
+		for i in segment_count:
+			var offset_x := -panel_size.x * 0.5 + segment_width * 0.5 + float(i) * (segment_width + gap)
+			_add_box(section, "FluorescentPanel_%02d" % i, center + Vector3(offset_x, 0.0, 0.0), Vector3(segment_width, panel_size.y, panel_size.z), mat_light, false, "light_mesh")
+	else:
+		var segment_depth := (panel_size.z - gap * float(segment_count - 1)) / float(segment_count)
+		for i in segment_count:
+			var offset_z := -panel_size.z * 0.5 + segment_depth * 0.5 + float(i) * (segment_depth + gap)
+			_add_box(section, "FluorescentPanel_%02d" % i, center + Vector3(0.0, 0.0, offset_z), Vector3(panel_size.x, panel_size.y, segment_depth), mat_light, false, "light_mesh")
 
 
 func _build_room_walls() -> void:
