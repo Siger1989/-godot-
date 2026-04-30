@@ -8,6 +8,7 @@ const PlayerScript := preload("res://scripts/player/VisibilityBlendPlayer.gd")
 const WALL_HEIGHT := 2.7
 const WALL_THICKNESS := 0.3
 const FLOOR_TILE := 1.0
+const WALL_PANEL_LENGTH := 0.75
 const TEXTURE_ROOT := "res://assets/textures/backrooms/"
 const TEXTURE_WALL := TEXTURE_ROOT + "wallpaper_yellow_green"
 const TEXTURE_WALL_DIRTY := TEXTURE_ROOT + "wallpaper_dirty"
@@ -50,8 +51,10 @@ var mat_ceiling: StandardMaterial3D
 var mat_baseboard: StandardMaterial3D
 var mat_light: StandardMaterial3D
 var mat_camera_cutline: StandardMaterial3D
+var mat_vision_cutline: StandardMaterial3D
 var visible_floor_mesh: MeshInstance3D
 var memory_floor_mesh: MeshInstance3D
+var vision_cutline_mesh: MeshInstance3D
 var last_visibility_ray_count := 0
 var last_memory_vertex_count := 0
 var _memory_vertices := PackedVector3Array()
@@ -179,6 +182,10 @@ func _make_materials() -> void:
 	mat_camera_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat_camera_cutline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat_camera_cutline.render_priority = 8
+	mat_vision_cutline = _material(Color(0.08, 0.075, 0.055, 0.86), 1.0)
+	mat_vision_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat_vision_cutline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_vision_cutline.render_priority = 9
 
 
 func _build_level() -> void:
@@ -208,8 +215,16 @@ func _build_section(section_id: String, rect: Rect2) -> void:
 
 
 func _add_floor_tiles(section: Node3D, rect: Rect2) -> void:
-	var center := _rect_center(rect)
-	_add_box(section, "ContinuousCarpetFloor", center + Vector3(0.0, -0.045, 0.0), Vector3(rect.size.x, 0.09, rect.size.y), mat_floor, false, "visibility_floor")
+	var x := rect.position.x
+	while x < rect.position.x + rect.size.x - 0.001:
+		var tile_w: float = min(FLOOR_TILE, rect.position.x + rect.size.x - x)
+		var z := rect.position.y
+		while z < rect.position.y + rect.size.y - 0.001:
+			var tile_d: float = min(FLOOR_TILE, rect.position.y + rect.size.y - z)
+			var center := Vector3(x + tile_w * 0.5, -0.045, z + tile_d * 0.5)
+			_add_box(section, "CarpetVisionTile", center, Vector3(tile_w, 0.09, tile_d), mat_floor, false, "visibility_floor")
+			z += FLOOR_TILE
+		x += FLOOR_TILE
 
 
 func _add_ceiling_edges(section: Node3D, rect: Rect2) -> void:
@@ -301,6 +316,12 @@ func _build_visibility_surfaces() -> void:
 	visible_floor_mesh.visible = false
 	visible_floor_mesh.material_override = mat_visible_floor
 	add_child(visible_floor_mesh)
+
+	vision_cutline_mesh = MeshInstance3D.new()
+	vision_cutline_mesh.name = "PhysicalVisibilityCutline"
+	vision_cutline_mesh.visible = false
+	vision_cutline_mesh.material_override = mat_vision_cutline
+	add_child(vision_cutline_mesh)
 
 
 func _spawn_player_and_camera() -> void:
@@ -416,6 +437,7 @@ func _update_visibility_floor(delta: float) -> void:
 	var eye := player.global_position + Vector3(0.0, 1.05, 0.0)
 	var polygon := _sample_physical_visibility_polygon(eye, 19.0, 360)
 	last_visibility_ray_count = polygon.size()
+	_update_visibility_cutline(polygon)
 
 	_memory_sample_timer += delta
 	if polygon.size() > 2 and (_memory_sample_timer >= 0.20 or _last_memory_sample.distance_to(player.global_position) > 0.85):
@@ -531,6 +553,35 @@ func _append_memory_polygon(points: PackedVector3Array) -> void:
 	last_memory_vertex_count = _memory_vertices.size()
 
 
+func _update_visibility_cutline(points: PackedVector3Array) -> void:
+	if not vision_cutline_mesh or points.size() < 2 or not player:
+		return
+	var vertices := PackedVector3Array()
+	var colors := PackedColorArray()
+	var origin := Vector2(player.global_position.x, player.global_position.z)
+	for i in points.size():
+		var next_i := (i + 1) % points.size()
+		var point_a := points[i]
+		var point_b := points[next_i]
+		var distance_a := origin.distance_to(Vector2(point_a.x, point_a.z))
+		var distance_b := origin.distance_to(Vector2(point_b.x, point_b.z))
+		if distance_a > 18.85 and distance_b > 18.85:
+			continue
+		vertices.append(Vector3(point_a.x, 0.052, point_a.z))
+		vertices.append(Vector3(point_b.x, 0.052, point_b.z))
+		colors.append(Color(0.08, 0.075, 0.055, 0.78))
+		colors.append(Color(0.08, 0.075, 0.055, 0.78))
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_COLOR] = colors
+	var mesh := ArrayMesh.new()
+	if vertices.size() >= 2:
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINES, arrays)
+	vision_cutline_mesh.mesh = mesh
+	vision_cutline_mesh.visible = vertices.size() >= 2
+
+
 func _visibility_alpha_for_distance(distance: float) -> float:
 	if distance <= 8.0:
 		return 1.0
@@ -643,17 +694,27 @@ func _add_camera_cutline(parent: Node, node_name: String, local_position: Vector
 func _add_wall_h(section_id: String, x1: float, x2: float, z: float) -> void:
 	if x2 - x1 < 0.45:
 		return
-	var center := Vector3((x1 + x2) * 0.5, WALL_HEIGHT * 0.5, z)
-	_add_box(sections[section_id], "WallSegment", center, Vector3(x2 - x1, WALL_HEIGHT, WALL_THICKNESS), mat_wall, true, "wall")
-	_add_box(sections[section_id], "Baseboard", center + Vector3(0.0, -WALL_HEIGHT * 0.5 + 0.16, -WALL_THICKNESS * 0.58), Vector3(x2 - x1, 0.16, 0.08), mat_baseboard, false, "baseboard")
+	var cursor := x1
+	while cursor < x2 - 0.001:
+		var next_x: float = min(cursor + WALL_PANEL_LENGTH, x2)
+		var center := Vector3((cursor + next_x) * 0.5, WALL_HEIGHT * 0.5, z)
+		var width := next_x - cursor
+		_add_box(sections[section_id], "WallPanelH", center, Vector3(width, WALL_HEIGHT, WALL_THICKNESS), mat_wall, true, "wall")
+		_add_box(sections[section_id], "BaseboardH", center + Vector3(0.0, -WALL_HEIGHT * 0.5 + 0.16, -WALL_THICKNESS * 0.58), Vector3(width, 0.16, 0.08), mat_baseboard, false, "baseboard")
+		cursor = next_x
 
 
 func _add_wall_v(section_id: String, x: float, z1: float, z2: float) -> void:
 	if z2 - z1 < 0.45:
 		return
-	var center := Vector3(x, WALL_HEIGHT * 0.5, (z1 + z2) * 0.5)
-	_add_box(sections[section_id], "WallSegment", center, Vector3(WALL_THICKNESS, WALL_HEIGHT, z2 - z1), mat_wall, true, "wall")
-	_add_box(sections[section_id], "Baseboard", center + Vector3(-WALL_THICKNESS * 0.58, -WALL_HEIGHT * 0.5 + 0.16, 0.0), Vector3(0.08, 0.16, z2 - z1), mat_baseboard, false, "baseboard")
+	var cursor := z1
+	while cursor < z2 - 0.001:
+		var next_z: float = min(cursor + WALL_PANEL_LENGTH, z2)
+		var center := Vector3(x, WALL_HEIGHT * 0.5, (cursor + next_z) * 0.5)
+		var depth := next_z - cursor
+		_add_box(sections[section_id], "WallPanelV", center, Vector3(WALL_THICKNESS, WALL_HEIGHT, depth), mat_wall, true, "wall")
+		_add_box(sections[section_id], "BaseboardV", center + Vector3(-WALL_THICKNESS * 0.58, -WALL_HEIGHT * 0.5 + 0.16, 0.0), Vector3(0.08, 0.16, depth), mat_baseboard, false, "baseboard")
+		cursor = next_z
 
 
 func _add_box(parent: Node, node_name: String, position: Vector3, size: Vector3, material: Material, collision: bool, role: String) -> Node3D:

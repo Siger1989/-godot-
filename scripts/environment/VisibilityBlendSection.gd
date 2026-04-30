@@ -187,9 +187,10 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 		var can_show_memory: bool = _can_show_structure_memory(mesh, role, current_memory)
 		if live_weight > 0.015 or can_show_memory:
 			var live_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
-			var memory_brightness: float = 1.0 if role == "floor" else 0.58
+			var memory_brightness: float = 0.52 if role == "floor" else 0.42
 			var brightness: float = lerp(memory_brightness, live_brightness, clamp(live_weight, 0.0, 1.0))
-			_apply_original(mesh, brightness, 1.0)
+			var memory_amount: float = 1.0 - clamp(live_weight * 1.65, 0.0, 1.0)
+			_apply_original_tinted(mesh, brightness, 1.0, _memory_tint_for_role(role), memory_amount)
 			mesh.visible = true
 			return
 		mesh.visible = false
@@ -360,6 +361,39 @@ func _apply_original(mesh: MeshInstance3D, brightness: float, alpha: float) -> v
 	runtime.normal_scale = base.normal_scale
 	runtime.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.985 else BaseMaterial3D.TRANSPARENCY_DISABLED
 	mesh.material_override = runtime
+
+
+func _apply_original_tinted(mesh: MeshInstance3D, brightness: float, alpha: float, tint: Color, tint_amount: float) -> void:
+	var base := _base_materials.get(mesh) as StandardMaterial3D
+	var runtime := _runtime_materials.get(mesh) as StandardMaterial3D
+	if not base or not runtime:
+		return
+	var color := base.albedo_color.lerp(tint, clamp(tint_amount, 0.0, 1.0))
+	runtime.albedo_color = color.darkened(1.0 - clamp(brightness, 0.0, 1.0))
+	runtime.albedo_color.a = alpha
+	runtime.albedo_texture = base.albedo_texture
+	runtime.uv1_scale = base.uv1_scale
+	runtime.texture_repeat = base.texture_repeat
+	runtime.roughness = base.roughness
+	runtime.roughness_texture = base.roughness_texture
+	runtime.shading_mode = base.shading_mode
+	runtime.emission_enabled = base.emission_enabled
+	if base.emission_enabled:
+		runtime.emission = base.emission.lerp(tint, clamp(tint_amount, 0.0, 1.0)).darkened(1.0 - clamp(brightness, 0.0, 1.0))
+		runtime.emission_energy_multiplier = base.emission_energy_multiplier * alpha
+	runtime.normal_enabled = base.normal_enabled
+	runtime.normal_texture = base.normal_texture
+	runtime.normal_scale = base.normal_scale
+	runtime.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.985 else BaseMaterial3D.TRANSPARENCY_DISABLED
+	mesh.material_override = runtime
+
+
+func _memory_tint_for_role(role: String) -> Color:
+	if role == "floor":
+		return Color(0.40, 0.40, 0.36)
+	if role == "baseboard":
+		return Color(0.22, 0.22, 0.20)
+	return Color(0.34, 0.36, 0.32)
 
 
 func _apply_flat_material(mesh: MeshInstance3D, material: StandardMaterial3D, alpha: float) -> void:
