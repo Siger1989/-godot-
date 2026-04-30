@@ -61,6 +61,7 @@ var last_memory_vertex_count := 0
 var _memory_vertices := PackedVector3Array()
 var _memory_colors := PackedColorArray()
 var _memory_indices := PackedInt32Array()
+var _latest_visibility_points := PackedVector3Array()
 var _last_memory_sample := Vector3.INF
 var _memory_sample_timer := 0.0
 
@@ -135,6 +136,39 @@ func has_line_of_sight(origin: Vector3, target: Vector3, hit_tolerance: float = 
 		return true
 	var hit_position := hit.get("position") as Vector3
 	return hit_position.distance_to(to) <= hit_tolerance
+
+
+func light_reaches_visible_surface(light_position: Vector3, light_range: float) -> float:
+	if not player or _latest_visibility_points.size() < 3:
+		return 0.0
+	var player_flat := Vector3(player.global_position.x, 0.0, player.global_position.z)
+	var best := 0.0
+	var step: int = max(1, _latest_visibility_points.size() / 24)
+	for i in range(0, _latest_visibility_points.size(), step):
+		var boundary := _latest_visibility_points[i]
+		for fraction in [0.35, 0.62, 0.86]:
+			var sample := player_flat.lerp(Vector3(boundary.x, 0.0, boundary.z), float(fraction))
+			var distance := Vector2(light_position.x, light_position.z).distance_to(Vector2(sample.x, sample.z))
+			if distance > light_range:
+				continue
+			if _light_has_clear_path(light_position, sample + Vector3(0.0, 0.12, 0.0)):
+				best = max(best, 1.0 - smoothstep(light_range * 0.45, light_range, distance))
+	return best
+
+
+func _light_has_clear_path(origin: Vector3, target: Vector3) -> bool:
+	var params := PhysicsRayQueryParameters3D.create(origin, target)
+	var exclude: Array[RID] = []
+	var player_collision := player as CollisionObject3D
+	if player_collision:
+		exclude.append(player_collision.get_rid())
+	params.exclude = exclude
+	params.hit_from_inside = false
+	var hit := get_world_3d().direct_space_state.intersect_ray(params)
+	if hit.is_empty():
+		return true
+	var hit_position := hit.get("position") as Vector3
+	return hit_position.distance_to(target) <= 0.18
 
 
 func get_section_debug(section_id: String) -> Dictionary:
@@ -440,6 +474,7 @@ func _update_visibility_floor(delta: float) -> void:
 		return
 	var eye := player.global_position + Vector3(0.0, 1.05, 0.0)
 	var polygon := _sample_physical_visibility_polygon(eye, 19.0, 360)
+	_latest_visibility_points = polygon
 	last_visibility_ray_count = polygon.size()
 	_update_visibility_cutline(polygon)
 

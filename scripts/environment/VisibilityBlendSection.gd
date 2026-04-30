@@ -185,8 +185,9 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 		return
 
 	var raw_visible: float = max(_physical_visibility_for_mesh(mesh, role), reveal)
-	if role == "floor":
-		_floor_light_target = max(_floor_light_target, raw_visible)
+	if _is_structure_role(role):
+		if role == "floor":
+			_floor_light_target = max(_floor_light_target, raw_visible)
 		_section_light_target = max(_section_light_target, raw_visible)
 	var live_weight := _smooth_weight(_mesh_live_weights, mesh, raw_visible, 0.12, 0.24)
 	if live_weight > 0.035:
@@ -235,9 +236,17 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 func _apply_light(light: Light3D) -> void:
 	var original: float = float(_base_light_energy.get(light, light.light_energy))
 	var target_weight: float = max(_section_light_target, door_reveal_weight * 0.35)
+	if _manager and _manager.has_method("light_reaches_visible_surface"):
+		target_weight = max(target_weight, float(_manager.call("light_reaches_visible_surface", light.global_position, _light_range(light))))
 	var current_weight := _smooth_weight(_light_visibility_weights, light, target_weight, 0.18, 0.45)
 	light.visible = current_weight > 0.025
 	light.light_energy = original * current_weight
+
+
+func _light_range(light: Light3D) -> float:
+	if light is OmniLight3D:
+		return (light as OmniLight3D).omni_range
+	return 8.0
 
 
 func _role_visible_in_memory(role: String) -> bool:
