@@ -47,6 +47,8 @@ var _touch_drag_index := -1
 var _faded_walls: Dictionary = {}
 var _wall_fade_targets: Dictionary = {}
 var _wall_fade_alphas: Dictionary = {}
+var _wall_fade_centers: Dictionary = {}
+var _camera_fade_materials: Dictionary = {}
 
 var mat_floor: StandardMaterial3D
 var mat_floor_dark: StandardMaterial3D
@@ -59,6 +61,7 @@ var mat_baseboard: StandardMaterial3D
 var mat_light: StandardMaterial3D
 var mat_camera_cutline: StandardMaterial3D
 var mat_vision_cutline: StandardMaterial3D
+var camera_fade_shader: Shader
 var visible_floor_mesh: MeshInstance3D
 var memory_floor_mesh: MeshInstance3D
 var vision_cutline_mesh: MeshInstance3D
@@ -227,6 +230,7 @@ func _make_materials() -> void:
 	mat_camera_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat_camera_cutline.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat_camera_cutline.render_priority = 8
+	camera_fade_shader = _make_camera_fade_shader()
 	mat_vision_cutline = _material(Color(1.0, 1.0, 1.0, 1.0), 1.0)
 	mat_vision_cutline.vertex_color_use_as_albedo = true
 	mat_vision_cutline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -472,7 +476,8 @@ func _update_foreground_wall_fade(delta: float) -> void:
 			break
 
 	for wall in active_walls.keys():
-		_set_wall_fade_target(wall as Node, float(active_walls[wall]))
+		var data := active_walls[wall] as Dictionary
+		_set_wall_fade_target(wall as Node, float(data.get("alpha", 1.0)), data.get("center", Vector3.ZERO) as Vector3)
 	for wall in _wall_fade_targets.keys():
 		if not active_walls.has(wall):
 			_set_wall_fade_target(wall as Node, 1.0)
@@ -480,26 +485,55 @@ func _update_foreground_wall_fade(delta: float) -> void:
 
 
 func _add_foreground_fade_zone(active_walls: Dictionary, center_wall: Node, hit_position: Vector3) -> void:
-	var center := Vector2(hit_position.x, hit_position.z)
-	var player_center := Vector2(player.global_position.x, player.global_position.z)
 	for candidate in get_tree().get_nodes_in_group("visibility_blend_foreground_wall"):
 		var wall := candidate as Node3D
 		if not wall or not is_instance_valid(wall):
 			continue
-		var distance := center.distance_to(Vector2(wall.global_position.x, wall.global_position.z))
-		var player_distance := player_center.distance_to(Vector2(wall.global_position.x, wall.global_position.z))
-		if min(distance, player_distance) > CAMERA_FADE_RADIUS:
+		if not _wall_matches_camera_fade_plane(wall, center_wall as Node3D, hit_position):
 			continue
-		_remember_active_wall_alpha(active_walls, wall, CAMERA_FADE_MIN_ALPHA)
-	_remember_active_wall_alpha(active_walls, center_wall, CAMERA_FADE_MIN_ALPHA)
+		_remember_active_wall_alpha(active_walls, wall, CAMERA_FADE_MIN_ALPHA, hit_position)
+	_remember_active_wall_alpha(active_walls, center_wall, CAMERA_FADE_MIN_ALPHA, hit_position)
 
 
-func _remember_active_wall_alpha(active_walls: Dictionary, wall: Node, alpha: float) -> void:
+func _wall_matches_camera_fade_plane(wall: Node3D, center_wall: Node3D, hit_position: Vector3) -> bool:
+	if not wall or not center_wall:
+		return false
+	var center_mesh := _first_wall_mesh(center_wall)
+	var wall_mesh := _first_wall_mesh(wall)
+	if not center_mesh or not wall_mesh or not center_mesh.mesh or not wall_mesh.mesh:
+		return false
+	var center_size: Vector3 = center_mesh.mesh.get_aabb().size
+	var wall_size: Vector3 = wall_mesh.mesh.get_aabb().size
+	var horizontal: bool = center_size.x >= center_size.z
+	if (wall_size.x >= wall_size.z) != horizontal:
+		return false
+	var plane_tolerance: float = maxf(WALL_THICKNESS * 1.9, 0.58)
+	if horizontal:
+		if abs(wall.global_position.z - center_wall.global_position.z) > plane_tolerance:
+			return false
+		return abs(wall.global_position.x - hit_position.x) <= CAMERA_FADE_RADIUS + WALL_PANEL_LENGTH * 0.5
+	if abs(wall.global_position.x - center_wall.global_position.x) > plane_tolerance:
+		return false
+	return abs(wall.global_position.z - hit_position.z) <= CAMERA_FADE_RADIUS + WALL_PANEL_LENGTH * 0.5
+
+
+func _first_wall_mesh(node: Node) -> MeshInstance3D:
+	for child in node.get_children():
+		if child is MeshInstance3D and String(child.get_meta("visibility_role", "")) != "camera_cutline":
+			return child as MeshInstance3D
+	return null
+
+
+func _remember_active_wall_alpha(active_walls: Dictionary, wall: Node, alpha: float, fade_center: Vector3) -> void:
 	if not is_instance_valid(wall):
 		return
 	if active_walls.has(wall):
-		alpha = min(float(active_walls[wall]), alpha)
-	active_walls[wall] = alpha
+		var existing := active_walls[wall] as Dictionary
+		alpha = min(float(existing.get("alpha", 1.0)), alpha)
+	active_walls[wall] = {
+		"alpha": alpha,
+		"center": fade_center
+	}
 
 
 func _update_visibility_floor(delta: float) -> void:
@@ -689,7 +723,7 @@ func _visibility_alpha_for_distance(distance: float) -> float:
 	return 0.0
 
 
-func _set_wall_alpha(wall: Node, alpha: float) -> void:
+func _set_wall_alpha(wall: Node, alpha: float, fade_center: Vector3) -> void:
 	if not is_instance_valid(wall):
 		return
 	for child in wall.get_children():
@@ -697,26 +731,43 @@ func _set_wall_alpha(wall: Node, alpha: float) -> void:
 			var mesh := child as MeshInstance3D
 			if String(mesh.get_meta("visibility_role", "")) == "camera_cutline":
 				continue
-			var material := mesh.material_override as StandardMaterial3D
-			if not material:
+			if alpha >= 0.995:
 				continue
-			if not _faded_walls.has(wall):
-				material = material.duplicate() as StandardMaterial3D
-				mesh.material_override = material
-				_faded_walls[wall] = material
-			material = mesh.material_override as StandardMaterial3D
-			if material:
-				var color := material.albedo_color
-				color.a = alpha
-				material.albedo_color = color
-				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.99 else BaseMaterial3D.TRANSPARENCY_DISABLED
+			_apply_camera_fade_material(mesh, alpha, fade_center)
 	_set_wall_cutline_visible(wall, false)
 
 
-func _set_wall_fade_target(wall: Node, alpha: float) -> void:
+func _apply_camera_fade_material(mesh: MeshInstance3D, center_alpha: float, fade_center: Vector3) -> void:
+	if not camera_fade_shader:
+		return
+	var base := mesh.material_override as StandardMaterial3D
+	var material := _camera_fade_materials.get(mesh) as ShaderMaterial
+	if not material:
+		material = ShaderMaterial.new()
+		material.shader = camera_fade_shader
+		material.render_priority = 8
+		_camera_fade_materials[mesh] = material
+	if base:
+		material.set_shader_parameter("albedo_color", base.albedo_color)
+		material.set_shader_parameter("use_texture", base.albedo_texture != null)
+		if base.albedo_texture:
+			material.set_shader_parameter("albedo_texture", base.albedo_texture)
+	else:
+		material.set_shader_parameter("albedo_color", Color(0.82, 0.77, 0.47, 1.0))
+		material.set_shader_parameter("use_texture", false)
+	material.set_shader_parameter("fade_center_world", fade_center)
+	material.set_shader_parameter("fade_inner", CAMERA_FADE_CORE_RADIUS)
+	material.set_shader_parameter("fade_outer", CAMERA_FADE_RADIUS)
+	material.set_shader_parameter("center_alpha", clamp(center_alpha, 0.0, 1.0))
+	mesh.material_override = material
+
+
+func _set_wall_fade_target(wall: Node, alpha: float, fade_center: Vector3 = Vector3.ZERO) -> void:
 	if not is_instance_valid(wall):
 		return
 	_wall_fade_targets[wall] = clamp(alpha, 0.0, 1.0)
+	if alpha < 0.995:
+		_wall_fade_centers[wall] = fade_center
 	if not _wall_fade_alphas.has(wall):
 		_wall_fade_alphas[wall] = 1.0
 
@@ -726,15 +777,18 @@ func _apply_wall_fades(delta: float) -> void:
 		if not is_instance_valid(wall):
 			_wall_fade_targets.erase(wall)
 			_wall_fade_alphas.erase(wall)
+			_wall_fade_centers.erase(wall)
 			continue
 		var target: float = float(_wall_fade_targets[wall])
 		var current: float = float(_wall_fade_alphas.get(wall, 1.0))
 		current = move_toward(current, target, delta / CAMERA_FADE_SPEED)
 		_wall_fade_alphas[wall] = current
-		_set_wall_alpha(wall as Node, current)
+		var fade_center: Vector3 = _wall_fade_centers.get(wall, player.global_position) as Vector3
+		_set_wall_alpha(wall as Node, current, fade_center)
 		if current >= 0.995 and target >= 0.995:
 			_wall_fade_targets.erase(wall)
 			_wall_fade_alphas.erase(wall)
+			_wall_fade_centers.erase(wall)
 
 
 func _set_wall_cutline_visible(wall: Node, visible: bool) -> void:
@@ -817,8 +871,9 @@ func _add_box(parent: Node, node_name: String, position: Vector3, size: Vector3,
 	container.name = node_name
 	container.position = position
 	container.set_meta("visibility_role", role)
-	if role == "wall" or role == "wall_trim":
+	if role == "wall" or role == "wall_trim" or role == "baseboard":
 		container.add_to_group("visibility_blend_foreground_wall")
+	if role == "wall" or role == "wall_trim":
 		container.add_to_group("visibility_blend_los_blocker")
 	parent.add_child(container)
 
@@ -857,6 +912,38 @@ func _material(color: Color, roughness: float) -> StandardMaterial3D:
 	material.albedo_color = color
 	material.roughness = roughness
 	return material
+
+
+func _make_camera_fade_shader() -> Shader:
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode blend_mix, depth_prepass_alpha, cull_disabled;
+
+uniform sampler2D albedo_texture : source_color, repeat_enable;
+uniform bool use_texture = false;
+uniform vec4 albedo_color : source_color = vec4(0.82, 0.77, 0.47, 1.0);
+uniform vec3 fade_center_world = vec3(0.0, 0.0, 0.0);
+uniform float fade_inner = 0.42;
+uniform float fade_outer = 3.10;
+uniform float center_alpha = 0.28;
+
+varying vec3 world_position;
+
+void vertex() {
+	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+
+void fragment() {
+	vec4 tex = use_texture ? texture(albedo_texture, UV) : vec4(1.0);
+	float distance_to_center = distance(world_position.xz, fade_center_world.xz);
+	float fade = smoothstep(fade_inner, fade_outer, distance_to_center);
+	ALBEDO = tex.rgb * albedo_color.rgb;
+	ALPHA = mix(center_alpha, albedo_color.a, fade);
+	ROUGHNESS = 1.0;
+}
+"""
+	return shader
 
 
 func _load_texture(path: String) -> Texture2D:

@@ -282,7 +282,7 @@ func _can_show_structure_memory(mesh: MeshInstance3D, role: String, current_memo
 
 func _memory_tint_amount_for_role(role: String, amount: float) -> float:
 	if role == "floor":
-		return clamp(amount * 0.16, 0.0, 0.16)
+		return clamp(amount * 0.30, 0.0, 0.30)
 	return clamp(amount, 0.0, 1.0)
 
 
@@ -553,18 +553,18 @@ func _apply_original_tinted(mesh: MeshInstance3D, brightness: float, alpha: floa
 
 func _static_brightness_for_role(role: String, is_unseen_unknown: bool) -> float:
 	if role == "floor":
-		return 0.54 if is_unseen_unknown else 0.98
+		return 0.54 if is_unseen_unknown else 0.82
 	if role == "baseboard":
-		return 0.42 if is_unseen_unknown else 0.68
-	return 0.58 if is_unseen_unknown else 0.84
+		return 0.42 if is_unseen_unknown else 0.60
+	return 0.58 if is_unseen_unknown else 0.76
 
 
 func _static_tint_for_role(role: String, is_unseen_unknown: bool) -> Color:
 	if role == "floor":
-		return Color(0.44, 0.44, 0.39) if is_unseen_unknown else Color(0.82, 0.80, 0.68)
+		return Color(0.44, 0.44, 0.39) if is_unseen_unknown else Color(0.58, 0.58, 0.52)
 	if role == "baseboard":
-		return Color(0.27, 0.27, 0.23) if is_unseen_unknown else Color(0.40, 0.40, 0.34)
-	return Color(0.50, 0.51, 0.46) if is_unseen_unknown else Color(0.66, 0.66, 0.58)
+		return Color(0.27, 0.27, 0.23) if is_unseen_unknown else Color(0.36, 0.36, 0.31)
+	return Color(0.50, 0.51, 0.46) if is_unseen_unknown else Color(0.58, 0.58, 0.52)
 
 
 func _apply_flat_material(mesh: MeshInstance3D, material: StandardMaterial3D, alpha: float) -> void:
