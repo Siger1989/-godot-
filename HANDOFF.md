@@ -48,3 +48,10 @@
 - 用户确认：先不要继续在当前主游戏结构上硬改。
 - 后续方案：以目前已经敲定的小场景为基础继续延申，把小场景中连续、稳定的空间关系作为新主线。
 - 当前上传目的：保留现有进度，回头先对齐整体方案，再决定是否重建主游戏场景结构。
+
+## 2026-04-30 小场景视觉连续性
+
+- 已修小场景 `Visibility_Blend_Test` 的可见结构连续性。
+- 物理视线能看到的地板/墙/踢脚线/转角件现在保留原始贴图，不再被 `UNKNOWN` 状态刷成黑色。
+- 转角柱改为同墙布材质、缩小尺寸，用于弱化墙布转角黑边。
+- 验证：`validate_all.bat` 通过，并重新生成 `screenshots/visibility_blend_initial.png`、`screenshots/visibility_blend_door_reveal.png`、`screenshots/visibility_blend_room_b_memory.png`。

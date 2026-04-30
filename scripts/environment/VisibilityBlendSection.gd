@@ -164,8 +164,8 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 	var physical_visible := _physical_visibility_for_mesh(mesh, role)
 	var current_visible: float = max(physical_visible, reveal)
 	var current_memory: float = memory_weight * (1.0 - current_visible)
-	if role == "wall" or role == "baseboard" or role == "ceiling" or role == "floor":
-		if current_visible > 0.025 and _target_state == LogicState.VISIBLE:
+	if _is_structure_role(role):
+		if current_visible > 0.025:
 			var structural_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
 			_apply_original(mesh, structural_brightness, 1.0)
 			mesh.visible = true
@@ -210,7 +210,11 @@ func _apply_light(light: Light3D) -> void:
 
 
 func _role_visible_in_memory(role: String) -> bool:
-	return role == "floor" or role == "wall" or role == "ceiling" or role == "baseboard" or role == "outline"
+	return _is_structure_role(role) or role == "outline"
+
+
+func _is_structure_role(role: String) -> bool:
+	return role == "floor" or role == "wall" or role == "wall_trim" or role == "ceiling" or role == "baseboard"
 
 
 func _door_reveal_for_mesh(mesh: MeshInstance3D, role: String) -> float:
@@ -253,7 +257,7 @@ func _distance_visibility(position: Vector3) -> float:
 func _physical_visibility_for_mesh(mesh: MeshInstance3D, role: String) -> float:
 	if role == "detail" or role == "dynamic":
 		return _physical_visibility_at(mesh.global_position)
-	if role == "wall" or role == "baseboard" or role == "ceiling" or role == "light_mesh":
+	if role == "wall" or role == "wall_trim" or role == "baseboard" or role == "ceiling" or role == "light_mesh":
 		return _physical_visibility_at(mesh.global_position + Vector3(0.0, 0.18, 0.0))
 	return _physical_visibility_at(mesh.global_position)
 

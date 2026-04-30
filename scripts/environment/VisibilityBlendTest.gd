@@ -167,7 +167,7 @@ func _make_materials() -> void:
 	mat_wall = _textured_material(Color(0.82, 0.77, 0.47), _load_texture(TEXTURE_WALL + ".png"), 0.93, Vector3(2.4, 1.0, 1.0), _load_texture(TEXTURE_WALL + "_normal.png"), _load_texture(TEXTURE_WALL + "_roughness.png"), 0.22)
 	mat_wall_dirty = _textured_material(Color(0.58, 0.53, 0.32), _load_texture(TEXTURE_WALL_DIRTY + ".png"), 0.96, Vector3(2.4, 1.0, 1.0), _load_texture(TEXTURE_WALL_DIRTY + "_normal.png"), _load_texture(TEXTURE_WALL_DIRTY + "_roughness.png"), 0.3)
 	mat_ceiling = _textured_material(Color(0.76, 0.73, 0.60), _load_texture(TEXTURE_CEILING + ".png"), 0.94, Vector3(1.0, 1.0, 1.0), _load_texture(TEXTURE_CEILING + "_normal.png"), _load_texture(TEXTURE_CEILING + "_roughness.png"), 0.14)
-	mat_baseboard = _material(Color(0.26, 0.21, 0.12), 0.92)
+	mat_baseboard = _material(Color(0.34, 0.29, 0.17), 0.92)
 	mat_light = _material(Color(1.0, 0.98, 0.78), 0.34)
 	mat_light.emission_enabled = true
 	mat_light.emission = Color(1.0, 0.96, 0.74)
@@ -246,7 +246,7 @@ func _build_room_walls() -> void:
 		Vector3(18.0, 0.0, -5.0), Vector3(18.0, 0.0, 5.0)
 	]:
 		var section_id := _section_for_point(point)
-		_add_box(sections[section_id], "CornerPillar", point + Vector3(0.0, WALL_HEIGHT * 0.5, 0.0), Vector3(0.46, WALL_HEIGHT, 0.46), mat_wall_dirty, true, "wall")
+		_add_box(sections[section_id], "CornerPillar", point + Vector3(0.0, WALL_HEIGHT * 0.5, 0.0), Vector3(0.32, WALL_HEIGHT, 0.32), mat_wall, true, "wall_trim")
 
 
 func _build_static_door_wall() -> void:
@@ -561,7 +561,7 @@ func _add_box(parent: Node, node_name: String, position: Vector3, size: Vector3,
 	container.name = node_name
 	container.position = position
 	container.set_meta("visibility_role", role)
-	if role == "wall":
+	if role == "wall" or role == "wall_trim":
 		container.add_to_group("visibility_blend_foreground_wall")
 		container.add_to_group("visibility_blend_los_blocker")
 	parent.add_child(container)
