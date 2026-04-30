@@ -61,4 +61,5 @@
 - 灯光和灯板显示已拆开：灯光可以照亮玩家可见墙面，即使灯板本体被遮挡；灯板被拆成多段，只显示视线能看到的部分。记忆房间仍关闭灯光和灯板。
 - 地板和墙面已从大块拆为小块可见性单元，不再主要依赖房间状态隐藏；小块根据物理射线显示实时画面或灰暗记忆，并绘制玩家视野多边形切线作为真实视野边界。
 - 墙面小块可见性已改为采样朝向玩家的墙面表面，避免采样点落在墙体中心导致墙板被自身碰撞误挡、整片变灰黑。
+- 未知/遮挡墙面的兜底材质保持灰暗墙布，不再隐藏成黑洞；本轮提高了灰暗墙布亮度，减少黑块感。
 - 验证：`validate_all.bat` 通过，并重新生成 `screenshots/visibility_blend_initial.png`、`screenshots/visibility_blend_door_reveal.png`、`screenshots/visibility_blend_room_b_memory.png`。
