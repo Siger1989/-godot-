@@ -8,13 +8,14 @@ const PlayerScript := preload("res://scripts/player/VisibilityBlendPlayer.gd")
 const WALL_HEIGHT := 2.7
 const WALL_THICKNESS := 0.3
 const SIGHT_RAY_HEIGHT := 1.15
+const LIGHT_SURFACE_RAY_HEIGHT := 1.05
 const FLOOR_TILE := 1.0
 const WALL_PANEL_LENGTH := 0.75
-const CAMERA_FADE_RADIUS := 2.45
+const CAMERA_FADE_RADIUS := 3.10
 const CAMERA_FADE_CORE_RADIUS := 0.42
-const CAMERA_FADE_MIN_ALPHA := 0.34
+const CAMERA_FADE_MIN_ALPHA := 0.28
 const CAMERA_FADE_EDGE_ALPHA := 0.94
-const CAMERA_FADE_SPEED := 0.34
+const CAMERA_FADE_SPEED := 0.42
 const TEXTURE_ROOT := "res://assets/textures/backrooms/"
 const TEXTURE_WALL := TEXTURE_ROOT + "wallpaper_yellow_green"
 const TEXTURE_WALL_DIRTY := TEXTURE_ROOT + "wallpaper_dirty"
@@ -151,18 +152,20 @@ func light_reaches_visible_surface(light_position: Vector3, light_range: float) 
 	var step: int = max(1, _latest_visibility_points.size() / 24)
 	for i in range(0, _latest_visibility_points.size(), step):
 		var boundary := _latest_visibility_points[i]
-		for fraction in [0.35, 0.62, 0.86]:
+		for fraction in [0.18, 0.35, 0.55, 0.74, 0.90]:
 			var sample := player_flat.lerp(Vector3(boundary.x, 0.0, boundary.z), float(fraction))
 			var distance := Vector2(light_position.x, light_position.z).distance_to(Vector2(sample.x, sample.z))
 			if distance > light_range:
 				continue
-			if _light_has_clear_path(light_position, sample + Vector3(0.0, 0.12, 0.0)):
+			if _light_has_clear_path(light_position, sample):
 				best = max(best, 1.0 - smoothstep(light_range * 0.45, light_range, distance))
 	return best
 
 
 func _light_has_clear_path(origin: Vector3, target: Vector3) -> bool:
-	var params := PhysicsRayQueryParameters3D.create(origin, target)
+	var from := Vector3(origin.x, LIGHT_SURFACE_RAY_HEIGHT, origin.z)
+	var to := Vector3(target.x, LIGHT_SURFACE_RAY_HEIGHT, target.z)
+	var params := PhysicsRayQueryParameters3D.create(from, to)
 	var exclude: Array[RID] = []
 	var player_collision := player as CollisionObject3D
 	if player_collision:
@@ -173,7 +176,7 @@ func _light_has_clear_path(origin: Vector3, target: Vector3) -> bool:
 	if hit.is_empty():
 		return true
 	var hit_position := hit.get("position") as Vector3
-	return hit_position.distance_to(target) <= 0.18
+	return hit_position.distance_to(to) <= 0.08
 
 
 func get_section_debug(section_id: String) -> Dictionary:
@@ -478,16 +481,16 @@ func _update_foreground_wall_fade(delta: float) -> void:
 
 func _add_foreground_fade_zone(active_walls: Dictionary, center_wall: Node, hit_position: Vector3) -> void:
 	var center := Vector2(hit_position.x, hit_position.z)
+	var player_center := Vector2(player.global_position.x, player.global_position.z)
 	for candidate in get_tree().get_nodes_in_group("visibility_blend_foreground_wall"):
 		var wall := candidate as Node3D
 		if not wall or not is_instance_valid(wall):
 			continue
 		var distance := center.distance_to(Vector2(wall.global_position.x, wall.global_position.z))
-		if distance > CAMERA_FADE_RADIUS:
+		var player_distance := player_center.distance_to(Vector2(wall.global_position.x, wall.global_position.z))
+		if min(distance, player_distance) > CAMERA_FADE_RADIUS:
 			continue
-		var fade_t: float = smoothstep(CAMERA_FADE_CORE_RADIUS, CAMERA_FADE_RADIUS, distance)
-		var alpha: float = lerp(CAMERA_FADE_MIN_ALPHA, CAMERA_FADE_EDGE_ALPHA, fade_t)
-		_remember_active_wall_alpha(active_walls, wall, alpha)
+		_remember_active_wall_alpha(active_walls, wall, CAMERA_FADE_MIN_ALPHA)
 	_remember_active_wall_alpha(active_walls, center_wall, CAMERA_FADE_MIN_ALPHA)
 
 
@@ -639,8 +642,8 @@ func _update_visibility_cutline(points: PackedVector3Array) -> void:
 			continue
 		if abs(distance_a - distance_b) < 0.75:
 			continue
-		_append_soft_cutline(vertices, colors, indices, Vector3(point_a.x, 0.052, point_a.z), Vector3(point_b.x, 0.052, point_b.z), 0.055, Color(0.20, 0.20, 0.18, 0.16))
-		_append_soft_cutline(vertices, colors, indices, Vector3(point_a.x, 0.051, point_a.z), Vector3(point_b.x, 0.051, point_b.z), 0.16, Color(0.20, 0.20, 0.18, 0.055))
+		_append_soft_cutline(vertices, colors, indices, Vector3(point_a.x, 0.052, point_a.z), Vector3(point_b.x, 0.052, point_b.z), 0.10, Color(0.17, 0.16, 0.13, 0.09))
+		_append_soft_cutline(vertices, colors, indices, Vector3(point_a.x, 0.051, point_a.z), Vector3(point_b.x, 0.051, point_b.z), 0.38, Color(0.17, 0.16, 0.13, 0.028))
 	var arrays := []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
@@ -707,7 +710,7 @@ func _set_wall_alpha(wall: Node, alpha: float) -> void:
 				color.a = alpha
 				material.albedo_color = color
 				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if alpha < 0.99 else BaseMaterial3D.TRANSPARENCY_DISABLED
-	_set_wall_cutline_visible(wall, alpha < 0.72)
+	_set_wall_cutline_visible(wall, false)
 
 
 func _set_wall_fade_target(wall: Node, alpha: float) -> void:

@@ -202,13 +202,13 @@ func _apply_mesh(mesh: MeshInstance3D, role: String, reveal: float) -> void:
 			var live_brightness: float = 1.0 if role == "floor" else max(0.38, _distance_brightness(mesh.global_position))
 			var static_brightness: float = _static_brightness_for_role(role, false)
 			var brightness: float = lerp(static_brightness, live_brightness, live_mix)
-			var memory_amount: float = lerp(1.0, 0.0, live_mix)
+			var memory_amount: float = _memory_tint_amount_for_role(role, lerp(1.0, 0.0, live_mix))
 			_apply_original_tinted(mesh, brightness, 1.0, _static_tint_for_role(role, false), memory_amount)
 			mesh.visible = true
 			return
 		if can_show_memory:
 			var static_brightness: float = _static_brightness_for_role(role, false)
-			_apply_original_tinted(mesh, static_brightness, 1.0, _static_tint_for_role(role, false), 1.0)
+			_apply_original_tinted(mesh, static_brightness, 1.0, _static_tint_for_role(role, false), _memory_tint_amount_for_role(role, 1.0))
 			mesh.visible = true
 			return
 		mesh.visible = false
@@ -278,6 +278,12 @@ func _can_show_structure_memory(mesh: MeshInstance3D, role: String, current_memo
 	if not _is_structure_role(role):
 		return false
 	return current_memory > 0.025 and _mesh_seen_as_memory.has(mesh)
+
+
+func _memory_tint_amount_for_role(role: String, amount: float) -> float:
+	if role == "floor":
+		return clamp(amount * 0.16, 0.0, 0.16)
+	return clamp(amount, 0.0, 1.0)
 
 
 func _smooth_weight(store: Dictionary, key: Variant, target: float, rise_time: float, fall_time: float) -> float:
@@ -547,7 +553,7 @@ func _apply_original_tinted(mesh: MeshInstance3D, brightness: float, alpha: floa
 
 func _static_brightness_for_role(role: String, is_unseen_unknown: bool) -> float:
 	if role == "floor":
-		return 0.54 if is_unseen_unknown else 0.86
+		return 0.54 if is_unseen_unknown else 0.98
 	if role == "baseboard":
 		return 0.42 if is_unseen_unknown else 0.68
 	return 0.58 if is_unseen_unknown else 0.84
@@ -555,7 +561,7 @@ func _static_brightness_for_role(role: String, is_unseen_unknown: bool) -> float
 
 func _static_tint_for_role(role: String, is_unseen_unknown: bool) -> Color:
 	if role == "floor":
-		return Color(0.44, 0.44, 0.39) if is_unseen_unknown else Color(0.64, 0.64, 0.58)
+		return Color(0.44, 0.44, 0.39) if is_unseen_unknown else Color(0.82, 0.80, 0.68)
 	if role == "baseboard":
 		return Color(0.27, 0.27, 0.23) if is_unseen_unknown else Color(0.40, 0.40, 0.34)
 	return Color(0.50, 0.51, 0.46) if is_unseen_unknown else Color(0.66, 0.66, 0.58)

@@ -58,6 +58,7 @@ func _run() -> void:
 		_fail("Physical visibility ray polygon is not being generated")
 	if float(room_b.get("visible", 0.0)) >= 0.35:
 		_fail("RoomB became globally visible instead of physically visible")
+	_expect_active_light_without_lamp_view("open_door_light_reaches_visible_floor", "RoomB")
 
 	if player:
 		player.global_position = Vector3(10.6, 0.0, 0.0)
@@ -124,6 +125,21 @@ func _expect_visible_light(label: String, section_id: String) -> void:
 		_fail("%s expected at least one visible lamp panel in %s" % [label, section_id])
 	if active_lights <= 0:
 		_fail("%s expected at least one active light in %s" % [label, section_id])
+
+
+func _expect_active_light_without_lamp_view(label: String, section_id: String) -> void:
+	var section := root.find_child(section_id, true, false)
+	if not section:
+		_fail("%s expected section %s to exist" % [label, section_id])
+		return
+	var active_lights := _count_active_lights(section)
+	print("VISIBILITY_BLEND_%s %s active_lights=%d" % [
+		label,
+		section_id,
+		active_lights
+	])
+	if active_lights <= 0:
+		_fail("%s expected %s light to stay active when it reaches visible floor" % [label, section_id])
 
 
 func _count_visible_light_meshes(node: Node) -> int:
