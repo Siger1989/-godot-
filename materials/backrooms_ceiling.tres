@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dkxvlss4tn88a"]
+
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_ceiling_custom_albedo.png" id="1_ceiling_albedo"]
+[resource]
+albedo_texture = ExtResource("1_ceiling_albedo")
+emission_energy_multiplier = 0
+emission_enabled = false
+normal_scale = 0
+normal_enabled = false
+uv1_offset = Vector3(0, 0, 0)
+uv1_scale = Vector3(1, 1, 1)
+cull_mode = 0
+diffuse_mode = 2
+albedo_color = Color(0.741176, 0.698039, 0.521569, 1)
+roughness = 0.9

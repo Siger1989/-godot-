@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/SmallCabinet_A.glb" id="1_ae41g"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1r5a4"]
+size = Vector3(0.48, 0.8, 0.43)
+
+[node name="SmallCabinet_A" type="Node3D" unique_id=1606532881]
+metadata/natural_prop_id = "SmallCabinet_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+
+[node name="Model" type="Node3D" parent="." unique_id=1111373349 instance=ExtResource("1_ae41g")]
+
+[node name="CollisionBody" type="StaticBody3D" parent="." unique_id=290919616]
+
+[node name="Collision" type="CollisionShape3D" parent="CollisionBody" unique_id=1360242025]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("BoxShape3D_1r5a4")

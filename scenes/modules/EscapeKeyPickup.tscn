@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://c4b8s6pwqkg1l"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gold"]
+resource_name = "EscapeKeyGold"
+albedo_color = Color(1, 0.74, 0.18, 1)
+roughness = 0.36
+metallic = 0.65
+emission_enabled = true
+emission = Color(1, 0.58, 0.08, 1)
+emission_energy_multiplier = 0.55
+cull_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shadow"]
+resource_name = "EscapeKeyShadow"
+albedo_color = Color(0.035, 0.027, 0.018, 1)
+roughness = 0.95
+cull_mode = 2
+
+[sub_resource type="BoxMesh" id="BoxMesh_bow_top"]
+size = Vector3(0.18, 0.032, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bow_side"]
+size = Vector3(0.032, 0.105, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_shaft"]
+size = Vector3(0.046, 0.28, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tooth_a"]
+size = Vector3(0.11, 0.046, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tooth_b"]
+size = Vector3(0.048, 0.07, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_shadow"]
+size = Vector3(0.25, 0.41, 0.012)
+
+[node name="EscapeKeyPickup" type="Node3D" groups=["escape_key_pickup"]]
+metadata/resource_model_id = "EscapeKeyPickup"
+metadata/escape_key_owner = "cabinet_top"
+metadata/collected = false
+
+[node name="ShadowPlate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.006, -0.06, 0.018)
+mesh = SubResource("BoxMesh_shadow")
+surface_material_override/0 = SubResource("StandardMaterial3D_shadow")
+
+[node name="BowTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.105, 0)
+mesh = SubResource("BoxMesh_bow_top")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="BowBottom" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.025, 0)
+mesh = SubResource("BoxMesh_bow_top")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="BowLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.074, 0.065, 0)
+mesh = SubResource("BoxMesh_bow_side")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="BowRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.074, 0.065, 0)
+mesh = SubResource("BoxMesh_bow_side")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="Shaft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.105, 0)
+mesh = SubResource("BoxMesh_shaft")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="ToothA" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.055, -0.22, 0)
+mesh = SubResource("BoxMesh_tooth_a")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")
+
+[node name="ToothB" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.086, -0.168, 0)
+mesh = SubResource("BoxMesh_tooth_b")
+surface_material_override/0 = SubResource("StandardMaterial3D_gold")

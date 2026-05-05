@@ -1,0 +1,14 @@
+{
+  "top_weight": 0.0,
+  "bottom_weight": 2.0,
+  "top_band": 0.28,
+  "bottom_band": 0.28,
+  "density": 0.58,
+  "strength": 0.5,
+  "random_rotation": false,
+  "rotation_degrees": 0.0,
+  "size_x_scale": 0.7,
+  "size_y_scale": 0.7,
+  "top_offset": 0.0,
+  "bottom_offset": 0.0
+}

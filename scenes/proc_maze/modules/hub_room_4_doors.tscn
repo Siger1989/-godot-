@@ -1,0 +1,4 @@
+[gd_scene format=4]
+
+[node name="hub_room_4_doors" type="Node3D"]
+metadata/proc_maze_placeholder = true

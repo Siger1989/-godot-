@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://materials/debug/uv_direction_debug.gdshader" id="1_uv_shader"]
+
+[resource]
+shader = ExtResource("1_uv_shader")
+shader_parameter/debug_tiles = 6.0
+shader_parameter/base_color = Vector3(0.14, 0.13, 0.11)
+shader_parameter/grid_color = Vector3(0.03, 0.03, 0.03)
+shader_parameter/u_color = Vector3(1, 0.08, 0.04)
+shader_parameter/v_color = Vector3(0.08, 0.95, 0.18)

@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/monster/MonsterController.gd" id="1_monster"]
+[ext_resource type="PackedScene" path="res://3D模型/guai1.glb" id="2_guai1"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_monster"]
+size = Vector3(0.72, 0.62, 2.22)
+
+[node name="Monster" type="CharacterBody3D"]
+scale = Vector3(0.953989, 0.387199, 0.688722)
+safe_margin = 0.07
+script = ExtResource("1_monster")
+metadata/default_size_source = "FourRoomMVP MonsterRoot/Monster saved scale"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.31, 0)
+shape = SubResource("BoxShape3D_monster")
+
+[node name="ModelRoot" type="Node3D" parent="."]
+position = Vector3(0, 0.212, 1.06)
+scale = Vector3(0.25, 0.7, 0.25)
+
+[node name="guai1" parent="ModelRoot" instance=ExtResource("2_guai1")]

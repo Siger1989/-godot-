@@ -1,0 +1,60 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/HideLocker_A.tscn" id="1_ar34o"]
+[ext_resource type="Script" path="res://scripts/scene/HideableCabinetComponent.gd" id="2_x3kro"]
+
+[sub_resource type="Environment" id="Environment_o2ogh"]
+background_mode = 1
+background_color = Color(0.02, 0.019, 0.016, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 0.91, 0.72, 1)
+ambient_light_energy = 0.24
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nhu0j"]
+albedo_color = Color(0.52, 0.48, 0.35, 1)
+roughness = 0.92
+
+[sub_resource type="BoxMesh" id="BoxMesh_j1q1c"]
+size = Vector3(4.2, 0.04, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l0hhr"]
+albedo_color = Color(0.55, 0.47, 0.26, 1)
+roughness = 0.94
+
+[sub_resource type="BoxMesh" id="BoxMesh_q7y4w"]
+size = Vector3(4.2, 2.55, 0.08)
+
+[node name="Test_HideableLockerShowcase" type="Node3D" unique_id=39934390]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1164467677]
+environment = SubResource("Environment_o2ogh")
+
+[node name="ScaleCheckFloor" type="MeshInstance3D" parent="." unique_id=2078654829]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.9)
+material_override = SubResource("StandardMaterial3D_nhu0j")
+mesh = SubResource("BoxMesh_j1q1c")
+
+[node name="BackroomsWallBackdrop" type="MeshInstance3D" parent="." unique_id=1672377865]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, -0.365)
+material_override = SubResource("StandardMaterial3D_l0hhr")
+mesh = SubResource("BoxMesh_q7y4w")
+
+[node name="SoftLockerReviewLight" type="OmniLight3D" parent="." unique_id=226786424]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, 1.25)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.6
+omni_range = 4.0
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=547399517]
+transform = Transform3D(0.9163614, -0.047160253, 0.3975647, 0, 0.9930377, 0.11779694, -0.4003521, -0.10794457, 0.9099814, 1.35, 1.38, 3.15)
+current = true
+fov = 48.0
+
+[node name="HideableProps" type="Node3D" parent="." unique_id=337596695]
+
+[node name="HideLocker_A_Showcase" type="Node3D" parent="HideableProps" unique_id=639152927 groups=["interactive_hideable"] instance=ExtResource("1_ar34o")]
+script = ExtResource("2_x3kro")
+metadata/natural_prop_id = "HideLocker_A"
+metadata/natural_prop_category = "furniture"
+metadata/hideable_prop_id = "HideLocker_A"
+metadata/blocks_path = true

@@ -1,0 +1,18 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://dc1ji0ydclx6u"]
+
+[ext_resource type="Texture2D" uid="uid://dq2l00jalt7n5" path="res://materials/textures/backrooms_wall_albedo.png" id="1_wall_albedo"]
+[ext_resource type="Texture2D" uid="uid://b0csp2wljxuqw" path="res://materials/textures/backrooms_wall_normal.png" id="2_wall_normal"]
+
+[resource]
+emission_energy_multiplier = 0
+emission_enabled = false
+albedo_color = Color(1, 1, 1, 1)
+uv1_offset = Vector3(0, 0, 0)
+cull_mode = 0
+diffuse_mode = 2
+albedo_texture = ExtResource("1_wall_albedo")
+roughness = 0.88
+normal_enabled = true
+normal_scale = 0.22
+normal_texture = ExtResource("2_wall_normal")
+uv1_scale = Vector3(1, 1, 1)

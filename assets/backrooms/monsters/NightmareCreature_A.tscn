@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/monsters/NightmareCreature_A.glb" id="1_ncglb"]
+
+[node name="NightmareCreature_A" type="Node3D"]
+metadata/resource_model_id = "NightmareCreature_A"
+metadata/resource_model_category = "monsters"
+metadata/source_title = "Nightmare Creature 1#"
+metadata/source_author = "Idk"
+metadata/source_license = "CC-BY-4.0"
+metadata/source_url = "https://sketchfab.com/3d-models/nightmare-creature-1-9fb509d207d744babeb5d87a486f7de1"
+metadata/approx_triangles = 6718
+metadata/animation_count = 22
+metadata/display_height_meters = 1.29
+metadata/mobile_perf_note = "mobile_candidate_after_behavior_mapping"
+metadata/gameplay_status = "visual_wrapper_for_nightmare_ai"
+metadata/gameplay_idle_animation = "Creature_armature|idle"
+metadata/gameplay_walk_animation = "Creature_armature|walk"
+metadata/gameplay_run_animation = "Creature_armature|Run"
+metadata/gameplay_attack_animation = "Creature_armature|attack_1"
+metadata/gameplay_death_animation = "Creature_armature|death_1"
+metadata/gameplay_hit_animation = "Creature_armature|hit_1"
+metadata/gameplay_roar_animation = "Creature_armature|roar"
+
+[node name="Model" parent="." instance=ExtResource("1_ncglb")]
+position = Vector3(0, 0.89, 0)
+scale = Vector3(0.85, 0.85, 0.85)

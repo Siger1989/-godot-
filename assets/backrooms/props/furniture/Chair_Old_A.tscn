@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/Chair_Old_A.glb" id="1_bbsvy"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_b8dtk"]
+size = Vector3(0.58, 0.86, 0.56)
+
+[node name="Chair_Old_A" type="Node3D" unique_id=18534822]
+metadata/natural_prop_id = "Chair_Old_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+
+[node name="Model" type="Node3D" parent="." unique_id=1105070532 instance=ExtResource("1_bbsvy")]
+
+[node name="CollisionBody" type="StaticBody3D" parent="." unique_id=740657902]
+
+[node name="Collision" type="CollisionShape3D" parent="CollisionBody" unique_id=369469296]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.43, 0.04)
+shape = SubResource("BoxShape3D_b8dtk")

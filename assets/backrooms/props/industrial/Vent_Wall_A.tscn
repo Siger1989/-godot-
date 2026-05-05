@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Vent_Wall_A.glb" id="1_xdsnc"]
+
+[node name="Vent_Wall_A" type="Node3D" unique_id=405254760]
+metadata/natural_prop_id = "Vent_Wall_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+
+[node name="Model" type="Node3D" parent="." unique_id=664724040 instance=ExtResource("1_xdsnc")]

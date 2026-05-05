@@ -1,0 +1,2783 @@
+[gd_scene format=4]
+
+[ext_resource type="Script" path="res://scripts/core/GameBootstrap.gd" id="1_bootstrap"]
+[ext_resource type="Script" path="res://scripts/core/SceneBuilder.gd" id="2_builder"]
+[ext_resource type="Script" path="res://scripts/core/SceneRegistry.gd" id="3_registry"]
+[ext_resource type="Script" path="res://scripts/visibility/VisibilitySolver.gd" id="4_solver"]
+[ext_resource type="Script" path="res://scripts/visibility/VisibilityMemory.gd" id="5_memory"]
+[ext_resource type="Script" path="res://scripts/visibility/VisibilityRenderer.gd" id="6_renderer"]
+[ext_resource type="Script" path="res://scripts/lighting/LightingController.gd" id="7_lighting"]
+[ext_resource type="Script" path="res://scripts/camera/ForegroundOcclusion.gd" id="8_occlusion"]
+[ext_resource type="Script" path="res://scripts/debug/DebugOverlay.gd" id="9_debug"]
+[ext_resource type="Script" path="res://scripts/scene/PortalComponent.gd" id="10_3htuw"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Stack_2_A.tscn" id="10_6efvc"]
+[ext_resource type="Script" path="res://scripts/camera/CameraController.gd" id="10_camera"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Medium_A.tscn" id="11_6weao"]
+[ext_resource type="PackedScene" path="res://scenes/modules/PlayerModule.tscn" id="11_player"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/SmallCabinet_A.tscn" id="12_ka3di"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/cleaning/Bucket_A.tscn" id="13_lnsop"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/cleaning/Mop_A.tscn" id="14_tnx8n"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/ElectricBox_A.tscn" id="15_saxg4"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Pipe_Straight_A.tscn" id="16_xtbpi"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/MetalShelf_A.tscn" id="17_jd13u"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Stack_3_A.tscn" id="18_02e50"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Small_A.tscn" id="19_fbdpf"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/Chair_Old_A.tscn" id="20_3cmuo"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Vent_Wall_A.tscn" id="21_h62jl"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Pipe_Corner_A.tscn" id="22_lrym3"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/cleaning/CleaningClothPile_A.tscn" id="23_yoas6"]
+[ext_resource type="Script" path="res://scripts/scene/MarkerComponent.gd" id="25_2w7vi"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/HideLocker_A.tscn" id="25_d8kyk"]
+[ext_resource type="Shader" path="res://materials/shaders/contact_ao_surface.gdshader" id="26_1lc8q"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_floor_albedo.png" id="27_68djy"]
+[ext_resource type="Script" path="res://scripts/scene/HideableCabinetComponent.gd" id="27_kvrxb"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_floor_normal.png" id="28_d8kyk"]
+[ext_resource type="Script" path="res://scripts/scene/WallModule.gd" id="29_8dwpl"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_ceiling_custom_albedo.png" id="30_ij6fc"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_wall_albedo.png" id="31_f4fyx"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_wall_normal.png" id="32_kvrxb"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_wall_runtime_grime_atlas.png" id="33_mt16e"]
+[ext_resource type="Script" path="res://scripts/scene/WallOpeningBody.gd" id="34_p18wh"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_door_frame_albedo.png" id="35_oo7rf"]
+[ext_resource type="Texture2D" path="res://materials/textures/backrooms_door_frame_normal.png" id="36_1p8yu"]
+[ext_resource type="Script" path="res://scripts/scene/DoorFrameVisual.gd" id="37_adqaa"]
+[ext_resource type="Script" path="res://scripts/scene/RoomModule.gd" id="38_gueuw"]
+[ext_resource type="Material" path="res://materials/backrooms_ceiling_light.tres" id="41_ij6fc"]
+[ext_resource type="Script" path="res://scripts/scene/DoorComponent.gd" id="44_mt16e"]
+[ext_resource type="Script" path="res://scripts/player/PlayerController.gd" id="46_p18wh"]
+[ext_resource type="Script" path="res://scripts/monster/MonsterSizeSourceRuntime.gd" id="48_f4fyx"]
+[ext_resource type="Script" path="res://scripts/monster/MonsterController.gd" id="49_oo7rf"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/doors/OldOfficeDoor_A.tscn" id="61_kdktk"]
+[ext_resource type="PackedScene" path="res://scenes/modules/EscapeKeyPickup.tscn" id="63_escape_key"]
+[ext_resource type="PackedScene" path="res://scenes/modules/MonsterModule.tscn" id="64_monster"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/monsters/NightmareCreature_Monster.tscn" id="65_nightmare"]
+
+[sub_resource type="Environment" id="Environment_1p8yu"]
+background_mode = 1
+background_color = Color(0.015, 0.014, 0.012, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 0.9, 0.66, 1)
+ambient_light_sky_contribution = 0.0
+ambient_light_energy = 0.07
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_adqaa"]
+size = Vector3(12.16, 0.12, 12.16)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gueuw"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("27_68djy")
+shader_parameter/normal_texture = ExtResource("28_d8kyk")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = null
+shader_parameter/uv_scale = Vector2(7, 7)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.78
+shader_parameter/normal_depth = 0.8
+shader_parameter/surface_mode = 1
+shader_parameter/random_grime_atlas_grid = null
+shader_parameter/random_grime_seed = null
+shader_parameter/random_grime_strength = null
+shader_parameter/random_grime_density = null
+shader_parameter/random_grime_top_weight = null
+shader_parameter/random_grime_bottom_weight = null
+shader_parameter/random_grime_top_band = null
+shader_parameter/random_grime_bottom_band = null
+shader_parameter/random_grime_rotation_enabled = null
+shader_parameter/random_grime_rotation_degrees = null
+shader_parameter/random_grime_size_x_scale = null
+shader_parameter/random_grime_size_y_scale = null
+shader_parameter/random_grime_top_offset = null
+shader_parameter/random_grime_bottom_offset = null
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.08
+shader_parameter/ceiling_contact_strength = 0.0
+shader_parameter/corner_contact_strength = 0.08
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.16
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.08
+metadata/base_ceiling_contact_strength = 0.0
+metadata/base_corner_contact_strength = 0.08
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.16
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_fcalh"]
+_surfaces = [{
+"aabb": AABB(-3, 0, -3, 6, 1e-05, 6),
+"attribute_data": PackedByteArray("AACAvgAAgL4AAIA+AACAvgAAgD4AAIA+AACAvgAAgL4AAIA+AACAPgAAgL4AAIA+"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_gueuw"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 6,
+"vertex_data": PackedByteArray("AABAwAAAAAAAAEDAAABAQAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEBA/3///////z//f///////P/9///////8//3///////z//f///////P/9///////8/")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_lrbua"]
+_surfaces = [{
+"aabb": AABB(-3, 0, -3, 6, 1e-05, 6),
+"attribute_data": PackedByteArray("AACAPgAAgL4AAEA/AACAvgAAQD8AAIA+AACAPgAAgL4AAEA/AACAPgAAgD4AAIA+"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_gueuw"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 6,
+"vertex_data": PackedByteArray("AABAwAAAAAAAAEDAAABAQAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEBA/3///////z//f///////P/9///////8//3///////z//f///////P/9///////8/")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_y124a"]
+_surfaces = [{
+"aabb": AABB(-3, 0, -3, 6, 1e-05, 6),
+"attribute_data": PackedByteArray("AACAPgAAgD4AAEA/AACAPgAAQD8AAEA/AACAPgAAgD4AAEA/AABAPwAAgD4AAEA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_gueuw"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 6,
+"vertex_data": PackedByteArray("AABAwAAAAAAAAEDAAABAQAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEBA/3///////z//f///////P/9///////8//3///////z//f///////P/9///////8/")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_0ecp0"]
+_surfaces = [{
+"aabb": AABB(-3, 0, -3, 6, 1e-05, 6),
+"attribute_data": PackedByteArray("AACAvgAAgD4AAIA+AACAPgAAgD4AAEA/AACAvgAAgD4AAIA+AABAPwAAgL4AAEA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_gueuw"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 6,
+"vertex_data": PackedByteArray("AABAwAAAAAAAAEDAAABAQAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEDAAABAQAAAAAAAAEBAAABAwAAAAAAAAEBA/3///////z//f///////P/9///////8//3///////z//f///////P/9///////8/")
+}]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_apiec"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("30_ij6fc")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = false
+shader_parameter/use_random_grime = null
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(0.741176, 0.698039, 0.521569, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.9
+shader_parameter/normal_depth = 0.0
+shader_parameter/surface_mode = 2
+shader_parameter/random_grime_atlas_grid = null
+shader_parameter/random_grime_seed = null
+shader_parameter/random_grime_strength = null
+shader_parameter/random_grime_density = null
+shader_parameter/random_grime_top_weight = null
+shader_parameter/random_grime_bottom_weight = null
+shader_parameter/random_grime_top_band = null
+shader_parameter/random_grime_bottom_band = null
+shader_parameter/random_grime_rotation_enabled = null
+shader_parameter/random_grime_rotation_degrees = null
+shader_parameter/random_grime_size_x_scale = null
+shader_parameter/random_grime_size_y_scale = null
+shader_parameter/random_grime_top_offset = null
+shader_parameter/random_grime_bottom_offset = null
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.0
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.08
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.16
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.0
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.08
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.16
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_lyjan"]
+_surfaces = [{
+"aabb": AABB(-3.02, -0.05, -3.02, 6.04, 0.1, 6.04),
+"attribute_data": PackedByteArray("dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_apiec"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 36,
+"vertex_data": PackedByteArray("rkdBwM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0FArkdBwM3MTL2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0HArkdBQM3MTD2uR0HArkdBwM3MTD2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0HArkdBQM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBwM3MTD2uR0FArkdBwM3MTL2uR0FArkdBwM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTD2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0HArkdBQM3MTD2uR0FArkdBwM3MTD2uR0FArkdBwM3MTD2uR0HArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTL2uR0HArkdBwM3MTL2uR0HArkdBwM3MTL2uR0FArkdBQM3MTL2uR0FA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3///////7//f///////v/9///////+//3///////7//f///////v/9///////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_t432n"]
+size = Vector3(6.04, 0.1, 6.04)
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_k7ewx"]
+_surfaces = [{
+"aabb": AABB(-3.02, -0.05, -3.02, 6.04, 0.1, 6.04),
+"attribute_data": PackedByteArray("dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_apiec"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 36,
+"vertex_data": PackedByteArray("rkdBwM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0FArkdBwM3MTL2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0HArkdBQM3MTD2uR0HArkdBwM3MTD2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0HArkdBQM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBwM3MTD2uR0FArkdBwM3MTL2uR0FArkdBwM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTD2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0HArkdBQM3MTD2uR0FArkdBwM3MTD2uR0FArkdBwM3MTD2uR0HArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTL2uR0HArkdBwM3MTL2uR0HArkdBwM3MTL2uR0FArkdBQM3MTL2uR0FA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3///////7//f///////v/9///////+//3///////7//f///////v/9///////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pcioe"]
+size = Vector3(6.04, 0.1, 6.04)
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_06ki0"]
+_surfaces = [{
+"aabb": AABB(-3.02, -0.05, -3.02, 6.04, 0.1, 6.04),
+"attribute_data": PackedByteArray("dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_apiec"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 36,
+"vertex_data": PackedByteArray("rkdBwM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0FArkdBwM3MTL2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0HArkdBQM3MTD2uR0HArkdBwM3MTD2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0HArkdBQM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBwM3MTD2uR0FArkdBwM3MTL2uR0FArkdBwM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTD2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0HArkdBQM3MTD2uR0FArkdBwM3MTD2uR0FArkdBwM3MTD2uR0HArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTL2uR0HArkdBwM3MTL2uR0HArkdBwM3MTL2uR0FArkdBQM3MTL2uR0FA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3///////7//f///////v/9///////+//3///////7//f///////v/9///////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5kb2k"]
+size = Vector3(6.04, 0.1, 6.04)
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_tn25d"]
+_surfaces = [{
+"aabb": AABB(-3.02, -0.05, -3.02, 6.04, 0.1, 6.04),
+"attribute_data": PackedByteArray("dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv4mICLx02gA/iYgIPHTaAD+JiAi8dNoAv4mICLx02gC/iYgIPHTaAD+JiAg8dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/dNoAv3TaAL902gA/dNoAP3TaAD902gC/dNoAv3TaAL902gC/dNoAP3TaAD902gA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_apiec"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 36,
+"vertex_data": PackedByteArray("rkdBwM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0FArkdBwM3MTL2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0FArkdBQM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0HArkdBQM3MTD2uR0HArkdBwM3MTD2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0HArkdBQM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTD2uR0FArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBwM3MTD2uR0FArkdBwM3MTL2uR0FArkdBwM3MTL2uR0HArkdBwM3MTD2uR0HArkdBwM3MTD2uR0FArkdBwM3MTD2uR0FArkdBQM3MTD2uR0HArkdBQM3MTD2uR0FArkdBwM3MTD2uR0FArkdBwM3MTD2uR0HArkdBQM3MTD2uR0HArkdBwM3MTL2uR0HArkdBQM3MTL2uR0FArkdBQM3MTL2uR0HArkdBwM3MTL2uR0HArkdBwM3MTL2uR0FArkdBQM3MTL2uR0FA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3///////7//f///////v/9///////+//3///////7//f///////v/9///////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_d3hbf"]
+size = Vector3(6.04, 0.1, 6.04)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3ijtm"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 767458.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_34oc6"]
+_surfaces = [{
+"aabb": AABB(-2.82, -1.355, -0.1, 5.64, 2.71, 0.2),
+"attribute_data": PackedByteArray("16PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC916PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC9d3f3PgQEhD9ERAQ/gIAAvUREBD8EBIQ/d3f3PgQEhD93d/c+gIAAvUREBD+AgAC9REQEvwQEhD93d/e+gIAAvXd3974EBIQ/REQEvwQEhD9ERAS/gIAAvXd3976AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_3ijtm"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("4Xo0wKRwrb/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrb/NzMw94Xo0wKRwrb/NzMw94Xo0wKRwrT/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrb/NzMy94Xo0wKRwrT/NzMy94Xo0wKRwrb/NzMy94Xo0QKRwrb/NzMy94Xo0QKRwrT/NzMy94Xo0wKRwrT/NzMy94Xo0QKRwrb/NzMw94Xo0QKRwrT/NzMy94Xo0QKRwrb/NzMy94Xo0QKRwrb/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrT/NzMy94Xo0wKRwrb/NzMy94Xo0wKRwrT/NzMw94Xo0wKRwrb/NzMw94Xo0wKRwrb/NzMy94Xo0wKRwrT/NzMy94Xo0wKRwrT/NzMw9/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xmel3"]
+size = Vector3(5.64, 2.55, 0.2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pk2qv"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 209287.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_bwll6"]
+_surfaces = [{
+"aabb": AABB(-0.1, -1.355, -2.82, 0.2, 2.71, 5.64),
+"attribute_data": PackedByteArray("REQEvwQEhD93d/e+gIAAvXd3974EBIQ/REQEvwQEhD9ERAS/gIAAvXd3976AgAC9d3f3PgQEhD9ERAQ/gIAAvUREBD8EBIQ/d3f3PgQEhD93d/c+gIAAvUREBD+AgAC916PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC916PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_pk2qv"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("zczMvaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejRAzczMvaRwrb/hejRAzczMvaRwrT/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrb/hejTAzczMPaRwrb/hejTAzczMPaRwrT/hejTAzczMvaRwrT/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejTAzczMPaRwrb/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrT/hejTAzczMvaRwrb/hejTAzczMvaRwrT/hejRAzczMvaRwrb/hejRAzczMvaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrT/hejRA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_iukbt"]
+size = Vector3(0.2, 2.55, 5.64)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7p2j4"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 622095.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_r24j1"]
+_surfaces = [{
+"aabb": AABB(-2.82, -1.355, -0.1, 5.64, 2.71, 0.2),
+"attribute_data": PackedByteArray("Fa4HPwQEhD/2KLw/gIAAvfYovD8EBIQ/Fa4HPwQEhD8Vrgc/gIAAvfYovD+AgAC99ii8vwQEhD8Vrge/gIAAvRWuB78EBIQ/9ii8vwQEhD/2KLy/gIAAvRWuB7+AgAC9d3f3PgQEhD9ERAQ/gIAAvUREBD8EBIQ/d3f3PgQEhD93d/c+gIAAvUREBD+AgAC9REQEvwQEhD93d/e+gIAAvXd3974EBIQ/REQEvwQEhD9ERAS/gIAAvXd3976AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_7p2j4"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("4Xo0wKRwrb/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrb/NzMw94Xo0wKRwrb/NzMw94Xo0wKRwrT/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrb/NzMy94Xo0wKRwrT/NzMy94Xo0wKRwrb/NzMy94Xo0QKRwrb/NzMy94Xo0QKRwrT/NzMy94Xo0wKRwrT/NzMy94Xo0QKRwrb/NzMw94Xo0QKRwrT/NzMy94Xo0QKRwrb/NzMy94Xo0QKRwrb/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrT/NzMy94Xo0wKRwrb/NzMy94Xo0wKRwrT/NzMw94Xo0wKRwrb/NzMw94Xo0wKRwrb/NzMy94Xo0wKRwrT/NzMy94Xo0wKRwrT/NzMw9/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_d07l0"]
+size = Vector3(5.64, 2.55, 0.2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3yn6u"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 935066.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_kr3g2"]
+_surfaces = [{
+"aabb": AABB(-0.1, -1.355, -2.82, 0.2, 2.71, 5.64),
+"attribute_data": PackedByteArray("3t29PwQEhD8iIsI/gIAAvSIiwj8EBIQ/3t29PwQEhD/e3b0/gIAAvSIiwj+AgAC9IiLCvwQEhD/e3b2/gIAAvd7dvb8EBIQ/IiLCvwQEhD8iIsK/gIAAvd7dvb+AgAC916PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC916PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_3yn6u"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("zczMvaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejRAzczMvaRwrb/hejRAzczMvaRwrT/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrb/hejTAzczMPaRwrb/hejTAzczMPaRwrT/hejTAzczMvaRwrT/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejTAzczMPaRwrb/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrT/hejTAzczMvaRwrb/hejTAzczMvaRwrT/hejRAzczMvaRwrb/hejRAzczMvaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrT/hejRA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_iwebk"]
+size = Vector3(0.2, 2.55, 5.64)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pmg2r"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 799048.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_tta0t"]
+_surfaces = [{
+"aabb": AABB(-0.1, -1.355, -2.82, 0.2, 2.71, 5.64),
+"attribute_data": PackedByteArray("3t29PwQEhD8iIsI/gIAAvSIiwj8EBIQ/3t29PwQEhD/e3b0/gIAAvSIiwj+AgAC9IiLCvwQEhD/e3b2/gIAAvd7dvb8EBIQ/IiLCvwQEhD8iIsK/gIAAvd7dvb+AgAC99ii8vwQEhD8Vrge/gIAAvRWuB78EBIQ/9ii8vwQEhD/2KLy/gIAAvRWuB7+AgAC9Fa4HPwQEhD/2KLw/gIAAvfYovD8EBIQ/Fa4HPwQEhD8Vrgc/gIAAvfYovD+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_pmg2r"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("zczMvaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejRAzczMvaRwrb/hejRAzczMvaRwrT/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrb/hejTAzczMPaRwrb/hejTAzczMPaRwrT/hejTAzczMvaRwrT/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejTAzczMPaRwrb/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrT/hejTAzczMvaRwrb/hejTAzczMvaRwrT/hejRAzczMvaRwrb/hejRAzczMvaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrT/hejRA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_m1rf6"]
+size = Vector3(0.2, 2.55, 5.64)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_f2won"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 196617.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_o1to8"]
+_surfaces = [{
+"aabb": AABB(-0.1, -0.08, -2.82, 0.2, 2.71, 5.64),
+"attribute_data": PackedByteArray("16PwPo2AAL3Xo/A+BASEP0RExD0EBIQ/RETEvZqcHD5ERMS9BASEP9ej8L4EBIQ/16PwPo2AAL1ERMQ9BASEP0RExD2anBw+RETEvZqcHD7Xo/C+BASEP9ej8L6NgAC916Pwvo2AAL3Xo/A+jYAAvURExD2anBw+RETEPZqcHD5ERMS9mpwcPtej8L6NgAC916Pwvo2AAL1ERMS9BASEP9ej8L4EBIQ/RETEPZqcHD7Xo/A+BASEP0RExD0EBIQ/16Pwvo2AAL1ERMS9mpwcPkRExL0EBIQ/RETEPZqcHD7Xo/A+jYAAvdej8D4EBIQ/16PwPo2AAL1ERMS9mpwcPtej8L6NgAC9RETEvZqcHD7Xo/A+jYAAvURExD2anBw+iYiIvAQEhD+JiIi8mpwcPomIiDyanBw+iYiIvAQEhD+JiIg8mpwcPomIiDwEBIQ/iYiIvERExL2JiIi8RETEPYmIiDxERMQ9iYiIvERExL2JiIg8RETEPYmIiDxERMS9iYiIPJqcHD6JiIg8BASEP4mIiLwEBIQ/iYiIPJqcHD6JiIi8BASEP4mIiLyanBw+iYiIvAQEhD+JiIi8jYAAvYmIiDyNgAC9iYiIvAQEhD+JiIg8jYAAvYmIiDwEBIQ/iYiIPI2AAL2JiIg8BASEP4mIiLwEBIQ/iYiIPI2AAL2JiIi8BASEP4mIiLyNgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_f2won"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 66,
+"vertex_data": PackedByteArray("zczMPexRKEDhejTAzczMPQrXo73hejTAzczMPQrXo70zMxO/zczMPXE9CkAzMxM/zczMPQrXo70zMxM/zczMPQrXo73hejRAzczMPexRKEDhejTAzczMPQrXo70zMxO/zczMPXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPQrXo73hejRAzczMPexRKEDhejRAzczMPexRKEDhejRAzczMPexRKEDhejTAzczMPXE9CkAzMxO/zczMPXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPexRKEDhejRAzczMvexRKEDhejTAzczMvQrXo70zMxO/zczMvQrXo73hejTAzczMvXE9CkAzMxM/zczMvQrXo73hejRAzczMvQrXo70zMxM/zczMvexRKEDhejTAzczMvXE9CkAzMxO/zczMvQrXo70zMxO/zczMvXE9CkAzMxM/zczMvexRKEDhejRAzczMvQrXo73hejRAzczMvexRKEDhejRAzczMvXE9CkAzMxO/zczMvexRKEDhejTAzczMvXE9CkAzMxO/zczMvexRKEDhejRAzczMvXE9CkAzMxM/zczMvQrXo70zMxO/zczMvXE9CkAzMxO/zczMPXE9CkAzMxO/zczMvQrXo70zMxO/zczMPXE9CkAzMxO/zczMPQrXo70zMxO/zczMvXE9CkAzMxO/zczMvXE9CkAzMxM/zczMPXE9CkAzMxM/zczMvXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPXE9CkAzMxO/zczMvXE9CkAzMxM/zczMvQrXo70zMxM/zczMPQrXo70zMxM/zczMvXE9CkAzMxM/zczMPQrXo70zMxM/zczMPXE9CkAzMxM/zczMvQrXo73hejRAzczMvexRKEDhejRAzczMPexRKEDhejRAzczMvQrXo73hejRAzczMPexRKEDhejRAzczMPQrXo73hejRAzczMvexRKEDhejTAzczMvQrXo73hejTAzczMPQrXo73hejTAzczMvexRKEDhejTAzczMPQrXo73hejTAzczMPexRKEDhejTA////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6frpu"]
+size = Vector3(0.2, 2.55, 2.245)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4fyms"]
+size = Vector3(0.2, 2.55, 2.245)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kdktk"]
+size = Vector3(0.2, 0.39, 1.15)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_455g4"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 717909.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_b4bl0"]
+_surfaces = [{
+"aabb": AABB(-2.82, -1.355, -0.1, 5.64, 2.71, 0.2),
+"attribute_data": PackedByteArray("16PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC916PwvgQEhD/Xo/A+gIAAvdej8D4EBIQ/16PwvgQEhD/Xo/C+gIAAvdej8D6AgAC9IiLCvwQEhD/e3b2/gIAAvd7dvb8EBIQ/IiLCvwQEhD8iIsK/gIAAvd7dvb+AgAC93t29PwQEhD8iIsI/gIAAvSIiwj8EBIQ/3t29PwQEhD/e3b0/gIAAvSIiwj+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_455g4"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("4Xo0wKRwrb/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrb/NzMw94Xo0wKRwrb/NzMw94Xo0wKRwrT/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrb/NzMy94Xo0wKRwrT/NzMy94Xo0wKRwrb/NzMy94Xo0QKRwrb/NzMy94Xo0QKRwrT/NzMy94Xo0wKRwrT/NzMy94Xo0QKRwrb/NzMw94Xo0QKRwrT/NzMy94Xo0QKRwrb/NzMy94Xo0QKRwrb/NzMw94Xo0QKRwrT/NzMw94Xo0QKRwrT/NzMy94Xo0wKRwrb/NzMy94Xo0wKRwrT/NzMw94Xo0wKRwrb/NzMw94Xo0wKRwrb/NzMy94Xo0wKRwrT/NzMy94Xo0wKRwrT/NzMw9/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_aj6v4"]
+size = Vector3(5.64, 2.55, 0.2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_iomea"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 260204.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_4q2uq"]
+_surfaces = [{
+"aabb": AABB(-0.1, -1.355, -2.82, 0.2, 2.71, 5.64),
+"attribute_data": PackedByteArray("REQEvwQEhD93d/e+gIAAvXd3974EBIQ/REQEvwQEhD9ERAS/gIAAvXd3976AgAC9d3f3PgQEhD9ERAQ/gIAAvUREBD8EBIQ/d3f3PgQEhD93d/c+gIAAvUREBD+AgAC99ii8vwQEhD8Vrge/gIAAvRWuB78EBIQ/9ii8vwQEhD/2KLy/gIAAvRWuB7+AgAC9Fa4HPwQEhD/2KLw/gIAAvfYovD8EBIQ/Fa4HPwQEhD8Vrgc/gIAAvfYovD+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_iomea"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("zczMvaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejRAzczMvaRwrb/hejRAzczMvaRwrT/hejRAzczMPaRwrT/hejRAzczMPaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrb/hejTAzczMPaRwrb/hejTAzczMPaRwrT/hejTAzczMvaRwrT/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejTAzczMPaRwrb/hejTAzczMPaRwrb/hejRAzczMPaRwrT/hejRAzczMPaRwrT/hejTAzczMvaRwrb/hejTAzczMvaRwrT/hejRAzczMvaRwrb/hejRAzczMvaRwrb/hejTAzczMvaRwrT/hejTAzczMvaRwrT/hejRA/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ika03"]
+size = Vector3(0.2, 2.55, 5.64)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bof3n"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 695873.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_x560w"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_bof3n"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_a2oic"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cjnyb"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 180330.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_jb403"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("16PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_cjnyb"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_45isc"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_l76vl"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 788209.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_v24ar"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("9ii8PwQEhD8K18M/gIAAvQrXwz8EBIQ/9ii8PwQEhD/2KLw/gIAAvQrXwz+AgAC9CtfDvwQEhD/2KLy/gIAAvfYovL8EBIQ/CtfDvwQEhD8K18O/gIAAvfYovL+AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_l76vl"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sl0ii"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_llloy"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 990430.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_we5xs"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("9ii8PwQEhD8K18M/gIAAvQrXwz8EBIQ/9ii8PwQEhD/2KLw/gIAAvQrXwz+AgAC9CtfDvwQEhD/2KLy/gIAAvfYovL8EBIQ/CtfDvwQEhD8K18O/gIAAvfYovL+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_llloy"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oqyyu"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xipxl"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 309465.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_ytcrt"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("9ii8PwQEhD8K18M/gIAAvQrXwz8EBIQ/9ii8PwQEhD/2KLw/gIAAvQrXwz+AgAC9CtfDvwQEhD/2KLy/gIAAvfYovL8EBIQ/CtfDvwQEhD8K18O/gIAAvfYovL+AgAC9CtfDvwQEhD/2KLy/gIAAvfYovL8EBIQ/CtfDvwQEhD8K18O/gIAAvfYovL+AgAC99ii8PwQEhD8K18M/gIAAvQrXwz8EBIQ/9ii8PwQEhD/2KLw/gIAAvQrXwz+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_xipxl"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tit1u"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qepvg"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 644871.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_7o7t5"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("16PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC9CtfDvwQEhD/2KLy/gIAAvfYovL8EBIQ/CtfDvwQEhD8K18O/gIAAvfYovL+AgAC99ii8PwQEhD8K18M/gIAAvQrXwz8EBIQ/9ii8PwQEhD/2KLw/gIAAvQrXwz+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_qepvg"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_84g15"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0xix3"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 125518.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_887hi"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9CtfDvwQEhD/2KLy/gIAAvfYovL8EBIQ/CtfDvwQEhD8K18O/gIAAvfYovL+AgAC99ii8PwQEhD8K18M/gIAAvQrXwz8EBIQ/9ii8PwQEhD/2KLw/gIAAvQrXwz+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_0xix3"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jd8cl"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3f1wu"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 112444.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_jnjgq"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_3f1wu"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_2k1r4"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p42sr"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 113070.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_4bk6c"]
+_surfaces = [{
+"aabb": AABB(-0.18, -1.355, -0.18, 0.36, 2.71, 0.36),
+"attribute_data": PackedByteArray("16PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC9FK4HvwQEhD/Xo/C+gIAAvdej8L4EBIQ/FK4HvwQEhD8Urge/gIAAvdej8L6AgAC916PwPgQEhD8Urgc/gIAAvRSuBz8EBIQ/16PwPgQEhD/Xo/A+gIAAvRSuBz+AgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_p42sr"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("7FE4vqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrT/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrT/sUTi+7FE4vqRwrT/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTi+7FE4PqRwrb/sUTi+7FE4PqRwrb/sUTg+7FE4PqRwrT/sUTg+7FE4PqRwrT/sUTi+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTg+7FE4vqRwrb/sUTg+7FE4vqRwrb/sUTi+7FE4vqRwrT/sUTi+7FE4vqRwrT/sUTg+/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w6jkp"]
+size = Vector3(0.36, 2.55, 0.36)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x4t6f"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 904847.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_pqwop"]
+_surfaces = [{
+"aabb": AABB(-0.1, -0.08, -2.82, 0.2, 2.71, 5.64),
+"attribute_data": PackedByteArray("16PwPo2AAL3Xo/A+BASEP0RExD0EBIQ/RETEvZqcHD5ERMS9BASEP9ej8L4EBIQ/16PwPo2AAL1ERMQ9BASEP0RExD2anBw+RETEvZqcHD7Xo/C+BASEP9ej8L6NgAC916Pwvo2AAL3Xo/A+jYAAvURExD2anBw+RETEPZqcHD5ERMS9mpwcPtej8L6NgAC916Pwvo2AAL1ERMS9BASEP9ej8L4EBIQ/RETEPZqcHD7Xo/A+BASEP0RExD0EBIQ/16Pwvo2AAL1ERMS9mpwcPkRExL0EBIQ/RETEPZqcHD7Xo/A+jYAAvdej8D4EBIQ/16PwPo2AAL1ERMS9mpwcPtej8L6NgAC9RETEvZqcHD7Xo/A+jYAAvURExD2anBw+iYiIvAQEhD+JiIi8mpwcPomIiDyanBw+iYiIvAQEhD+JiIg8mpwcPomIiDwEBIQ/iYiIvERExL2JiIi8RETEPYmIiDxERMQ9iYiIvERExL2JiIg8RETEPYmIiDxERMS9iYiIPJqcHD6JiIg8BASEP4mIiLwEBIQ/iYiIPJqcHD6JiIi8BASEP4mIiLyanBw+iYiIvAQEhD+JiIi8jYAAvYmIiDyNgAC9iYiIvAQEhD+JiIg8jYAAvYmIiDwEBIQ/iYiIPI2AAL2JiIg8BASEP4mIiLwEBIQ/iYiIPI2AAL2JiIi8BASEP4mIiLyNgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_x4t6f"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 66,
+"vertex_data": PackedByteArray("zczMPexRKEDhejTAzczMPQrXo73hejTAzczMPQrXo70zMxO/zczMPXE9CkAzMxM/zczMPQrXo70zMxM/zczMPQrXo73hejRAzczMPexRKEDhejTAzczMPQrXo70zMxO/zczMPXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPQrXo73hejRAzczMPexRKEDhejRAzczMPexRKEDhejRAzczMPexRKEDhejTAzczMPXE9CkAzMxO/zczMPXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPexRKEDhejRAzczMvexRKEDhejTAzczMvQrXo70zMxO/zczMvQrXo73hejTAzczMvXE9CkAzMxM/zczMvQrXo73hejRAzczMvQrXo70zMxM/zczMvexRKEDhejTAzczMvXE9CkAzMxO/zczMvQrXo70zMxO/zczMvXE9CkAzMxM/zczMvexRKEDhejRAzczMvQrXo73hejRAzczMvexRKEDhejRAzczMvXE9CkAzMxO/zczMvexRKEDhejTAzczMvXE9CkAzMxO/zczMvexRKEDhejRAzczMvXE9CkAzMxM/zczMvQrXo70zMxO/zczMvXE9CkAzMxO/zczMPXE9CkAzMxO/zczMvQrXo70zMxO/zczMPXE9CkAzMxO/zczMPQrXo70zMxO/zczMvXE9CkAzMxO/zczMvXE9CkAzMxM/zczMPXE9CkAzMxM/zczMvXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPXE9CkAzMxO/zczMvXE9CkAzMxM/zczMvQrXo70zMxM/zczMPQrXo70zMxM/zczMvXE9CkAzMxM/zczMPQrXo70zMxM/zczMPXE9CkAzMxM/zczMvQrXo73hejRAzczMvexRKEDhejRAzczMPexRKEDhejRAzczMvQrXo73hejRAzczMPexRKEDhejRAzczMPQrXo73hejRAzczMvexRKEDhejTAzczMvQrXo73hejTAzczMPQrXo73hejTAzczMvexRKEDhejTAzczMPQrXo73hejTAzczMPexRKEDhejTA////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_aeh4s"]
+size = Vector3(0.2, 2.55, 2.245)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xfgg8"]
+size = Vector3(0.2, 2.55, 2.245)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7m40s"]
+size = Vector3(0.2, 0.39, 1.15)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hijvk"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 508903.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_j8gde"]
+_surfaces = [{
+"aabb": AABB(-2.82, -0.08, -0.1, 5.64, 2.71, 0.2),
+"attribute_data": PackedByteArray("16Pwvo2AAL1ERMS9BASEP9ej8L4EBIQ/RETEPZqcHD7Xo/A+BASEP0RExD0EBIQ/16Pwvo2AAL1ERMS9mpwcPkRExL0EBIQ/RETEPZqcHD7Xo/A+jYAAvdej8D4EBIQ/16PwPo2AAL1ERMS9mpwcPtej8L6NgAC9RETEvZqcHD7Xo/A+jYAAvURExD2anBw+16PwPo2AAL3Xo/A+BASEP0RExD0EBIQ/RETEvZqcHD5ERMS9BASEP9ej8L4EBIQ/16PwPo2AAL1ERMQ9BASEP0RExD2anBw+RETEvZqcHD7Xo/C+BASEP9ej8L6NgAC916Pwvo2AAL3Xo/A+jYAAvURExD2anBw+RETEPZqcHD5ERMS9mpwcPtej8L6NgAC9iYiIPAQEhD+JiIi8mpwcPomIiDyanBw+iYiIPAQEhD+JiIi8BASEP4mIiLyanBw+RETEvYmIiLxERMQ9iYiIPERExD2JiIi8RETEvYmIiLxERMS9iYiIPERExD2JiIg8iYiIvJqcHD6JiIg8BASEP4mIiLwEBIQ/iYiIvJqcHD6JiIg8mpwcPomIiDwEBIQ/iYiIPAQEhD+JiIi8jYAAvYmIiDyNgAC9iYiIPAQEhD+JiIi8BASEP4mIiLyNgAC9iYiIvI2AAL2JiIg8BASEP4mIiLwEBIQ/iYiIvI2AAL2JiIg8jYAAvYmIiDwEBIQ/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_hijvk"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 66,
+"vertex_data": PackedByteArray("4Xo0wOxRKEDNzMw9MzMTvwrXo73NzMw94Xo0wArXo73NzMw9MzMTP3E9CkDNzMw94Xo0QArXo73NzMw9MzMTPwrXo73NzMw94Xo0wOxRKEDNzMw9MzMTv3E9CkDNzMw9MzMTvwrXo73NzMw9MzMTP3E9CkDNzMw94Xo0QOxRKEDNzMw94Xo0QArXo73NzMw94Xo0QOxRKEDNzMw9MzMTv3E9CkDNzMw94Xo0wOxRKEDNzMw9MzMTv3E9CkDNzMw94Xo0QOxRKEDNzMw9MzMTP3E9CkDNzMw94Xo0wOxRKEDNzMy94Xo0wArXo73NzMy9MzMTvwrXo73NzMy9MzMTP3E9CkDNzMy9MzMTPwrXo73NzMy94Xo0QArXo73NzMy94Xo0wOxRKEDNzMy9MzMTvwrXo73NzMy9MzMTv3E9CkDNzMy9MzMTP3E9CkDNzMy94Xo0QArXo73NzMy94Xo0QOxRKEDNzMy94Xo0QOxRKEDNzMy94Xo0wOxRKEDNzMy9MzMTv3E9CkDNzMy9MzMTv3E9CkDNzMy9MzMTP3E9CkDNzMy94Xo0QOxRKEDNzMy9MzMTvwrXo73NzMy9MzMTv3E9CkDNzMw9MzMTv3E9CkDNzMy9MzMTvwrXo73NzMy9MzMTvwrXo73NzMw9MzMTv3E9CkDNzMw9MzMTv3E9CkDNzMy9MzMTP3E9CkDNzMw9MzMTP3E9CkDNzMy9MzMTv3E9CkDNzMy9MzMTv3E9CkDNzMw9MzMTP3E9CkDNzMw9MzMTP3E9CkDNzMy9MzMTPwrXo73NzMw9MzMTPwrXo73NzMy9MzMTP3E9CkDNzMy9MzMTP3E9CkDNzMw9MzMTPwrXo73NzMw94Xo0QArXo73NzMy94Xo0QOxRKEDNzMw94Xo0QOxRKEDNzMy94Xo0QArXo73NzMy94Xo0QArXo73NzMw94Xo0QOxRKEDNzMw94Xo0wOxRKEDNzMy94Xo0wArXo73NzMw94Xo0wArXo73NzMy94Xo0wOxRKEDNzMy94Xo0wOxRKEDNzMw94Xo0wArXo73NzMw9/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3///////38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_s2hqq"]
+size = Vector3(2.245, 2.55, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gljf8"]
+size = Vector3(2.245, 2.55, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ni51m"]
+size = Vector3(1.15, 0.39, 0.2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bj3f6"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 748700.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_q13l6"]
+_surfaces = [{
+"aabb": AABB(-0.1, -0.08, -2.82, 0.2, 2.71, 5.64),
+"attribute_data": PackedByteArray("16PwPo2AAL3Xo/A+BASEP0RExD0EBIQ/RETEvZqcHD5ERMS9BASEP9ej8L4EBIQ/16PwPo2AAL1ERMQ9BASEP0RExD2anBw+RETEvZqcHD7Xo/C+BASEP9ej8L6NgAC916Pwvo2AAL3Xo/A+jYAAvURExD2anBw+RETEPZqcHD5ERMS9mpwcPtej8L6NgAC916Pwvo2AAL1ERMS9BASEP9ej8L4EBIQ/RETEPZqcHD7Xo/A+BASEP0RExD0EBIQ/16Pwvo2AAL1ERMS9mpwcPkRExL0EBIQ/RETEPZqcHD7Xo/A+jYAAvdej8D4EBIQ/16PwPo2AAL1ERMS9mpwcPtej8L6NgAC9RETEvZqcHD7Xo/A+jYAAvURExD2anBw+iYiIvAQEhD+JiIi8mpwcPomIiDyanBw+iYiIvAQEhD+JiIg8mpwcPomIiDwEBIQ/iYiIvERExL2JiIi8RETEPYmIiDxERMQ9iYiIvERExL2JiIg8RETEPYmIiDxERMS9iYiIPJqcHD6JiIg8BASEP4mIiLwEBIQ/iYiIPJqcHD6JiIi8BASEP4mIiLyanBw+iYiIvAQEhD+JiIi8jYAAvYmIiDyNgAC9iYiIvAQEhD+JiIg8jYAAvYmIiDwEBIQ/iYiIPI2AAL2JiIg8BASEP4mIiLwEBIQ/iYiIPI2AAL2JiIi8BASEP4mIiLyNgAC9"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_bj3f6"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 66,
+"vertex_data": PackedByteArray("zczMPexRKEDhejTAzczMPQrXo73hejTAzczMPQrXo70zMxO/zczMPXE9CkAzMxM/zczMPQrXo70zMxM/zczMPQrXo73hejRAzczMPexRKEDhejTAzczMPQrXo70zMxO/zczMPXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPQrXo73hejRAzczMPexRKEDhejRAzczMPexRKEDhejRAzczMPexRKEDhejTAzczMPXE9CkAzMxO/zczMPXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPexRKEDhejRAzczMvexRKEDhejTAzczMvQrXo70zMxO/zczMvQrXo73hejTAzczMvXE9CkAzMxM/zczMvQrXo73hejRAzczMvQrXo70zMxM/zczMvexRKEDhejTAzczMvXE9CkAzMxO/zczMvQrXo70zMxO/zczMvXE9CkAzMxM/zczMvexRKEDhejRAzczMvQrXo73hejRAzczMvexRKEDhejRAzczMvXE9CkAzMxO/zczMvexRKEDhejTAzczMvXE9CkAzMxO/zczMvexRKEDhejRAzczMvXE9CkAzMxM/zczMvQrXo70zMxO/zczMvXE9CkAzMxO/zczMPXE9CkAzMxO/zczMvQrXo70zMxO/zczMPXE9CkAzMxO/zczMPQrXo70zMxO/zczMvXE9CkAzMxO/zczMvXE9CkAzMxM/zczMPXE9CkAzMxM/zczMvXE9CkAzMxO/zczMPXE9CkAzMxM/zczMPXE9CkAzMxO/zczMvXE9CkAzMxM/zczMvQrXo70zMxM/zczMPQrXo70zMxM/zczMvXE9CkAzMxM/zczMPQrXo70zMxM/zczMPXE9CkAzMxM/zczMvQrXo73hejRAzczMvexRKEDhejRAzczMPexRKEDhejRAzczMvQrXo73hejRAzczMPexRKEDhejRAzczMPQrXo73hejRAzczMvexRKEDhejTAzczMvQrXo73hejTAzczMPQrXo73hejTAzczMvexRKEDhejTAzczMPQrXo73hejTAzczMPexRKEDhejTA////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ypew7"]
+size = Vector3(0.2, 2.55, 2.245)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oeewv"]
+size = Vector3(0.2, 2.55, 2.245)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_d7rpt"]
+size = Vector3(0.2, 0.39, 1.15)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4mql0"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("31_f4fyx")
+shader_parameter/normal_texture = ExtResource("32_kvrxb")
+shader_parameter/random_grime_texture = ExtResource("33_mt16e")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = true
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.88
+shader_parameter/normal_depth = 0.22
+shader_parameter/surface_mode = 0
+shader_parameter/random_grime_atlas_grid = Vector2(4, 4)
+shader_parameter/random_grime_seed = 388545.0
+shader_parameter/random_grime_strength = 0.5
+shader_parameter/random_grime_density = 0.58
+shader_parameter/random_grime_top_weight = 0.0
+shader_parameter/random_grime_bottom_weight = 2.0
+shader_parameter/random_grime_top_band = 0.28
+shader_parameter/random_grime_bottom_band = 0.28
+shader_parameter/random_grime_rotation_enabled = false
+shader_parameter/random_grime_rotation_degrees = 0.0
+shader_parameter/random_grime_size_x_scale = 0.7
+shader_parameter/random_grime_size_y_scale = 0.7
+shader_parameter/random_grime_top_offset = 0.0
+shader_parameter/random_grime_bottom_offset = 0.0
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.13
+shader_parameter/ceiling_contact_strength = 0.08
+shader_parameter/corner_contact_strength = 0.1
+shader_parameter/door_edge_strength = 0.0
+shader_parameter/max_shadow = 0.24
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.13
+metadata/base_ceiling_contact_strength = 0.08
+metadata/base_corner_contact_strength = 0.1
+metadata/base_door_edge_strength = 0.0
+metadata/base_max_shadow = 0.24
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_ik6wv"]
+_surfaces = [{
+"aabb": AABB(-2.82, -0.08, -0.1, 5.64, 2.71, 0.2),
+"attribute_data": PackedByteArray("16Pwvo2AAL1ERMS9BASEP9ej8L4EBIQ/RETEPZqcHD7Xo/A+BASEP0RExD0EBIQ/16Pwvo2AAL1ERMS9mpwcPkRExL0EBIQ/RETEPZqcHD7Xo/A+jYAAvdej8D4EBIQ/16PwPo2AAL1ERMS9mpwcPtej8L6NgAC9RETEvZqcHD7Xo/A+jYAAvURExD2anBw+16PwPo2AAL3Xo/A+BASEP0RExD0EBIQ/RETEvZqcHD5ERMS9BASEP9ej8L4EBIQ/16PwPo2AAL1ERMQ9BASEP0RExD2anBw+RETEvZqcHD7Xo/C+BASEP9ej8L6NgAC916Pwvo2AAL3Xo/A+jYAAvURExD2anBw+RETEPZqcHD5ERMS9mpwcPtej8L6NgAC9iYiIPAQEhD+JiIi8mpwcPomIiDyanBw+iYiIPAQEhD+JiIi8BASEP4mIiLyanBw+RETEvYmIiLxERMQ9iYiIPERExD2JiIi8RETEvYmIiLxERMS9iYiIPERExD2JiIg8iYiIvJqcHD6JiIg8BASEP4mIiLwEBIQ/iYiIvJqcHD6JiIg8mpwcPomIiDwEBIQ/iYiIPAQEhD+JiIi8jYAAvYmIiDyNgAC9iYiIPAQEhD+JiIi8BASEP4mIiLyNgAC9iYiIvI2AAL2JiIg8BASEP4mIiLwEBIQ/iYiIvI2AAL2JiIg8jYAAvYmIiDwEBIQ/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_4mql0"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 66,
+"vertex_data": PackedByteArray("4Xo0wOxRKEDNzMw9MzMTvwrXo73NzMw94Xo0wArXo73NzMw9MzMTP3E9CkDNzMw94Xo0QArXo73NzMw9MzMTPwrXo73NzMw94Xo0wOxRKEDNzMw9MzMTv3E9CkDNzMw9MzMTvwrXo73NzMw9MzMTP3E9CkDNzMw94Xo0QOxRKEDNzMw94Xo0QArXo73NzMw94Xo0QOxRKEDNzMw9MzMTv3E9CkDNzMw94Xo0wOxRKEDNzMw9MzMTv3E9CkDNzMw94Xo0QOxRKEDNzMw9MzMTP3E9CkDNzMw94Xo0wOxRKEDNzMy94Xo0wArXo73NzMy9MzMTvwrXo73NzMy9MzMTP3E9CkDNzMy9MzMTPwrXo73NzMy94Xo0QArXo73NzMy94Xo0wOxRKEDNzMy9MzMTvwrXo73NzMy9MzMTv3E9CkDNzMy9MzMTP3E9CkDNzMy94Xo0QArXo73NzMy94Xo0QOxRKEDNzMy94Xo0QOxRKEDNzMy94Xo0wOxRKEDNzMy9MzMTv3E9CkDNzMy9MzMTv3E9CkDNzMy9MzMTP3E9CkDNzMy94Xo0QOxRKEDNzMy9MzMTvwrXo73NzMy9MzMTv3E9CkDNzMw9MzMTv3E9CkDNzMy9MzMTvwrXo73NzMy9MzMTvwrXo73NzMw9MzMTv3E9CkDNzMw9MzMTv3E9CkDNzMy9MzMTP3E9CkDNzMw9MzMTP3E9CkDNzMy9MzMTv3E9CkDNzMy9MzMTv3E9CkDNzMw9MzMTP3E9CkDNzMw9MzMTP3E9CkDNzMy9MzMTPwrXo73NzMw9MzMTPwrXo73NzMy9MzMTP3E9CkDNzMy9MzMTP3E9CkDNzMw9MzMTPwrXo73NzMw94Xo0QArXo73NzMy94Xo0QOxRKEDNzMw94Xo0QOxRKEDNzMy94Xo0QArXo73NzMy94Xo0QArXo73NzMw94Xo0QOxRKEDNzMw94Xo0wOxRKEDNzMy94Xo0wArXo73NzMw94Xo0wArXo73NzMy94Xo0wOxRKEDNzMy94Xo0wOxRKEDNzMw94Xo0wArXo73NzMw9/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3///////38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8x2ts"]
+size = Vector3(2.245, 2.55, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_klmhr"]
+size = Vector3(2.245, 2.55, 0.2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ylmld"]
+size = Vector3(1.15, 0.39, 0.2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0ylsu"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("26_1lc8q")
+shader_parameter/albedo_texture = ExtResource("35_oo7rf")
+shader_parameter/normal_texture = ExtResource("36_1p8yu")
+shader_parameter/use_texture = true
+shader_parameter/use_normal = true
+shader_parameter/use_random_grime = null
+shader_parameter/uv_scale = Vector2(0.24, 2)
+shader_parameter/uv_offset = Vector2(0.81, 0.41)
+shader_parameter/albedo_tint = Color(1, 1, 1, 1)
+shader_parameter/contact_color = null
+shader_parameter/roughness_value = 0.78
+shader_parameter/normal_depth = 0.24
+shader_parameter/surface_mode = 3
+shader_parameter/random_grime_atlas_grid = null
+shader_parameter/random_grime_seed = null
+shader_parameter/random_grime_strength = null
+shader_parameter/random_grime_density = null
+shader_parameter/random_grime_top_weight = null
+shader_parameter/random_grime_bottom_weight = null
+shader_parameter/random_grime_top_band = null
+shader_parameter/random_grime_bottom_band = null
+shader_parameter/random_grime_rotation_enabled = null
+shader_parameter/random_grime_rotation_degrees = null
+shader_parameter/random_grime_size_x_scale = null
+shader_parameter/random_grime_size_y_scale = null
+shader_parameter/random_grime_top_offset = null
+shader_parameter/random_grime_bottom_offset = null
+shader_parameter/floor_y = null
+shader_parameter/ceiling_y = null
+shader_parameter/base_height = null
+shader_parameter/ceiling_height = null
+shader_parameter/grid_band = null
+shader_parameter/door_edge_width = null
+shader_parameter/floor_contact_strength = 0.08
+shader_parameter/ceiling_contact_strength = 0.06
+shader_parameter/corner_contact_strength = 0.0
+shader_parameter/door_edge_strength = 0.09
+shader_parameter/max_shadow = 0.19
+metadata/contact_shadow_material = true
+metadata/base_floor_contact_strength = 0.08
+metadata/base_ceiling_contact_strength = 0.06
+metadata/base_corner_contact_strength = 0.0
+metadata/base_door_edge_strength = 0.09
+metadata/base_max_shadow = 0.19
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_l4x15"]
+_surfaces = [{
+"aabb": AABB(-0.08, -0.02, -0.575, 0.16, 2.2, 1.15),
+"attribute_data": PackedByteArray("AACAPwAAgD8AAIA/2k8WvDi9aT/aTxa8QxayPcJBdD9DFrI92k8WvEMWMjLaTxa8AACAPwAAgD84vWk/2k8WvDi9aT/CQXQ/QxayPcJBdD9DFjIy2k8WvEMWMjIAAIA/QxYyMgAAgD8AAIA/AACAPzi9aT/CQXQ/OL1pP8JBdD9DFrI9wkF0P0MWMjIAAIA/QxYyMgAAgD9DFrI92k8WvEMWMjLaTxa8OL1pP8JBdD8AAIA/2k8WvDi9aT/aTxa8QxYyMgAAgD9DFrI9wkF0P0MWsj3aTxa8OL1pP8JBdD8AAIA/AACAPwAAgD/aTxa8AACAPwAAgD9DFrI9wkF0P0MWMjIAAIA/QxayPcJBdD8AAIA/AACAPzi9aT/CQXQ/82HcPtpPFrzzYdw+wkF0PwfPET/CQXQ/82HcPtpPFrwHzxE/wkF0PwfPET/aTxa882HcPgAAHsDzYdw+AABeQAfPET8AAF5A82HcPgAAHsAHzxE/AABeQAfPET8AAB7AB88RP8JBdD8HzxE/2k8WvPNh3D7aTxa8B88RP8JBdD/zYdw+2k8WvPNh3D7CQXQ/82HcPtpPFrzzYdw+AACAPwfPET8AAIA/82HcPtpPFrwHzxE/AACAPwfPET/aTxa882HcPgAAg0DzYdw+AABGwAfPET8AAEbA82HcPgAAg0AHzxE/AABGwAfPET8AAINAB88RPwAAgD8HzxE/2k8WvPNh3D7aTxa8B88RPwAAgD/zYdw+2k8WvPNh3D4AAIA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_0ylsu"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 72,
+"vertex_data": PackedByteArray("CtejPR+FC0AzMxO/CtejPQrXo7wzMxO/CtejPQrXo7wzM/O+CtejPbgeBUAzM/M+CtejPQrXo7wzM/M+CtejPQrXo7wzMxM/CtejPR+FC0AzMxO/CtejPQrXo7wzM/O+CtejPbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPQrXo7wzMxM/CtejPR+FC0AzMxM/CtejPR+FC0AzMxM/CtejPR+FC0AzMxO/CtejPbgeBUAzM/O+CtejPbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPR+FC0AzMxM/CtejvR+FC0AzMxO/CtejvQrXo7wzM/O+CtejvQrXo7wzMxO/CtejvbgeBUAzM/M+CtejvQrXo7wzMxM/CtejvQrXo7wzM/M+CtejvR+FC0AzMxO/CtejvbgeBUAzM/O+CtejvQrXo7wzM/O+CtejvbgeBUAzM/M+CtejvR+FC0AzMxM/CtejvQrXo7wzMxM/CtejvR+FC0AzMxM/CtejvbgeBUAzM/O+CtejvR+FC0AzMxO/CtejvbgeBUAzM/O+CtejvR+FC0AzMxM/CtejvbgeBUAzM/M+CtejvQrXo7wzM/O+CtejvbgeBUAzM/O+CtejPbgeBUAzM/O+CtejvQrXo7wzM/O+CtejPbgeBUAzM/O+CtejPQrXo7wzM/O+CtejvbgeBUAzM/O+CtejvbgeBUAzM/M+CtejPbgeBUAzM/M+CtejvbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPbgeBUAzM/O+CtejvbgeBUAzM/M+CtejvQrXo7wzM/M+CtejPQrXo7wzM/M+CtejvbgeBUAzM/M+CtejPQrXo7wzM/M+CtejPbgeBUAzM/M+CtejvQrXo7wzMxM/CtejvR+FC0AzMxM/CtejPR+FC0AzMxM/CtejvQrXo7wzMxM/CtejPR+FC0AzMxM/CtejPQrXo7wzMxM/CtejvR+FC0AzMxM/CtejvR+FC0AzMxO/CtejPR+FC0AzMxO/CtejvR+FC0AzMxM/CtejPR+FC0AzMxO/CtejPR+FC0AzMxM/CtejvR+FC0AzMxO/CtejvQrXo7wzMxO/CtejPQrXo7wzMxO/CtejvR+FC0AzMxO/CtejPQrXo7wzMxO/CtejPR+FC0AzMxO/////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3///////z//f///////P/9///////8//3///////z//f///////P/9///////8//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_g4cgp"]
+_surfaces = [{
+"aabb": AABB(-0.575, -0.02, -0.08, 1.15, 2.2, 0.16),
+"attribute_data": PackedByteArray("QxYyMgAAgD9DFrI92k8WvEMWMjLaTxa8OL1pP8JBdD8AAIA/2k8WvDi9aT/aTxa8QxYyMgAAgD9DFrI9wkF0P0MWsj3aTxa8OL1pP8JBdD8AAIA/AACAPwAAgD/aTxa8AACAPwAAgD9DFrI9wkF0P0MWMjIAAIA/QxayPcJBdD8AAIA/AACAPzi9aT/CQXQ/AACAPwAAgD8AAIA/2k8WvDi9aT/aTxa8QxayPcJBdD9DFrI92k8WvEMWMjLaTxa8AACAPwAAgD84vWk/2k8WvDi9aT/CQXQ/QxayPcJBdD9DFjIy2k8WvEMWMjIAAIA/QxYyMgAAgD8AAIA/AACAPzi9aT/CQXQ/OL1pP8JBdD9DFrI9wkF0P0MWMjIAAIA/B88RP9pPFrzzYdw+wkF0PwfPET/CQXQ/B88RP9pPFrzzYdw+2k8WvPNh3D7CQXQ/QxayPQAAQDI4vWk/AACAPzi9aT8AAEAyQxayPQAAQDJDFrI9AACAPzi9aT8AAIA/82HcPsJBdD8HzxE/2k8WvPNh3D7aTxa882HcPsJBdD8HzxE/wkF0PwfPET/aTxa8B88RP9pPFrzzYdw+AACAPwfPET8AAIA/B88RP9pPFrzzYdw+2k8WvPNh3D4AAIA/AACAPwAAQDJDFjIyAACAP0MWMjIAAEAyAACAPwAAQDIAAIA/AACAP0MWMjIAAIA/82HcPgAAgD8HzxE/2k8WvPNh3D7aTxa882HcPgAAgD8HzxE/AACAPwfPET/aTxa8"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_0ylsu"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 72,
+"vertex_data": PackedByteArray("MzMTvx+FC0AK16M9MzPzvgrXo7wK16M9MzMTvwrXo7wK16M9MzPzPrgeBUAK16M9MzMTPwrXo7wK16M9MzPzPgrXo7wK16M9MzMTvx+FC0AK16M9MzPzvrgeBUAK16M9MzPzvgrXo7wK16M9MzPzPrgeBUAK16M9MzMTPx+FC0AK16M9MzMTPwrXo7wK16M9MzMTPx+FC0AK16M9MzPzvrgeBUAK16M9MzMTvx+FC0AK16M9MzPzvrgeBUAK16M9MzMTPx+FC0AK16M9MzPzPrgeBUAK16M9MzMTvx+FC0AK16O9MzMTvwrXo7wK16O9MzPzvgrXo7wK16O9MzPzPrgeBUAK16O9MzPzPgrXo7wK16O9MzMTPwrXo7wK16O9MzMTvx+FC0AK16O9MzPzvgrXo7wK16O9MzPzvrgeBUAK16O9MzPzPrgeBUAK16O9MzMTPwrXo7wK16O9MzMTPx+FC0AK16O9MzMTPx+FC0AK16O9MzMTvx+FC0AK16O9MzPzvrgeBUAK16O9MzPzvrgeBUAK16O9MzPzPrgeBUAK16O9MzMTPx+FC0AK16O9MzPzvgrXo7wK16O9MzPzvrgeBUAK16M9MzPzvrgeBUAK16O9MzPzvgrXo7wK16O9MzPzvgrXo7wK16M9MzPzvrgeBUAK16M9MzPzvrgeBUAK16O9MzPzPrgeBUAK16M9MzPzPrgeBUAK16O9MzPzvrgeBUAK16O9MzPzvrgeBUAK16M9MzPzPrgeBUAK16M9MzPzPrgeBUAK16O9MzPzPgrXo7wK16M9MzPzPgrXo7wK16O9MzPzPrgeBUAK16O9MzPzPrgeBUAK16M9MzPzPgrXo7wK16M9MzMTPwrXo7wK16O9MzMTPx+FC0AK16M9MzMTPx+FC0AK16O9MzMTPwrXo7wK16O9MzMTPwrXo7wK16M9MzMTPx+FC0AK16M9MzMTPx+FC0AK16O9MzMTvx+FC0AK16M9MzMTvx+FC0AK16O9MzMTPx+FC0AK16O9MzMTPx+FC0AK16M9MzMTvx+FC0AK16M9MzMTvx+FC0AK16O9MzMTvwrXo7wK16M9MzMTvwrXo7wK16O9MzMTvx+FC0AK16O9MzMTvx+FC0AK16M9MzMTvwrXo7wK16M9/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3///////38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/////f/////////9//////////3//////////f/////////9//////////3///////3///////z//f///////P/9///////8//3///////z//f///////P/9///////8/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_md6ol"]
+_surfaces = [{
+"aabb": AABB(-0.08, -0.02, -0.575, 0.16, 2.2, 1.15),
+"attribute_data": PackedByteArray("AACAPwAAgD8AAIA/2k8WvDi9aT/aTxa8QxayPcJBdD9DFrI92k8WvEMWMjLaTxa8AACAPwAAgD84vWk/2k8WvDi9aT/CQXQ/QxayPcJBdD9DFjIy2k8WvEMWMjIAAIA/QxYyMgAAgD8AAIA/AACAPzi9aT/CQXQ/OL1pP8JBdD9DFrI9wkF0P0MWMjIAAIA/QxYyMgAAgD9DFrI92k8WvEMWMjLaTxa8OL1pP8JBdD8AAIA/2k8WvDi9aT/aTxa8QxYyMgAAgD9DFrI9wkF0P0MWsj3aTxa8OL1pP8JBdD8AAIA/AACAPwAAgD/aTxa8AACAPwAAgD9DFrI9wkF0P0MWMjIAAIA/QxayPcJBdD8AAIA/AACAPzi9aT/CQXQ/82HcPtpPFrzzYdw+wkF0PwfPET/CQXQ/82HcPtpPFrwHzxE/wkF0PwfPET/aTxa882HcPgAAHsDzYdw+AABeQAfPET8AAF5A82HcPgAAHsAHzxE/AABeQAfPET8AAB7AB88RP8JBdD8HzxE/2k8WvPNh3D7aTxa8B88RP8JBdD/zYdw+2k8WvPNh3D7CQXQ/82HcPtpPFrzzYdw+AACAPwfPET8AAIA/82HcPtpPFrwHzxE/AACAPwfPET/aTxa882HcPgAAg0DzYdw+AABGwAfPET8AAEbA82HcPgAAg0AHzxE/AABGwAfPET8AAINAB88RPwAAgD8HzxE/2k8WvPNh3D7aTxa8B88RPwAAgD/zYdw+2k8WvPNh3D4AAIA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_0ylsu"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 72,
+"vertex_data": PackedByteArray("CtejPR+FC0AzMxO/CtejPQrXo7wzMxO/CtejPQrXo7wzM/O+CtejPbgeBUAzM/M+CtejPQrXo7wzM/M+CtejPQrXo7wzMxM/CtejPR+FC0AzMxO/CtejPQrXo7wzM/O+CtejPbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPQrXo7wzMxM/CtejPR+FC0AzMxM/CtejPR+FC0AzMxM/CtejPR+FC0AzMxO/CtejPbgeBUAzM/O+CtejPbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPR+FC0AzMxM/CtejvR+FC0AzMxO/CtejvQrXo7wzM/O+CtejvQrXo7wzMxO/CtejvbgeBUAzM/M+CtejvQrXo7wzMxM/CtejvQrXo7wzM/M+CtejvR+FC0AzMxO/CtejvbgeBUAzM/O+CtejvQrXo7wzM/O+CtejvbgeBUAzM/M+CtejvR+FC0AzMxM/CtejvQrXo7wzMxM/CtejvR+FC0AzMxM/CtejvbgeBUAzM/O+CtejvR+FC0AzMxO/CtejvbgeBUAzM/O+CtejvR+FC0AzMxM/CtejvbgeBUAzM/M+CtejvQrXo7wzM/O+CtejvbgeBUAzM/O+CtejPbgeBUAzM/O+CtejvQrXo7wzM/O+CtejPbgeBUAzM/O+CtejPQrXo7wzM/O+CtejvbgeBUAzM/O+CtejvbgeBUAzM/M+CtejPbgeBUAzM/M+CtejvbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPbgeBUAzM/O+CtejvbgeBUAzM/M+CtejvQrXo7wzM/M+CtejPQrXo7wzM/M+CtejvbgeBUAzM/M+CtejPQrXo7wzM/M+CtejPbgeBUAzM/M+CtejvQrXo7wzMxM/CtejvR+FC0AzMxM/CtejPR+FC0AzMxM/CtejvQrXo7wzMxM/CtejPR+FC0AzMxM/CtejPQrXo7wzMxM/CtejvR+FC0AzMxM/CtejvR+FC0AzMxO/CtejPR+FC0AzMxO/CtejvR+FC0AzMxM/CtejPR+FC0AzMxO/CtejPR+FC0AzMxM/CtejvR+FC0AzMxO/CtejvQrXo7wzMxO/CtejPQrXo7wzMxO/CtejvR+FC0AzMxO/CtejPQrXo7wzMxO/CtejPR+FC0AzMxO/////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3///////z//f///////P/9///////8//3///////z//f///////P/9///////8//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_n337n"]
+_surfaces = [{
+"aabb": AABB(-0.575, -0.02, -0.08, 1.15, 2.2, 0.16),
+"attribute_data": PackedByteArray("QxYyMgAAgD9DFrI92k8WvEMWMjLaTxa8OL1pP8JBdD8AAIA/2k8WvDi9aT/aTxa8QxYyMgAAgD9DFrI9wkF0P0MWsj3aTxa8OL1pP8JBdD8AAIA/AACAPwAAgD/aTxa8AACAPwAAgD9DFrI9wkF0P0MWMjIAAIA/QxayPcJBdD8AAIA/AACAPzi9aT/CQXQ/AACAPwAAgD8AAIA/2k8WvDi9aT/aTxa8QxayPcJBdD9DFrI92k8WvEMWMjLaTxa8AACAPwAAgD84vWk/2k8WvDi9aT/CQXQ/QxayPcJBdD9DFjIy2k8WvEMWMjIAAIA/QxYyMgAAgD8AAIA/AACAPzi9aT/CQXQ/OL1pP8JBdD9DFrI9wkF0P0MWMjIAAIA/B88RP9pPFrzzYdw+wkF0PwfPET/CQXQ/B88RP9pPFrzzYdw+2k8WvPNh3D7CQXQ/QxayPQAAQDI4vWk/AACAPzi9aT8AAEAyQxayPQAAQDJDFrI9AACAPzi9aT8AAIA/82HcPsJBdD8HzxE/2k8WvPNh3D7aTxa882HcPsJBdD8HzxE/wkF0PwfPET/aTxa8B88RP9pPFrzzYdw+AACAPwfPET8AAIA/B88RP9pPFrzzYdw+2k8WvPNh3D4AAIA/AACAPwAAQDJDFjIyAACAP0MWMjIAAEAyAACAPwAAQDIAAIA/AACAP0MWMjIAAIA/82HcPgAAgD8HzxE/2k8WvPNh3D7aTxa882HcPgAAgD8HzxE/AACAPwfPET/aTxa8"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_0ylsu"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 72,
+"vertex_data": PackedByteArray("MzMTvx+FC0AK16M9MzPzvgrXo7wK16M9MzMTvwrXo7wK16M9MzPzPrgeBUAK16M9MzMTPwrXo7wK16M9MzPzPgrXo7wK16M9MzMTvx+FC0AK16M9MzPzvrgeBUAK16M9MzPzvgrXo7wK16M9MzPzPrgeBUAK16M9MzMTPx+FC0AK16M9MzMTPwrXo7wK16M9MzMTPx+FC0AK16M9MzPzvrgeBUAK16M9MzMTvx+FC0AK16M9MzPzvrgeBUAK16M9MzMTPx+FC0AK16M9MzPzPrgeBUAK16M9MzMTvx+FC0AK16O9MzMTvwrXo7wK16O9MzPzvgrXo7wK16O9MzPzPrgeBUAK16O9MzPzPgrXo7wK16O9MzMTPwrXo7wK16O9MzMTvx+FC0AK16O9MzPzvgrXo7wK16O9MzPzvrgeBUAK16O9MzPzPrgeBUAK16O9MzMTPwrXo7wK16O9MzMTPx+FC0AK16O9MzMTPx+FC0AK16O9MzMTvx+FC0AK16O9MzPzvrgeBUAK16O9MzPzvrgeBUAK16O9MzPzPrgeBUAK16O9MzMTPx+FC0AK16O9MzPzvgrXo7wK16O9MzPzvrgeBUAK16M9MzPzvrgeBUAK16O9MzPzvgrXo7wK16O9MzPzvgrXo7wK16M9MzPzvrgeBUAK16M9MzPzvrgeBUAK16O9MzPzPrgeBUAK16M9MzPzPrgeBUAK16O9MzPzvrgeBUAK16O9MzPzvrgeBUAK16M9MzPzPrgeBUAK16M9MzPzPrgeBUAK16O9MzPzPgrXo7wK16M9MzPzPgrXo7wK16O9MzPzPrgeBUAK16O9MzPzPrgeBUAK16M9MzPzPgrXo7wK16M9MzMTPwrXo7wK16O9MzMTPx+FC0AK16M9MzMTPx+FC0AK16O9MzMTPwrXo7wK16O9MzMTPwrXo7wK16M9MzMTPx+FC0AK16M9MzMTPx+FC0AK16O9MzMTvx+FC0AK16M9MzMTvx+FC0AK16O9MzMTPx+FC0AK16O9MzMTPx+FC0AK16M9MzMTvx+FC0AK16M9MzMTvx+FC0AK16O9MzMTvwrXo7wK16M9MzMTvwrXo7wK16O9MzMTvx+FC0AK16O9MzMTvx+FC0AK16M9MzMTvwrXo7wK16M9/3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/////f/////////9//////////3//////////f/////////9//////////3///////38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/////f/////////9//////////3//////////f/////////9//////////3///////3///////z//f///////P/9///////8//3///////z//f///////P/9///////8/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/")
+}]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_ace5s"]
+_surfaces = [{
+"aabb": AABB(-0.08, -0.02, -0.575, 0.16, 2.2, 1.15),
+"attribute_data": PackedByteArray("AACAPwAAgD8AAIA/2k8WvDi9aT/aTxa8QxayPcJBdD9DFrI92k8WvEMWMjLaTxa8AACAPwAAgD84vWk/2k8WvDi9aT/CQXQ/QxayPcJBdD9DFjIy2k8WvEMWMjIAAIA/QxYyMgAAgD8AAIA/AACAPzi9aT/CQXQ/OL1pP8JBdD9DFrI9wkF0P0MWMjIAAIA/QxYyMgAAgD9DFrI92k8WvEMWMjLaTxa8OL1pP8JBdD8AAIA/2k8WvDi9aT/aTxa8QxYyMgAAgD9DFrI9wkF0P0MWsj3aTxa8OL1pP8JBdD8AAIA/AACAPwAAgD/aTxa8AACAPwAAgD9DFrI9wkF0P0MWMjIAAIA/QxayPcJBdD8AAIA/AACAPzi9aT/CQXQ/82HcPtpPFrzzYdw+wkF0PwfPET/CQXQ/82HcPtpPFrwHzxE/wkF0PwfPET/aTxa882HcPgAAHsDzYdw+AABeQAfPET8AAF5A82HcPgAAHsAHzxE/AABeQAfPET8AAB7AB88RP8JBdD8HzxE/2k8WvPNh3D7aTxa8B88RP8JBdD/zYdw+2k8WvPNh3D7CQXQ/82HcPtpPFrzzYdw+AACAPwfPET8AAIA/82HcPtpPFrwHzxE/AACAPwfPET/aTxa882HcPgAAg0DzYdw+AABGwAfPET8AAEbA82HcPgAAg0AHzxE/AABGwAfPET8AAINAB88RPwAAgD8HzxE/2k8WvPNh3D7aTxa8B88RPwAAgD/zYdw+2k8WvPNh3D4AAIA/"),
+"format": 34359738391,
+"material": SubResource("ShaderMaterial_0ylsu"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 72,
+"vertex_data": PackedByteArray("CtejPR+FC0AzMxO/CtejPQrXo7wzMxO/CtejPQrXo7wzM/O+CtejPbgeBUAzM/M+CtejPQrXo7wzM/M+CtejPQrXo7wzMxM/CtejPR+FC0AzMxO/CtejPQrXo7wzM/O+CtejPbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPQrXo7wzMxM/CtejPR+FC0AzMxM/CtejPR+FC0AzMxM/CtejPR+FC0AzMxO/CtejPbgeBUAzM/O+CtejPbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPR+FC0AzMxM/CtejvR+FC0AzMxO/CtejvQrXo7wzM/O+CtejvQrXo7wzMxO/CtejvbgeBUAzM/M+CtejvQrXo7wzMxM/CtejvQrXo7wzM/M+CtejvR+FC0AzMxO/CtejvbgeBUAzM/O+CtejvQrXo7wzM/O+CtejvbgeBUAzM/M+CtejvR+FC0AzMxM/CtejvQrXo7wzMxM/CtejvR+FC0AzMxM/CtejvbgeBUAzM/O+CtejvR+FC0AzMxO/CtejvbgeBUAzM/O+CtejvR+FC0AzMxM/CtejvbgeBUAzM/M+CtejvQrXo7wzM/O+CtejvbgeBUAzM/O+CtejPbgeBUAzM/O+CtejvQrXo7wzM/O+CtejPbgeBUAzM/O+CtejPQrXo7wzM/O+CtejvbgeBUAzM/O+CtejvbgeBUAzM/M+CtejPbgeBUAzM/M+CtejvbgeBUAzM/O+CtejPbgeBUAzM/M+CtejPbgeBUAzM/O+CtejvbgeBUAzM/M+CtejvQrXo7wzM/M+CtejPQrXo7wzM/M+CtejvbgeBUAzM/M+CtejPQrXo7wzM/M+CtejPbgeBUAzM/M+CtejvQrXo7wzMxM/CtejvR+FC0AzMxM/CtejPR+FC0AzMxM/CtejvQrXo7wzMxM/CtejPR+FC0AzMxM/CtejPQrXo7wzMxM/CtejvR+FC0AzMxM/CtejvR+FC0AzMxO/CtejPR+FC0AzMxO/CtejvR+FC0AzMxM/CtejPR+FC0AzMxO/CtejPR+FC0AzMxM/CtejvR+FC0AzMxO/CtejvQrXo7wzMxO/CtejPQrXo7wzMxO/CtejvR+FC0AzMxO/CtejPQrXo7wzMxO/CtejPR+FC0AzMxO/////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////////f/////////9//////////3//////AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//38AAP///7//fwAA////v/9/AAD///+//38AAP///7//fwAA////v/9/AAD///+//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+//3//f////7//f/9/////v/9//3////+//3//f////7//f/9/////v/9//3////+//3///////z//f///////P/9///////8//3///////z//f///////P/9///////8//////wAA/7//////AAD/v/////8AAP+//////wAA/7//////AAD/v/////8AAP+/")
+}]
+
+[sub_resource type="BoxMesh" id="BoxMesh_qlnxr"]
+size = Vector3(1.2, 0.08, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1c6jk"]
+size = Vector3(1.2, 0.08, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_wnyx4"]
+size = Vector3(1.2, 0.08, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_pyl23"]
+size = Vector3(1.2, 0.08, 0.7)
+
+[node name="FourRoomMVP" type="Node3D" unique_id=300782345]
+script = ExtResource("1_bootstrap")
+build_on_ready = true
+metadata/mvp_player_immortal = true
+metadata/mvp_monster_test_set = "two_normal_one_red_two_nightmare_cabinet_key_exit"
+
+[node name="Systems" type="Node" parent="." unique_id=1179644131]
+
+[node name="SceneBuilder" type="Node" parent="Systems" unique_id=1545532186]
+script = ExtResource("2_builder")
+
+[node name="SceneRegistry" type="Node" parent="Systems" unique_id=961461913]
+script = ExtResource("3_registry")
+
+[node name="VisibilitySolver" type="Node" parent="Systems" unique_id=1370457726]
+script = ExtResource("4_solver")
+
+[node name="VisibilityMemory" type="Node" parent="Systems" unique_id=646273322]
+script = ExtResource("5_memory")
+
+[node name="VisibilityRenderer" type="Node" parent="Systems" unique_id=1862306752]
+script = ExtResource("6_renderer")
+
+[node name="LightingController" type="Node" parent="Systems" unique_id=1839029001]
+script = ExtResource("7_lighting")
+
+[node name="ForegroundOcclusion" type="Node" parent="Systems" unique_id=1909761982]
+process_priority = 100
+script = ExtResource("8_occlusion")
+camera_path = NodePath("../../CameraRig/Camera3D")
+target_path = NodePath("../../PlayerRoot/Player")
+
+[node name="DebugOverlay" type="Node" parent="Systems" unique_id=1872972407]
+script = ExtResource("9_debug")
+
+[node name="LevelRoot" type="Node3D" parent="." unique_id=93381334]
+
+[node name="Portals" type="Node3D" parent="LevelRoot" unique_id=608942509]
+
+[node name="P_AB" type="Node3D" parent="LevelRoot/Portals" unique_id=546890580]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+script = ExtResource("10_3htuw")
+portal_id = "P_AB"
+area_a = "area_start"
+area_b = "area_light"
+opening_width = 1.15
+opening_height = 2.15
+
+[node name="LeftEdge" type="Marker3D" parent="LevelRoot/Portals/P_AB" unique_id=525236293]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.575)
+
+[node name="RightEdge" type="Marker3D" parent="LevelRoot/Portals/P_AB" unique_id=37381520]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.575)
+
+[node name="P_BC" type="Node3D" parent="LevelRoot/Portals" unique_id=810002759]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 3)
+script = ExtResource("10_3htuw")
+portal_id = "P_BC"
+area_a = "area_light"
+area_b = "area_objective"
+opening_width = 1.15
+opening_height = 2.15
+initial_state = "closed"
+door_node_path = NodePath("../../Doors/Door_P_BC_OldOffice_A")
+
+[node name="LeftEdge" type="Marker3D" parent="LevelRoot/Portals/P_BC" unique_id=1562359397]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.575, 0, 0)
+
+[node name="RightEdge" type="Marker3D" parent="LevelRoot/Portals/P_BC" unique_id=1654480732]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.575, 0, 0)
+
+[node name="P_CD" type="Node3D" parent="LevelRoot/Portals" unique_id=596134839]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 6)
+script = ExtResource("10_3htuw")
+portal_id = "P_CD"
+area_a = "area_objective"
+area_b = "area_narrow"
+opening_width = 1.15
+opening_height = 2.15
+
+[node name="LeftEdge" type="Marker3D" parent="LevelRoot/Portals/P_CD" unique_id=1512312399]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.575)
+
+[node name="RightEdge" type="Marker3D" parent="LevelRoot/Portals/P_CD" unique_id=516000008]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.575)
+
+[node name="P_DA" type="Node3D" parent="LevelRoot/Portals" unique_id=599030512]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+script = ExtResource("10_3htuw")
+portal_id = "P_DA"
+area_a = "area_narrow"
+area_b = "area_start"
+opening_width = 1.15
+opening_height = 2.15
+initial_state = "closed"
+
+[node name="LeftEdge" type="Marker3D" parent="LevelRoot/Portals/P_DA" unique_id=1871713196]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.575, 0, 0)
+
+[node name="RightEdge" type="Marker3D" parent="LevelRoot/Portals/P_DA" unique_id=842948054]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.575, 0, 0)
+
+[node name="Lights" type="Node3D" parent="LevelRoot" unique_id=1875789884]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="LevelRoot/Lights" unique_id=760620601]
+environment = SubResource("Environment_1p8yu")
+
+[node name="CeilingLight_Room_A" type="OmniLight3D" parent="LevelRoot/Lights" unique_id=2092364797 groups=["ceiling_light"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.29, 0)
+light_color = Color(1, 0.86, 0.58, 1)
+light_energy = 1.12
+light_cull_mask = 257
+shadow_enabled = true
+shadow_bias = 0.02
+shadow_normal_bias = 0.35
+shadow_caster_mask = 257
+omni_range = 6.0
+omni_attenuation = 0.92
+
+[node name="CeilingLight_Room_B" type="OmniLight3D" parent="LevelRoot/Lights" unique_id=1371064421 groups=["ceiling_light"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.29, 0)
+light_color = Color(1, 0.86, 0.58, 1)
+light_energy = 1.12
+light_cull_mask = 257
+shadow_enabled = true
+shadow_bias = 0.02
+shadow_normal_bias = 0.35
+shadow_caster_mask = 257
+omni_range = 6.0
+omni_attenuation = 0.92
+
+[node name="CeilingLight_Room_C" type="OmniLight3D" parent="LevelRoot/Lights" unique_id=1280773037 groups=["ceiling_light"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.29, 6)
+light_color = Color(1, 0.86, 0.58, 1)
+light_energy = 1.12
+light_cull_mask = 257
+shadow_enabled = true
+shadow_bias = 0.02
+shadow_normal_bias = 0.35
+shadow_caster_mask = 257
+omni_range = 6.0
+omni_attenuation = 0.92
+
+[node name="CeilingLight_Room_D" type="OmniLight3D" parent="LevelRoot/Lights" unique_id=1618631086 groups=["ceiling_light"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.29, 6)
+light_color = Color(1, 0.86, 0.58, 1)
+light_energy = 1.12
+light_cull_mask = 257
+shadow_enabled = true
+shadow_bias = 0.02
+shadow_normal_bias = 0.35
+shadow_caster_mask = 257
+omni_range = 6.0
+omni_attenuation = 0.92
+
+[node name="Props" type="Node3D" parent="LevelRoot" unique_id=1052259132]
+
+[node name="RoomA_Corner_BoxStack" type="Node3D" parent="LevelRoot/Props" unique_id=340444407 instance=ExtResource("10_6efvc")]
+transform = Transform3D(0.971338, 0, 0.23770262, 0, 1, 0, -0.23770262, 0, 0.971338, -2.28, 0, -2.18)
+metadata/natural_prop_id = "Box_Stack_2_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+metadata/room_id = "Room_A"
+metadata/placement_group = "boxes_corner"
+
+[node name="RoomA_Low_Box" type="Node3D" parent="LevelRoot/Props" unique_id=885301855 instance=ExtResource("11_6weao")]
+transform = Transform3D(0.9838437, 0, -0.17902958, 0, 1, 0, 0.17902958, 0, 0.9838437, -1.72, 0, -2.3)
+metadata/natural_prop_id = "Box_Medium_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+metadata/room_id = "Room_A"
+metadata/placement_group = "boxes_corner"
+
+[node name="RoomB_Maintenance_Cabinet" type="Node3D" parent="LevelRoot/Props" unique_id=1606532881 instance=ExtResource("12_ka3di")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 8.47, 0, -1.55)
+metadata/natural_prop_id = "SmallCabinet_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+metadata/room_id = "Room_B"
+metadata/placement_group = "maintenance_wall"
+
+[node name="CabinetTop_EscapeKey" type="Node3D" parent="LevelRoot/Props" unique_id=534913248 groups=["escape_key_pickup"] instance=ExtResource("63_escape_key")]
+transform = Transform3D(1.32, 0, 0, 0, -5.76939e-08, -1.32, 0, 1.32, -5.76939e-08, 8.47, 0.92, -1.55)
+metadata/resource_model_id = "EscapeKeyPickup"
+metadata/escape_key_owner = "room_b_cabinet_top"
+metadata/collected = false
+metadata/room_id = "Room_B"
+metadata/placement_group = "cabinet_top_key"
+
+[node name="RoomB_Bucket" type="Node3D" parent="LevelRoot/Props" unique_id=1187642472 instance=ExtResource("13_lnsop")]
+transform = Transform3D(0.8525245, 0, -0.52268726, 0, 1, 0, 0.52268726, 0, 0.8525245, 8.24, 0, -2.35)
+metadata/natural_prop_id = "Bucket_A"
+metadata/natural_prop_category = "cleaning"
+metadata/blocks_path = true
+metadata/room_id = "Room_B"
+metadata/placement_group = "cleaning_corner"
+
+[node name="RoomB_Mop_Leaning" type="Node3D" parent="LevelRoot/Props" unique_id=1068747821 instance=ExtResource("14_tnx8n")]
+transform = Transform3D(-0.119712256, 0, -0.99280864, 0, 1, 0, 0.99280864, 0, -0.119712256, 8.5, 0, -2.16)
+metadata/natural_prop_id = "Mop_A"
+metadata/natural_prop_category = "cleaning"
+metadata/blocks_path = true
+metadata/room_id = "Room_B"
+metadata/placement_group = "cleaning_corner"
+
+[node name="RoomB_ElectricBox" type="Node3D" parent="LevelRoot/Props" unique_id=735870484 instance=ExtResource("15_saxg4")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 8.89, 1.18, 1.35)
+metadata/natural_prop_id = "ElectricBox_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+metadata/room_id = "Room_B"
+metadata/placement_group = "wall_maintenance"
+
+[node name="RoomB_Pipe_Straight" type="Node3D" parent="LevelRoot/Props" unique_id=293662621 instance=ExtResource("16_xtbpi")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 8.87, 1.76, 1.35)
+metadata/natural_prop_id = "Pipe_Straight_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+metadata/room_id = "Room_B"
+metadata/placement_group = "wall_maintenance"
+
+[node name="RoomC_MetalShelf" type="Node3D" parent="LevelRoot/Props" unique_id=275992851 instance=ExtResource("17_jd13u")]
+transform = Transform3D(0.059964024, 0, -0.99820054, 0, 1, 0, 0.99820054, 0, 0.059964024, 8.35, 0, 5.42)
+metadata/natural_prop_id = "MetalShelf_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+metadata/room_id = "Room_C"
+metadata/placement_group = "storage_side"
+
+[node name="RoomC_BoxStack_3" type="Node3D" parent="LevelRoot/Props" unique_id=654327051 instance=ExtResource("18_02e50")]
+transform = Transform3D(0.9286646, 0, 0.37092048, 0, 1, 0, -0.37092048, 0, 0.9286646, 7.33, 0, 4.6)
+metadata/natural_prop_id = "Box_Stack_3_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+metadata/room_id = "Room_C"
+metadata/placement_group = "storage_side"
+
+[node name="RoomC_Small_Box" type="Node3D" parent="LevelRoot/Props" unique_id=270667851 instance=ExtResource("19_fbdpf")]
+transform = Transform3D(0.9427547, 0, -0.3334871, 0, 1, 0, 0.3334871, 0, 0.9427547, 7.92, 0, 4.35)
+metadata/natural_prop_id = "Box_Small_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = false
+metadata/room_id = "Room_C"
+metadata/placement_group = "storage_side"
+
+[node name="RoomC_OldChair" type="Node3D" parent="LevelRoot/Props" unique_id=18534822 instance=ExtResource("20_3cmuo")]
+transform = Transform3D(-0.95533645, 0, 0.2955203, 0, 1, 0, -0.2955203, 0, -0.95533645, 5, 0, 7.88)
+metadata/natural_prop_id = "Chair_Old_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+metadata/room_id = "Room_C"
+metadata/placement_group = "old_office_edge"
+
+[node name="RoomC_WallVent" type="Node3D" parent="LevelRoot/Props" unique_id=405254760 instance=ExtResource("21_h62jl")]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 6.82, 2.05, 8.89)
+metadata/natural_prop_id = "Vent_Wall_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+metadata/room_id = "Room_C"
+metadata/placement_group = "upper_wall_detail"
+
+[node name="RoomD_WallVent" type="Node3D" parent="LevelRoot/Props" unique_id=945450060 instance=ExtResource("21_h62jl")]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -2.89, 2.02, 7.35)
+metadata/natural_prop_id = "Vent_Wall_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+metadata/room_id = "Room_D"
+metadata/placement_group = "upper_wall_detail"
+
+[node name="RoomD_NorthPipe" type="Node3D" parent="LevelRoot/Props" unique_id=576713225 instance=ExtResource("16_xtbpi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 2.12, 8.88)
+metadata/natural_prop_id = "Pipe_Straight_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+metadata/room_id = "Room_D"
+metadata/placement_group = "pipe_edge"
+
+[node name="RoomD_PipeCorner" type="Node3D" parent="LevelRoot/Props" unique_id=1608210608 instance=ExtResource("22_lrym3")]
+transform = Transform3D(0.8910065, 0, 0.45399052, 0, 1, 0, -0.45399052, 0, 0.8910065, -2.6, 2.03, 8.68)
+metadata/natural_prop_id = "Pipe_Corner_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+metadata/room_id = "Room_D"
+metadata/placement_group = "pipe_edge"
+
+[node name="RoomD_ClothPile" type="Node3D" parent="LevelRoot/Props" unique_id=1496907917 instance=ExtResource("23_yoas6")]
+transform = Transform3D(0.921061, 0, 0.38941833, 0, 1, 0, -0.38941833, 0, 0.921061, -2.23, 0, 7.85)
+metadata/natural_prop_id = "CleaningClothPile_A"
+metadata/natural_prop_category = "cleaning"
+metadata/blocks_path = false
+metadata/room_id = "Room_D"
+metadata/placement_group = "low_cleaning_detail"
+
+[node name="RoomC_HideLocker_A" type="Node3D" parent="LevelRoot/Props" unique_id=639152927 groups=["interactive_hideable"] instance=ExtResource("25_d8kyk")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 8.58, 0, 7.32)
+script = ExtResource("27_kvrxb")
+metadata/natural_prop_id = "HideLocker_A"
+metadata/natural_prop_category = "furniture"
+metadata/hideable_prop_id = "HideLocker_A"
+metadata/blocks_path = true
+metadata/room_id = "Room_C"
+metadata/placement_group = "hideable_wall"
+metadata/mvp_placement = true
+
+[node name="Markers" type="Node3D" parent="LevelRoot" unique_id=1002408311]
+
+[node name="Spawn_Player_A" type="Marker3D" parent="LevelRoot/Markers" unique_id=1702612484]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+script = ExtResource("25_2w7vi")
+marker_id = "Spawn_Player_A"
+marker_type = "PlayerSpawn"
+room_id = "Room_A"
+area_id = "area_start"
+
+[node name="Spawn_Monster_D" type="Marker3D" parent="LevelRoot/Markers" unique_id=1570837675]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1, 0.05, 7)
+script = ExtResource("25_2w7vi")
+marker_id = "Spawn_Monster_D"
+marker_type = "MonsterSpawn"
+room_id = "Room_D"
+area_id = "area_narrow"
+
+[node name="Spawn_Item_B" type="Marker3D" parent="LevelRoot/Markers" unique_id=1914236923]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.05, 0.5)
+script = ExtResource("25_2w7vi")
+marker_id = "Spawn_Item_B"
+marker_type = "ItemSpawn"
+room_id = "Room_B"
+area_id = "area_light"
+
+[node name="Trigger_Event_C" type="Marker3D" parent="LevelRoot/Markers" unique_id=784127420]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.05, 5)
+script = ExtResource("25_2w7vi")
+marker_id = "Trigger_Event_C"
+marker_type = "EventTrigger"
+room_id = "Room_C"
+area_id = "area_objective"
+
+[node name="Exit_C_01" type="Marker3D" parent="LevelRoot/Markers" unique_id=1038496244]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.05, 8.45)
+script = ExtResource("25_2w7vi")
+marker_id = "Exit_C_01"
+marker_type = "ExitPoint"
+room_id = "Room_C"
+area_id = "area_objective"
+
+[node name="ExitDoor_C_North" type="Marker3D" parent="LevelRoot/Markers" unique_id=1300285929]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.05, 8.72)
+script = ExtResource("25_2w7vi")
+marker_id = "ExitDoor_C_North"
+marker_type = "ExitDoor"
+room_id = "Room_C"
+area_id = "area_objective"
+
+[node name="Geometry" type="Node3D" parent="LevelRoot" unique_id=1241051772]
+
+[node name="Floor_WalkableCollision" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=439858401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -0.06, 3)
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Floor_WalkableCollision" unique_id=1117076218]
+shape = SubResource("BoxShape3D_adqaa")
+
+[node name="Floor_Room_A" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=2076287673 groups=["floor_visual"]]
+material_override = SubResource("ShaderMaterial_gueuw")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_fcalh")
+
+[node name="Floor_Room_B" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1656533947 groups=["floor_visual"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+material_override = SubResource("ShaderMaterial_gueuw")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_lrbua")
+
+[node name="Floor_Room_C" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=964135130 groups=["floor_visual"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 6)
+material_override = SubResource("ShaderMaterial_gueuw")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_y124a")
+
+[node name="Floor_Room_D" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1755051447 groups=["floor_visual"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
+material_override = SubResource("ShaderMaterial_gueuw")
+cast_shadow = 0
+mesh = SubResource("ArrayMesh_0ecp0")
+
+[node name="Ceiling_Room_A" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1637511362 groups=["ceiling", "foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0)
+script = ExtResource("29_8dwpl")
+wall_id = "Ceiling_Room_A"
+area_id = "area_start"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Ceiling_Room_A" unique_id=499991698]
+material_override = SubResource("ShaderMaterial_apiec")
+mesh = SubResource("ArrayMesh_lyjan")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Ceiling_Room_A" unique_id=1123530485]
+shape = SubResource("BoxShape3D_t432n")
+
+[node name="Ceiling_Room_B" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=601816866 groups=["ceiling", "foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.6, 0)
+script = ExtResource("29_8dwpl")
+wall_id = "Ceiling_Room_B"
+area_id = "area_light"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Ceiling_Room_B" unique_id=828820978]
+material_override = SubResource("ShaderMaterial_apiec")
+mesh = SubResource("ArrayMesh_k7ewx")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Ceiling_Room_B" unique_id=618197008]
+shape = SubResource("BoxShape3D_pcioe")
+
+[node name="Ceiling_Room_C" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=2119587145 groups=["ceiling", "foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.6, 6)
+script = ExtResource("29_8dwpl")
+wall_id = "Ceiling_Room_C"
+area_id = "area_objective"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Ceiling_Room_C" unique_id=66945204]
+material_override = SubResource("ShaderMaterial_apiec")
+mesh = SubResource("ArrayMesh_06ki0")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Ceiling_Room_C" unique_id=722928317]
+shape = SubResource("BoxShape3D_5kb2k")
+
+[node name="Ceiling_Room_D" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=86717256 groups=["ceiling", "foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 6)
+script = ExtResource("29_8dwpl")
+wall_id = "Ceiling_Room_D"
+area_id = "area_narrow"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Ceiling_Room_D" unique_id=1043766567]
+material_override = SubResource("ShaderMaterial_apiec")
+mesh = SubResource("ArrayMesh_tn25d")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Ceiling_Room_D" unique_id=553524872]
+shape = SubResource("BoxShape3D_d3hbf")
+
+[node name="Wall_South_A" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=181733307 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, -3)
+script = ExtResource("29_8dwpl")
+wall_id = "Wall_South_A"
+area_id = "area_start"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Wall_South_A" unique_id=1127809826]
+material_override = SubResource("ShaderMaterial_3ijtm")
+mesh = SubResource("ArrayMesh_34oc6")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Wall_South_A" unique_id=1546193330]
+shape = SubResource("BoxShape3D_xmel3")
+
+[node name="Wall_West_A" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1625195209 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.275, 0)
+script = ExtResource("29_8dwpl")
+wall_id = "Wall_West_A"
+area_id = "area_start"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Wall_West_A" unique_id=1465981842]
+material_override = SubResource("ShaderMaterial_pk2qv")
+mesh = SubResource("ArrayMesh_bwll6")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Wall_West_A" unique_id=1248432551]
+shape = SubResource("BoxShape3D_iukbt")
+
+[node name="Wall_South_B" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1672204687 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.275, -3)
+script = ExtResource("29_8dwpl")
+wall_id = "Wall_South_B"
+area_id = "area_light"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Wall_South_B" unique_id=1148339779]
+material_override = SubResource("ShaderMaterial_7p2j4")
+mesh = SubResource("ArrayMesh_r24j1")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Wall_South_B" unique_id=469882257]
+shape = SubResource("BoxShape3D_d07l0")
+
+[node name="Wall_East_B" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1406330032 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.275, 0)
+script = ExtResource("29_8dwpl")
+wall_id = "Wall_East_B"
+area_id = "area_light"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Wall_East_B" unique_id=814289208]
+material_override = SubResource("ShaderMaterial_3yn6u")
+mesh = SubResource("ArrayMesh_kr3g2")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Wall_East_B" unique_id=613388713]
+shape = SubResource("BoxShape3D_iwebk")
+
+[node name="Wall_East_C" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1161308671 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.275, 6)
+script = ExtResource("29_8dwpl")
+wall_id = "Wall_East_C"
+area_id = "area_objective"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Wall_East_C" unique_id=1336485681]
+material_override = SubResource("ShaderMaterial_pmg2r")
+mesh = SubResource("ArrayMesh_tta0t")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Wall_East_C" unique_id=1674178450]
+shape = SubResource("BoxShape3D_m1rf6")
+
+[node name="WallOpening_Exit_C_North" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1866680105 groups=["foreground_occluder", "wall_opening"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 9)
+script = ExtResource("34_p18wh")
+opening_id = "WallOpening_Exit_C_North"
+opening_width = 1.15
+visual_material = SubResource("ShaderMaterial_f2won")
+wall_id = "WallOpening_Exit_C_North"
+area_id = "area_objective"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallOpening_Exit_C_North" unique_id=270861775]
+material_override = SubResource("ShaderMaterial_f2won")
+mesh = SubResource("ArrayMesh_o1to8")
+
+[node name="Collision_Left" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_Exit_C_North" unique_id=869888045]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, -1.6975)
+shape = SubResource("BoxShape3D_6frpu")
+
+[node name="Collision_Right" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_Exit_C_North" unique_id=2062585836]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, 1.6975)
+shape = SubResource("BoxShape3D_4fyms")
+
+[node name="Collision_Top" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_Exit_C_North" unique_id=1037790249]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.355, 0)
+shape = SubResource("BoxShape3D_kdktk")
+
+[node name="Wall_North_D" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=121986556 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, 9)
+script = ExtResource("29_8dwpl")
+wall_id = "Wall_North_D"
+area_id = "area_narrow"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Wall_North_D" unique_id=1027049889]
+material_override = SubResource("ShaderMaterial_455g4")
+mesh = SubResource("ArrayMesh_b4bl0")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Wall_North_D" unique_id=1375133852]
+shape = SubResource("BoxShape3D_aj6v4")
+
+[node name="Wall_West_D" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1032398167 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.275, 6)
+script = ExtResource("29_8dwpl")
+wall_id = "Wall_West_D"
+area_id = "area_narrow"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/Wall_West_D" unique_id=1401477788]
+material_override = SubResource("ShaderMaterial_iomea")
+mesh = SubResource("ArrayMesh_4q2uq")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/Wall_West_D" unique_id=1472514465]
+shape = SubResource("BoxShape3D_ika03")
+
+[node name="WallJoint_A_SouthWest" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=267708000 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.275, -3)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_A_SouthWest"
+area_id = "area_start"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_A_SouthWest" unique_id=464408233]
+material_override = SubResource("ShaderMaterial_bof3n")
+mesh = SubResource("ArrayMesh_x560w")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_A_SouthWest" unique_id=357235930]
+shape = SubResource("BoxShape3D_a2oic")
+
+[node name="WallJoint_AB_SouthOuter" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=898163655 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.275, -3)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_AB_SouthOuter"
+area_id = "area_start"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_AB_SouthOuter" unique_id=190782052]
+material_override = SubResource("ShaderMaterial_cjnyb")
+mesh = SubResource("ArrayMesh_jb403")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_AB_SouthOuter" unique_id=1272550105]
+shape = SubResource("BoxShape3D_45isc")
+
+[node name="WallJoint_B_SouthEast" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1152136997 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.275, -3)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_B_SouthEast"
+area_id = "area_light"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_B_SouthEast" unique_id=2060063319]
+material_override = SubResource("ShaderMaterial_l76vl")
+mesh = SubResource("ArrayMesh_v24ar")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_B_SouthEast" unique_id=1667619288]
+shape = SubResource("BoxShape3D_sl0ii")
+
+[node name="WallJoint_BC_EastOuter" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1269093162 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.275, 3)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_BC_EastOuter"
+area_id = "area_light"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_BC_EastOuter" unique_id=232635715]
+material_override = SubResource("ShaderMaterial_llloy")
+mesh = SubResource("ArrayMesh_we5xs")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_BC_EastOuter" unique_id=919038572]
+shape = SubResource("BoxShape3D_oqyyu")
+
+[node name="WallJoint_C_NorthEast" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1807765672 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.275, 9)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_C_NorthEast"
+area_id = "area_objective"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_C_NorthEast" unique_id=212513048]
+material_override = SubResource("ShaderMaterial_xipxl")
+mesh = SubResource("ArrayMesh_ytcrt")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_C_NorthEast" unique_id=939821388]
+shape = SubResource("BoxShape3D_tit1u")
+
+[node name="WallJoint_CD_NorthOuter" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=2094367244 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.275, 9)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_CD_NorthOuter"
+area_id = "area_objective"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_CD_NorthOuter" unique_id=971238510]
+material_override = SubResource("ShaderMaterial_qepvg")
+mesh = SubResource("ArrayMesh_7o7t5")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_CD_NorthOuter" unique_id=527475288]
+shape = SubResource("BoxShape3D_84g15")
+
+[node name="WallJoint_D_NorthWest" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=523964744 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.275, 9)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_D_NorthWest"
+area_id = "area_narrow"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_D_NorthWest" unique_id=540540688]
+material_override = SubResource("ShaderMaterial_0xix3")
+mesh = SubResource("ArrayMesh_887hi")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_D_NorthWest" unique_id=1349553209]
+shape = SubResource("BoxShape3D_jd8cl")
+
+[node name="WallJoint_DA_WestOuter" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=146665468 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.275, 3)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_DA_WestOuter"
+area_id = "area_narrow"
+has_void_outer_side = true
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_DA_WestOuter" unique_id=1593858545]
+material_override = SubResource("ShaderMaterial_3f1wu")
+mesh = SubResource("ArrayMesh_jnjgq")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_DA_WestOuter" unique_id=702302315]
+shape = SubResource("BoxShape3D_2k1r4")
+
+[node name="WallJoint_Center" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1641447831 groups=["foreground_occluder"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.275, 3)
+script = ExtResource("29_8dwpl")
+wall_id = "WallJoint_Center"
+area_id = "area_start"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallJoint_Center" unique_id=1671412558]
+material_override = SubResource("ShaderMaterial_p42sr")
+mesh = SubResource("ArrayMesh_4bk6c")
+
+[node name="Collision" type="CollisionShape3D" parent="LevelRoot/Geometry/WallJoint_Center" unique_id=1105761559]
+shape = SubResource("BoxShape3D_w6jkp")
+
+[node name="WallOpening_P_AB" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=2095338842 groups=["foreground_occluder", "wall_opening"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+script = ExtResource("34_p18wh")
+opening_id = "WallOpening_P_AB"
+opening_width = 1.15
+visual_material = SubResource("ShaderMaterial_x4t6f")
+wall_id = "WallOpening_P_AB"
+area_id = "area_start"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallOpening_P_AB" unique_id=798220414]
+material_override = SubResource("ShaderMaterial_x4t6f")
+mesh = SubResource("ArrayMesh_pqwop")
+
+[node name="Collision_Left" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_AB" unique_id=1140847583]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, -1.6975)
+shape = SubResource("BoxShape3D_aeh4s")
+
+[node name="Collision_Right" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_AB" unique_id=467974212]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, 1.6975)
+shape = SubResource("BoxShape3D_xfgg8")
+
+[node name="Collision_Top" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_AB" unique_id=1455280710]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.355, 0)
+shape = SubResource("BoxShape3D_7m40s")
+
+[node name="WallOpening_P_BC" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=938571902 groups=["foreground_occluder", "wall_opening"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 3)
+script = ExtResource("34_p18wh")
+opening_id = "WallOpening_P_BC"
+span_axis = "x"
+opening_width = 1.15
+visual_material = SubResource("ShaderMaterial_hijvk")
+wall_id = "WallOpening_P_BC"
+area_id = "area_light"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallOpening_P_BC" unique_id=1957129109]
+material_override = SubResource("ShaderMaterial_hijvk")
+mesh = SubResource("ArrayMesh_j8gde")
+
+[node name="Collision_Left" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_BC" unique_id=838077060]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6975, 1.275, 0)
+shape = SubResource("BoxShape3D_s2hqq")
+
+[node name="Collision_Right" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_BC" unique_id=1258668940]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6975, 1.275, 0)
+shape = SubResource("BoxShape3D_gljf8")
+
+[node name="Collision_Top" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_BC" unique_id=481099769]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.355, 0)
+shape = SubResource("BoxShape3D_ni51m")
+
+[node name="WallOpening_P_CD" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=1857088239 groups=["foreground_occluder", "wall_opening"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 6)
+script = ExtResource("34_p18wh")
+opening_id = "WallOpening_P_CD"
+opening_width = 1.15
+visual_material = SubResource("ShaderMaterial_bj3f6")
+wall_id = "WallOpening_P_CD"
+area_id = "area_objective"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallOpening_P_CD" unique_id=1494029894]
+material_override = SubResource("ShaderMaterial_bj3f6")
+mesh = SubResource("ArrayMesh_q13l6")
+
+[node name="Collision_Left" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_CD" unique_id=821224348]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, -1.6975)
+shape = SubResource("BoxShape3D_ypew7")
+
+[node name="Collision_Right" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_CD" unique_id=893021232]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.275, 1.6975)
+shape = SubResource("BoxShape3D_oeewv")
+
+[node name="Collision_Top" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_CD" unique_id=1253296921]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.355, 0)
+shape = SubResource("BoxShape3D_d7rpt")
+
+[node name="WallOpening_P_DA" type="StaticBody3D" parent="LevelRoot/Geometry" unique_id=238819653 groups=["foreground_occluder", "wall_opening"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+script = ExtResource("34_p18wh")
+opening_id = "WallOpening_P_DA"
+span_axis = "x"
+opening_width = 1.15
+visual_material = SubResource("ShaderMaterial_4mql0")
+wall_id = "WallOpening_P_DA"
+area_id = "area_narrow"
+
+[node name="Mesh" type="MeshInstance3D" parent="LevelRoot/Geometry/WallOpening_P_DA" unique_id=362686153]
+material_override = SubResource("ShaderMaterial_4mql0")
+mesh = SubResource("ArrayMesh_ik6wv")
+
+[node name="Collision_Left" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_DA" unique_id=1619348704]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6975, 1.275, 0)
+shape = SubResource("BoxShape3D_8x2ts")
+
+[node name="Collision_Right" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_DA" unique_id=1351497082]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6975, 1.275, 0)
+shape = SubResource("BoxShape3D_klmhr")
+
+[node name="Collision_Top" type="CollisionShape3D" parent="LevelRoot/Geometry/WallOpening_P_DA" unique_id=2059970281]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.355, 0)
+shape = SubResource("BoxShape3D_ylmld")
+
+[node name="DoorFrame_P_AB" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=295063841 groups=["door_frame"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+material_override = SubResource("ShaderMaterial_0ylsu")
+mesh = SubResource("ArrayMesh_l4x15")
+script = ExtResource("37_adqaa")
+frame_id = "DoorFrame_P_AB"
+opening_width = 0.95
+trim_width = 0.1
+frame_depth = 0.16
+visual_material = SubResource("ShaderMaterial_0ylsu")
+
+[node name="DoorFrame_P_BC" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1266415991 groups=["door_frame"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 3)
+material_override = SubResource("ShaderMaterial_0ylsu")
+mesh = SubResource("ArrayMesh_g4cgp")
+script = ExtResource("37_adqaa")
+frame_id = "DoorFrame_P_BC"
+span_axis = "x"
+opening_width = 0.95
+trim_width = 0.1
+frame_depth = 0.16
+visual_material = SubResource("ShaderMaterial_0ylsu")
+
+[node name="DoorFrame_P_CD" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1004320315 groups=["door_frame"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 6)
+material_override = SubResource("ShaderMaterial_0ylsu")
+mesh = SubResource("ArrayMesh_md6ol")
+script = ExtResource("37_adqaa")
+frame_id = "DoorFrame_P_CD"
+opening_width = 0.95
+trim_width = 0.1
+frame_depth = 0.16
+visual_material = SubResource("ShaderMaterial_0ylsu")
+
+[node name="DoorFrame_P_DA" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1274545604 groups=["door_frame"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+material_override = SubResource("ShaderMaterial_0ylsu")
+mesh = SubResource("ArrayMesh_n337n")
+script = ExtResource("37_adqaa")
+frame_id = "DoorFrame_P_DA"
+span_axis = "x"
+opening_width = 0.95
+trim_width = 0.1
+frame_depth = 0.16
+visual_material = SubResource("ShaderMaterial_0ylsu")
+
+[node name="DoorFrame_Exit_C_North" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1658548659 groups=["door_frame"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 9)
+material_override = SubResource("ShaderMaterial_0ylsu")
+mesh = SubResource("ArrayMesh_ace5s")
+script = ExtResource("37_adqaa")
+frame_id = "DoorFrame_Exit_C_North"
+opening_width = 0.95
+trim_width = 0.1
+frame_depth = 0.16
+visual_material = SubResource("ShaderMaterial_0ylsu")
+
+[node name="CeilingLightPanel_Room_A" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=393923691 groups=["ceiling_light_panel"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.52, 0)
+material_override = ExtResource("41_ij6fc")
+cast_shadow = 0
+mesh = SubResource("BoxMesh_qlnxr")
+
+[node name="CeilingLightPanel_Room_B" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=963929117 groups=["ceiling_light_panel"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.52, 0)
+material_override = ExtResource("41_ij6fc")
+cast_shadow = 0
+mesh = SubResource("BoxMesh_1c6jk")
+
+[node name="CeilingLightPanel_Room_C" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1756836860 groups=["ceiling_light_panel"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.52, 6)
+material_override = ExtResource("41_ij6fc")
+cast_shadow = 0
+mesh = SubResource("BoxMesh_wnyx4")
+
+[node name="CeilingLightPanel_Room_D" type="MeshInstance3D" parent="LevelRoot/Geometry" unique_id=1174763876 groups=["ceiling_light_panel"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.52, 6)
+material_override = ExtResource("41_ij6fc")
+cast_shadow = 0
+mesh = SubResource("BoxMesh_pyl23")
+
+[node name="Areas" type="Node3D" parent="LevelRoot" unique_id=685866366]
+
+[node name="Room_A_Start" type="Node3D" parent="LevelRoot/Areas" unique_id=1230489770]
+script = ExtResource("38_gueuw")
+room_id = "Room_A"
+area_id = "area_start"
+room_type = "player_start"
+bounds_size = Vector3(6, 2.55, 6)
+portal_ids = PackedStringArray("P_AB", "P_DA")
+light_ids = PackedStringArray()
+marker_ids = PackedStringArray()
+
+[node name="Room_B_Light" type="Node3D" parent="LevelRoot/Areas" unique_id=265209226]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+script = ExtResource("38_gueuw")
+room_id = "Room_B"
+area_id = "area_light"
+room_type = "lighting_test"
+bounds_size = Vector3(6, 2.55, 6)
+portal_ids = PackedStringArray("P_AB", "P_BC")
+light_ids = PackedStringArray()
+marker_ids = PackedStringArray()
+
+[node name="Room_C_Objective" type="Node3D" parent="LevelRoot/Areas" unique_id=820756615]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 6)
+script = ExtResource("38_gueuw")
+room_id = "Room_C"
+area_id = "area_objective"
+room_type = "objective_test"
+bounds_size = Vector3(6, 2.55, 6)
+portal_ids = PackedStringArray("P_BC", "P_CD")
+light_ids = PackedStringArray()
+marker_ids = PackedStringArray()
+
+[node name="Room_D_Occlusion" type="Node3D" parent="LevelRoot/Areas" unique_id=374556682]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
+script = ExtResource("38_gueuw")
+room_id = "Room_D"
+area_id = "area_narrow"
+room_type = "occlusion_test"
+bounds_size = Vector3(6, 2.55, 6)
+portal_ids = PackedStringArray("P_CD", "P_DA")
+light_ids = PackedStringArray()
+marker_ids = PackedStringArray()
+
+[node name="Doors" type="Node3D" parent="LevelRoot" unique_id=73642281]
+
+[node name="Door_P_BC_OldOffice_A" type="Node3D" parent="LevelRoot/Doors" unique_id=106399235 groups=["interactive_door"] instance=ExtResource("61_kdktk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 3)
+script = ExtResource("44_mt16e")
+door_id = "OldOfficeDoor_A"
+metadata/backrooms_door_id = "OldOfficeDoor_A"
+metadata/backrooms_door_category = "doors"
+metadata/blocks_path = true
+metadata/portal_id = "P_BC"
+metadata/placement_group = "selected_door_frame"
+metadata/requires_escape_key = false
+
+[node name="Door_Exit_C_North_Keyed" type="Node3D" parent="LevelRoot/Doors" unique_id=1700796962 groups=["interactive_door"] instance=ExtResource("61_kdktk")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 6, 0, 9)
+script = ExtResource("44_mt16e")
+door_id = "Exit_C_North_Keyed"
+requires_escape_key = true
+metadata/backrooms_door_id = "OldOfficeDoor_A"
+metadata/backrooms_door_category = "doors"
+metadata/blocks_path = true
+metadata/requires_escape_key = true
+metadata/placement_group = "keyed_exit_outer_wall"
+metadata/exit_marker_id = "Exit_C_01"
+
+[node name="PlayerRoot" type="Node3D" parent="." unique_id=1714485781]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.034079358, 0)
+
+[node name="Player" type="CharacterBody3D" parent="PlayerRoot" unique_id=543630478 instance=ExtResource("11_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.034183513, 0)
+floor_snap_length = 0.28
+script = ExtResource("46_p18wh")
+metadata/mvp_player_immortal = true
+metadata/debug_immortal = true
+
+[node name="MonsterRoot" type="Node3D" parent="." unique_id=961686257]
+script = ExtResource("48_f4fyx")
+metadata/mvp_editable_monster_root = true
+metadata/monster_size_source = true
+metadata/editing_note = "Adjust one direct child per monster type in this FourRoomMVP scene. Other scenes read these saved transforms as the global size source. Runtime removes EditorSelectHandles only."
+
+[node name="Monster" type="CharacterBody3D" parent="MonsterRoot" unique_id=1755806070 instance=ExtResource("64_monster")]
+transform = Transform3D(-0.7789398, 0, 0.39762264, 0, 0.3871994, 0, -0.55077016, 0, -0.5623473, -1.1166995, 0.061522707, 7.074905)
+velocity = Vector3(0.17210148, 0, 0.6785138)
+floor_snap_length = 0.28
+safe_margin = 0.07
+script = ExtResource("49_oo7rf")
+metadata/default_size_source = "res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot/Monster"
+metadata/mvp_test_monster = true
+metadata/monster_role = "normal"
+metadata/monster_size_source_id = "normal"
+
+[node name="Monster_Red_KeyBearer_MVP" type="CharacterBody3D" parent="MonsterRoot" unique_id=1568239739 groups=["red_monster"] instance=ExtResource("64_monster")]
+transform = Transform3D(-0.17009413, 0, 0.6776865, 0, 0.387199, 0, -0.9387029, 0, -0.122797646, 7.1689515, 0.052998774, 7.2158856)
+velocity = Vector3(-0.24707545, 0, 0.6549456)
+floor_snap_length = 0.28
+safe_margin = 0.07
+script = ExtResource("49_oo7rf")
+monster_role = "red"
+metadata/default_size_source = "res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot/Monster_Red_KeyBearer_MVP"
+metadata/mvp_test_monster = true
+metadata/monster_role = "red"
+metadata/room_id = "Room_C"
+metadata/monster_size_source_id = "red_hunter"
+
+[node name="NightmareCreature_A_MVP" type="CharacterBody3D" parent="MonsterRoot" unique_id=1934769290 groups=["nightmare_monster"] instance=ExtResource("65_nightmare")]
+transform = Transform3D(0.038225245, 0, 0.42075568, 0, 0.5852417, 0, -0.69697946, 0, 0.023075989, 1.1945006, 0.27750033, 7.1850166)
+velocity = Vector3(-0.5059938, -3.2000003, 0.28349644)
+floor_snap_length = 0.28
+safe_margin = 0.07
+script = ExtResource("49_oo7rf")
+monster_role = "nightmare"
+wander_speed = 0.58
+flee_speed = 2.85
+chase_speed = 2.85
+turn_speed = 10.0
+eye_height = 0.72
+attack_range = 0.85
+attack_cooldown = 1.25
+investigate_reach_distance = 0.48
+monster_walk_footstep_interval = 0.74
+monster_run_footstep_interval = 0.46
+idle_animation = "Creature_armature|idle"
+walk_animation = "Creature_armature|walk"
+run_animation = "Creature_armature|Run"
+attack_animation = "Creature_armature|attack_1"
+death_animation = "Creature_armature|death_1"
+metadata/resource_model_id = "NightmareCreature_A"
+metadata/resource_model_category = "monsters"
+metadata/source_license = "CC-BY-4.0"
+metadata/approx_triangles = 6718
+metadata/animation_count = 22
+metadata/display_height_meters = 1.29
+metadata/gameplay_status = "hearing_ai_active"
+metadata/monster_role = "nightmare"
+metadata/mvp_test_monster = true
+metadata/monster_size_source_id = "nightmare"
+metadata/default_size_source = "res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot/NightmareCreature_A_MVP"
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=1880999252]
+transform = Transform3D(-4.371139e-08, 0.037631355, -0.9992685, 0, 0.9992685, 0.037631355, 1, 1.6449186e-09, -4.3679414e-08, -1.7975332, 1.0998074, -1.1006353e-16)
+script = ExtResource("10_camera")
+target_path = NodePath("../PlayerRoot/Player")
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig" unique_id=487380886]
+current = true
+fov = 62.0

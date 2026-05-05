@@ -1,0 +1,48 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/monster/MonsterController.gd" id="1_controller"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/monsters/NightmareCreature_A.tscn" id="2_visual"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_nightmare"]
+size = Vector3(1.08, 1.82, 1.08)
+
+[node name="NightmareCreature_Monster" type="CharacterBody3D" groups=["nightmare_monster"]]
+safe_margin = 0.07
+floor_snap_length = 0.28
+script = ExtResource("1_controller")
+monster_role = "nightmare"
+wander_speed = 0.58
+flee_speed = 2.85
+chase_speed = 2.85
+turn_speed = 10.0
+flee_turn_speed = 18.0
+eye_height = 0.72
+player_target_height = 0.8
+attack_range = 0.85
+attack_cooldown = 1.25
+investigate_reach_distance = 0.48
+nightmare_hearing_memory_time = 1.65
+monster_walk_footstep_interval = 0.74
+monster_run_footstep_interval = 0.46
+idle_animation = "Creature_armature|idle"
+walk_animation = "Creature_armature|walk"
+run_animation = "Creature_armature|Run"
+attack_animation = "Creature_armature|attack_1"
+death_animation = "Creature_armature|death_1"
+metadata/resource_model_id = "NightmareCreature_A"
+metadata/resource_model_category = "monsters"
+metadata/source_license = "CC-BY-4.0"
+metadata/approx_triangles = 6718
+metadata/animation_count = 22
+metadata/display_height_meters = 1.29
+metadata/gameplay_status = "hearing_ai_active"
+metadata/monster_role = "nightmare"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.91, 0)
+shape = SubResource("BoxShape3D_nightmare")
+
+[node name="ModelRoot" type="Node3D" parent="."]
+position = Vector3(0, -1.71, 0)
+
+[node name="NightmareCreature_A" parent="ModelRoot" instance=ExtResource("2_visual")]

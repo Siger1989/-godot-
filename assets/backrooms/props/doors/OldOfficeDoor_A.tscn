@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/scene/DoorComponent.gd" id="1_fdd8p"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/doors/OldOfficeDoor_A.glb" id="2_qnvwk"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v3f61"]
+size = Vector3(1.02, 2.09, 0.08)
+
+[node name="OldOfficeDoor_A" type="Node3D" unique_id=106399235]
+script = ExtResource("1_fdd8p")
+door_id = "OldOfficeDoor_A"
+metadata/backrooms_door_id = "OldOfficeDoor_A"
+metadata/backrooms_door_category = "doors"
+metadata/blocks_path = true
+
+[node name="HingePivot" type="Node3D" parent="." unique_id=96213547]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.49, 0, 0)
+
+[node name="Model" type="Node3D" parent="HingePivot" unique_id=173111985 instance=ExtResource("2_qnvwk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.49, 0, 0)
+
+[node name="CollisionBody" type="StaticBody3D" parent="HingePivot" unique_id=1588109499]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.49, 0, 0)
+
+[node name="Collision" type="CollisionShape3D" parent="HingePivot/CollisionBody" unique_id=927756167]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.045, 0)
+shape = SubResource("BoxShape3D_v3f61")

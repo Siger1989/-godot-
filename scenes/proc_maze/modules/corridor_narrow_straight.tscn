@@ -1,0 +1,4 @@
+[gd_scene format=4]
+
+[node name="corridor_narrow_straight" type="Node3D"]
+metadata/proc_maze_placeholder = true

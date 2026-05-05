@@ -1,0 +1,128 @@
+[gd_scene format=3 uid="uid://b6pvrr4obbb2x"]
+
+[ext_resource type="PackedScene" path="res://scenes/modules/MonsterModule.tscn" id="1_monster"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/monsters/NightmareCreature_Monster.tscn" id="3_nightmare"]
+[ext_resource type="Script" uid="uid://bus1kplaimyju" path="res://scripts/monster/MonsterSizeSourceRuntime.gd" id="4_runtime"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_select_handle"]
+size = Vector3(0.62, 0.06, 0.62)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_select_normal"]
+albedo_color = Color(0.12, 0.45, 1, 1)
+roughness = 0.82
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_select_imported"]
+albedo_color = Color(1, 0.73, 0.12, 1)
+roughness = 0.82
+
+[node name="MonsterSizeSource" type="Node3D" unique_id=1774853986]
+script = ExtResource("4_runtime")
+metadata/monster_size_source = true
+metadata/editing_note = "Adjust child monster transforms here. MVP and generated monster spawns use this scene as the size source."
+
+[node name="Monster" parent="." unique_id=467187557 instance=ExtResource("1_monster")]
+transform = Transform3D(0.46679673, 0, 0.6006413, 0, 0.3871994, 0, -0.83198303, 0, 0.33699894, -1.1856441, 0.062059455, 6.9860673)
+velocity = Vector3(-0.6910276, 0, 0.11171806)
+floor_snap_length = 0.28
+metadata/default_size_source = "res://scenes/modules/MonsterSizeSource.tscn/Monster"
+metadata/mvp_test_monster = true
+metadata/monster_role = "normal"
+metadata/monster_size_source_id = "normal"
+
+[node name="Monster_Normal_B" parent="." unique_id=741237206 instance=ExtResource("1_monster")]
+transform = Transform3D(-0.953989, 0, 0, 0, 0.387199, 0, 0, 0, -0.688722, 7.15, 0.05, 1.2)
+floor_snap_length = 0.28
+metadata/default_size_source = "res://scenes/modules/MonsterSizeSource.tscn/Monster_Normal_B"
+metadata/mvp_test_monster = true
+metadata/monster_role = "normal"
+metadata/room_id = "Room_B"
+metadata/monster_size_source_id = "normal_b"
+
+[node name="Monster_Red_KeyBearer_MVP" parent="." unique_id=1417055536 groups=["red_monster"] instance=ExtResource("1_monster")]
+transform = Transform3D(0.953989, 0, 0, 0, 0.387199, 0, 0, 0, 0.688722, 7.2, 0.05, 7.15)
+floor_snap_length = 0.28
+monster_role = "red"
+metadata/default_size_source = "res://scenes/modules/MonsterSizeSource.tscn/Monster_Red_KeyBearer_MVP"
+metadata/mvp_test_monster = true
+metadata/monster_role = "red"
+metadata/room_id = "Room_C"
+metadata/monster_size_source_id = "red_hunter"
+
+[node name="NightmareCreature_A_MVP" parent="." unique_id=1413564814 instance=ExtResource("3_nightmare")]
+transform = Transform3D(0.72892165, 0, -0.21179987, 0, 0.7221422, 0, 0.26607716, 0, 0.58022827, 1.25, 0.05, 7.15)
+floor_snap_length = 0.28
+monster_role = "nightmare"
+metadata/mvp_test_monster = true
+metadata/monster_role = "nightmare"
+metadata/monster_size_source_id = "nightmare"
+metadata/default_size_source = "res://scenes/modules/MonsterSizeSource.tscn/NightmareCreature_A_MVP"
+metadata/gameplay_status = "hearing_ai_active"
+
+[node name="NightmareCreature_B_MVP" parent="." instance=ExtResource("3_nightmare")]
+transform = Transform3D(0.7115586, 0, 0.26066616, 0, 0.7221422, 0, -0.32746172, 0, 0.5664113, 4.55, 0.05, 1.25)
+floor_snap_length = 0.28
+monster_role = "nightmare"
+metadata/mvp_test_monster = true
+metadata/monster_role = "nightmare"
+metadata/monster_size_source_id = "nightmare_b"
+metadata/default_size_source = "res://scenes/modules/MonsterSizeSource.tscn/NightmareCreature_B_MVP"
+metadata/gameplay_status = "hearing_ai_active"
+
+[node name="EditorSelectHandles" type="Node3D" parent="." unique_id=2133400134]
+metadata/editor_helper = true
+metadata/help = "Click these small floor markers if the nested GLB mesh is hard to select. Runtime removes this node."
+
+[node name="Label_Monster" type="Label3D" parent="EditorSelectHandles" unique_id=2004440321]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1856441, 1.45, 6.9860673)
+billboard = 1
+text = "Monster"
+
+[node name="Label_Monster_Normal_B" type="Label3D" parent="EditorSelectHandles" unique_id=898573946]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.15, 1.45, 1.2)
+billboard = 1
+text = "Monster_Normal_B"
+
+[node name="Label_Monster_Red" type="Label3D" parent="EditorSelectHandles" unique_id=2112927267]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 1.45, 7.15)
+billboard = 1
+text = "Red_Hunter"
+
+[node name="Label_NightmareCreature_A" type="Label3D" parent="EditorSelectHandles" unique_id=1057421288]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 1.7, 7.15)
+billboard = 1
+text = "NightmareCreature_A"
+
+[node name="Label_NightmareCreature_B" type="Label3D" parent="EditorSelectHandles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.55, 1.7, 1.25)
+billboard = 1
+text = "NightmareCreature_B"
+
+[node name="Select_Monster" type="MeshInstance3D" parent="EditorSelectHandles" unique_id=1447617245]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1856441, 0.035, 6.9860673)
+mesh = SubResource("BoxMesh_select_handle")
+surface_material_override/0 = SubResource("StandardMaterial3D_select_normal")
+metadata/selects_monster_node = "../Monster"
+
+[node name="Select_Monster_Normal_B" type="MeshInstance3D" parent="EditorSelectHandles" unique_id=1880638058]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.15, 0.035, 1.2)
+mesh = SubResource("BoxMesh_select_handle")
+surface_material_override/0 = SubResource("StandardMaterial3D_select_normal")
+metadata/selects_monster_node = "../Monster_Normal_B"
+
+[node name="Select_Monster_Red_KeyBearer_MVP" type="MeshInstance3D" parent="EditorSelectHandles" unique_id=1736367978]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, 0.035, 7.15)
+mesh = SubResource("BoxMesh_select_handle")
+surface_material_override/0 = SubResource("StandardMaterial3D_select_normal")
+metadata/selects_monster_node = "../Monster_Red_KeyBearer_MVP"
+
+[node name="Select_NightmareCreature_A_MVP" type="MeshInstance3D" parent="EditorSelectHandles" unique_id=499892199]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 0.035, 7.15)
+mesh = SubResource("BoxMesh_select_handle")
+surface_material_override/0 = SubResource("StandardMaterial3D_select_imported")
+metadata/selects_monster_node = "../NightmareCreature_A_MVP"
+
+[node name="Select_NightmareCreature_B_MVP" type="MeshInstance3D" parent="EditorSelectHandles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.55, 0.035, 1.25)
+mesh = SubResource("BoxMesh_select_handle")
+surface_material_override/0 = SubResource("StandardMaterial3D_select_imported")
+metadata/selects_monster_node = "../NightmareCreature_B_MVP"

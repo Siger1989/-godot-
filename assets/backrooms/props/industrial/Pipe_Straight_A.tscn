@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Pipe_Straight_A.glb" id="1_aadmr"]
+
+[node name="Pipe_Straight_A" type="Node3D" unique_id=293662621]
+metadata/natural_prop_id = "Pipe_Straight_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+
+[node name="Model" type="Node3D" parent="." unique_id=1571097230 instance=ExtResource("1_aadmr")]

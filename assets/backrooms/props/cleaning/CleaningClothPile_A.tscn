@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/cleaning/CleaningClothPile_A.glb" id="1_00j83"]
+
+[node name="CleaningClothPile_A" type="Node3D" unique_id=1496907917]
+metadata/natural_prop_id = "CleaningClothPile_A"
+metadata/natural_prop_category = "cleaning"
+metadata/blocks_path = false
+
+[node name="Model" type="Node3D" parent="." unique_id=634976055 instance=ExtResource("1_00j83")]

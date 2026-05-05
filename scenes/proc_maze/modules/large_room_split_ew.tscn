@@ -1,0 +1,4 @@
+[gd_scene format=4]
+
+[node name="large_room_split_ew" type="Node3D"]
+metadata/proc_maze_placeholder = true

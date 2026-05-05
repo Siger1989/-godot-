@@ -1,0 +1,18 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://2sbcupli4uvj"]
+
+[ext_resource type="Texture2D" uid="uid://d0ou3cbphot1p" path="res://materials/textures/backrooms_door_frame_albedo.png" id="1_door_frame_albedo"]
+[ext_resource type="Texture2D" uid="uid://dqwyhdfq154nj" path="res://materials/textures/backrooms_door_frame_normal.png" id="2_door_frame_normal"]
+
+[resource]
+emission_energy_multiplier = 0
+emission_enabled = false
+albedo_color = Color(1, 1, 1, 1)
+uv1_offset = Vector3(0.81, 0.41, 0)
+cull_mode = 0
+diffuse_mode = 2
+albedo_texture = ExtResource("1_door_frame_albedo")
+roughness = 0.78
+normal_enabled = true
+normal_scale = 0.24
+normal_texture = ExtResource("2_door_frame_normal")
+uv1_scale = Vector3(0.24, 2, 1)

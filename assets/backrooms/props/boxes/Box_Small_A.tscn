@@ -1,0 +1,10 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Small_A.glb" id="1_6f4vl"]
+
+[node name="Box_Small_A" type="Node3D" unique_id=270667851]
+metadata/natural_prop_id = "Box_Small_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = false
+
+[node name="Model" type="Node3D" parent="." unique_id=1854457647 instance=ExtResource("1_6f4vl")]

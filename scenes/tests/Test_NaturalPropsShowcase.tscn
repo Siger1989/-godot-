@@ -1,0 +1,204 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Small_A.tscn" id="1_bwda3"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Medium_A.tscn" id="2_wfogg"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Large_A.tscn" id="3_c6d85"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Stack_2_A.tscn" id="4_5hb0h"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Stack_3_A.tscn" id="5_327ft"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/cleaning/Bucket_A.tscn" id="6_o7asm"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/cleaning/Mop_A.tscn" id="7_xbbpc"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/cleaning/CleaningClothPile_A.tscn" id="8_4vs2v"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/Chair_Old_A.tscn" id="9_ny74q"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/SmallCabinet_A.tscn" id="10_kkof0"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/MetalShelf_A.tscn" id="11_iww8y"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/ElectricBox_A.tscn" id="12_qeme2"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Vent_Wall_A.tscn" id="13_nt5a5"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Pipe_Straight_A.tscn" id="14_dgumk"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/industrial/Pipe_Corner_A.tscn" id="15_cw6u1"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/doors/OldOfficeDoor_A.tscn" id="16_6gsuo"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/HideLocker_A.tscn" id="17_k9boa"]
+[ext_resource type="PackedScene" path="res://scenes/modules/PlayerModule.tscn" id="18_uo4df"]
+[ext_resource type="PackedScene" path="res://scenes/modules/MonsterModule.tscn" id="19_bqg07"]
+[ext_resource type="Script" path="res://scripts/tools/ResourceShowcaseController.gd" id="20_rsc01"]
+[ext_resource type="PackedScene" path="res://assets/backrooms/monsters/NightmareCreature_Monster.tscn" id="22_ncmon"]
+
+[sub_resource type="Environment" id="Environment_iptpc"]
+background_mode = 1
+background_color = Color(0.015, 0.014, 0.012, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 0.92, 0.74, 1)
+ambient_light_energy = 0.28
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j16pn"]
+albedo_color = Color(0.54, 0.49, 0.36, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_ewd5r"]
+size = Vector3(16.8, 0.04, 9.8)
+
+[node name="Test_NaturalPropsShowcase" type="Node3D" unique_id=139674199]
+script = ExtResource("20_rsc01")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2134442792]
+environment = SubResource("Environment_iptpc")
+
+[node name="ScaleCheckFloor" type="MeshInstance3D" parent="." unique_id=218633737]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -0.02, 0.45)
+material_override = SubResource("StandardMaterial3D_j16pn")
+mesh = SubResource("BoxMesh_ewd5r")
+
+[node name="SoftReviewLight" type="DirectionalLight3D" parent="." unique_id=48223984]
+transform = Transform3D(0.81915206, 0.41259637, -0.3984397, 0, 0.6946584, 0.7193398, 0.57357645, -0.58924866, 0.5690309, 0, 0, 0)
+light_energy = 1.7
+
+[node name="ReviewCamera" type="Camera3D" parent="." unique_id=2065447478]
+transform = Transform3D(1, 0, 0, 0, 0.8379969, 0.5456749, 0, -0.5456749, 0.8379969, 0, 5.35, 8.25)
+current = true
+fov = 50.0
+
+[node name="NaturalProps" type="Node3D" parent="." unique_id=1412664965]
+
+[node name="Box_Small_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=270667851 instance=ExtResource("1_bwda3")]
+transform = Transform3D(0.9838437, 0, -0.17902958, 0, 1, 0, 0.17902958, 0, 0.9838437, -2.9, 0, -1.35)
+metadata/natural_prop_id = "Box_Small_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = false
+
+[node name="Box_Medium_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=885301855 instance=ExtResource("2_wfogg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.45, 0, -1.35)
+metadata/natural_prop_id = "Box_Medium_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+
+[node name="Box_Large_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=364802596 instance=ExtResource("3_c6d85")]
+transform = Transform3D(0.9838437, 0, 0.17902958, 0, 1, 0, -0.17902958, 0, 0.9838437, 0, 0, -1.35)
+metadata/natural_prop_id = "Box_Large_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+
+[node name="Box_Stack_2_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=340444407 instance=ExtResource("4_5hb0h")]
+transform = Transform3D(0.9838437, 0, -0.17902958, 0, 1, 0, 0.17902958, 0, 0.9838437, 1.45, 0, -1.35)
+metadata/natural_prop_id = "Box_Stack_2_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+
+[node name="Box_Stack_3_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=654327051 instance=ExtResource("5_327ft")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 0, -1.35)
+metadata/natural_prop_id = "Box_Stack_3_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+
+[node name="Bucket_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=1187642472 instance=ExtResource("6_o7asm")]
+transform = Transform3D(0.9838437, 0, 0.17902958, 0, 1, 0, -0.17902958, 0, 0.9838437, -2.9, 0, 0)
+metadata/natural_prop_id = "Bucket_A"
+metadata/natural_prop_category = "cleaning"
+metadata/blocks_path = true
+
+[node name="Mop_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=1068747821 instance=ExtResource("7_xbbpc")]
+transform = Transform3D(0.9838437, 0, -0.17902958, 0, 1, 0, 0.17902958, 0, 0.9838437, -1.45, 0, 0)
+metadata/natural_prop_id = "Mop_A"
+metadata/natural_prop_category = "cleaning"
+metadata/blocks_path = true
+
+[node name="CleaningClothPile_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=1496907917 instance=ExtResource("8_4vs2v")]
+metadata/natural_prop_id = "CleaningClothPile_A"
+metadata/natural_prop_category = "cleaning"
+metadata/blocks_path = false
+
+[node name="Chair_Old_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=18534822 instance=ExtResource("9_ny74q")]
+transform = Transform3D(0.9838437, 0, 0.17902958, 0, 1, 0, -0.17902958, 0, 0.9838437, 1.45, 0, 0)
+metadata/natural_prop_id = "Chair_Old_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+
+[node name="SmallCabinet_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=1606532881 instance=ExtResource("10_kkof0")]
+transform = Transform3D(0.9838437, 0, -0.17902958, 0, 1, 0, 0.17902958, 0, 0.9838437, 2.9, 0, 0)
+metadata/natural_prop_id = "SmallCabinet_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+
+[node name="MetalShelf_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=275992851 instance=ExtResource("11_iww8y")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.9, 0, 1.35)
+metadata/natural_prop_id = "MetalShelf_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+
+[node name="ElectricBox_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=735870484 instance=ExtResource("12_qeme2")]
+transform = Transform3D(0.9838437, 0, 0.17902958, 0, 1, 0, -0.17902958, 0, 0.9838437, -1.45, 0, 1.35)
+metadata/natural_prop_id = "ElectricBox_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+
+[node name="Vent_Wall_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=405254760 instance=ExtResource("13_nt5a5")]
+transform = Transform3D(0.9838437, 0, -0.17902958, 0, 1, 0, 0.17902958, 0, 0.9838437, 0, 0, 1.35)
+metadata/natural_prop_id = "Vent_Wall_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+
+[node name="Pipe_Straight_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=293662621 instance=ExtResource("14_dgumk")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.45, 0, 1.35)
+metadata/natural_prop_id = "Pipe_Straight_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+
+[node name="Pipe_Corner_A_Showcase" type="Node3D" parent="NaturalProps" unique_id=1608210608 instance=ExtResource("15_cw6u1")]
+transform = Transform3D(0.9838437, 0, 0.17902958, 0, 1, 0, -0.17902958, 0, 0.9838437, 2.9, 0, 1.35)
+metadata/natural_prop_id = "Pipe_Corner_A"
+metadata/natural_prop_category = "industrial"
+metadata/blocks_path = false
+
+[node name="DoorProps" type="Node3D" parent="."]
+metadata/showcase_category = "doors"
+
+[node name="OldOfficeDoor_A_Showcase" parent="DoorProps" instance=ExtResource("16_6gsuo")]
+position = Vector3(-4.65, 0, 3.05)
+rotation = Vector3(0, 0.22, 0)
+metadata/resource_model_id = "OldOfficeDoor_A"
+metadata/resource_model_category = "doors"
+metadata/blocks_path = true
+
+[node name="HideableProps" type="Node3D" parent="."]
+metadata/showcase_category = "hideables"
+
+[node name="HideLocker_A_Showcase" parent="HideableProps" instance=ExtResource("17_k9boa")]
+position = Vector3(-2.45, 0, 3.0)
+rotation = Vector3(0, -0.18, 0)
+metadata/resource_model_id = "HideLocker_A"
+metadata/resource_model_category = "furniture"
+metadata/blocks_path = true
+
+[node name="Characters" type="Node3D" parent="."]
+metadata/showcase_category = "characters"
+
+[node name="Player_Showcase" parent="Characters" instance=ExtResource("18_uo4df")]
+process_mode = 4
+position = Vector3(0.15, 0, 3.0)
+rotation = Vector3(0, -0.3, 0)
+metadata/resource_model_id = "PlayerModule"
+metadata/resource_model_category = "characters"
+
+[node name="Monster_Default_Showcase" parent="Characters" instance=ExtResource("19_bqg07")]
+process_mode = 4
+position = Vector3(2.3, 0.05, 3.0)
+rotation = Vector3(0, 0.25, 0)
+metadata/resource_model_id = "MonsterModule"
+metadata/resource_model_category = "characters"
+metadata/default_size_source = "res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot/Monster"
+
+[node name="Monster_Red_KeyBearer_Showcase" parent="Characters" groups=["red_monster"] instance=ExtResource("19_bqg07")]
+process_mode = 4
+position = Vector3(4.35, 0.05, 3.0)
+rotation = Vector3(0, -0.22, 0)
+monster_role = "red"
+metadata/resource_model_id = "MonsterModule_Red_Hunter"
+metadata/resource_model_category = "characters"
+metadata/default_size_source = "res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot/Monster_Red_KeyBearer_MVP"
+
+[node name="NightmareCreature_A_Showcase" parent="Characters" instance=ExtResource("22_ncmon")]
+process_mode = 4
+position = Vector3(6.35, 0.05, 3.0)
+rotation = Vector3(0, -0.16, 0)
+scale = Vector3(0.698027, 0.585242, 0.421388)
+metadata/resource_model_id = "NightmareCreature_A"
+metadata/resource_model_category = "monsters"
+metadata/default_size_source = "res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot/NightmareCreature_A_MVP"

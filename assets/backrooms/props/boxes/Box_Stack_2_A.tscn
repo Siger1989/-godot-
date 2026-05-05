@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/boxes/Box_Stack_2_A.glb" id="1_oqgsa"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qvrjd"]
+size = Vector3(0.66, 0.7, 0.48)
+
+[node name="Box_Stack_2_A" type="Node3D" unique_id=340444407]
+metadata/natural_prop_id = "Box_Stack_2_A"
+metadata/natural_prop_category = "boxes"
+metadata/blocks_path = true
+
+[node name="Model" type="Node3D" parent="." unique_id=2129247424 instance=ExtResource("1_oqgsa")]
+
+[node name="CollisionBody" type="StaticBody3D" parent="." unique_id=897382639]
+
+[node name="Collision" type="CollisionShape3D" parent="CollisionBody" unique_id=640866013]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+shape = SubResource("BoxShape3D_qvrjd")

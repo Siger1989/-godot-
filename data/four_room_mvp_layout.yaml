@@ -1,0 +1,120 @@
+# 四房间环形 MVP 数据源
+# 单位：Godot 3D 米制感
+
+mvp_id: four_room_loop_mvp
+
+rooms:
+  - id: Room_A
+    name: StartRoom
+    role: player_start
+    size: { width: 6.0, depth: 6.0 }
+    position: { x: 0.0, z: 0.0 }
+    visual_style: standard_backrooms
+
+  - id: Room_B
+    name: LightRoom
+    role: lighting_test
+    size: { width: 6.0, depth: 6.0 }
+    position: { x: 6.0, z: 0.0 }
+    visual_style: standard_backrooms
+
+  - id: Room_C
+    name: ObjectiveRoom
+    role: objective_test
+    size: { width: 6.0, depth: 6.0 }
+    position: { x: 6.0, z: 6.0 }
+    visual_style: standard_backrooms
+
+  - id: Room_D
+    name: NarrowRoom
+    role: occlusion_test
+    size: { width: 5.2, depth: 6.0 }
+    position: { x: 0.4, z: 6.0 }
+    visual_style: darker_narrow
+
+portals:
+  - id: P_AB
+    connects: [Room_A, Room_B]
+    type: door
+    initial_state: open
+    width: 1.15
+    height: 2.15
+
+  - id: P_BC
+    connects: [Room_B, Room_C]
+    type: door
+    initial_state: closed
+    width: 1.05
+    height: 2.15
+
+  - id: P_CD
+    connects: [Room_C, Room_D]
+    type: doorway
+    initial_state: open
+    width: 1.25
+    height: 2.15
+
+  - id: P_DA
+    connects: [Room_D, Room_A]
+    type: door
+    initial_state: closed
+    width: 1.05
+    height: 2.15
+
+spawn_points:
+  player:
+    room: Room_A
+    position: { x: 0.0, y: 0.0, z: 0.0 }
+
+  monster_placeholder:
+    room: Room_D
+    position: { x: -1.5, y: 0.0, z: 1.0 }
+
+  item_placeholder:
+    room: Room_B
+    position: { x: 1.0, y: 0.0, z: 0.5 }
+
+  event_placeholder:
+    room: Room_C
+    position: { x: -1.0, y: 0.0, z: -1.0 }
+
+  exit_placeholder:
+    room: Room_C
+    position: { x: 1.5, y: 0.0, z: 1.5 }
+
+lights:
+  - id: L_A
+    room: Room_A
+    type: ceiling_panel
+    position: { x: 0.0, y: 2.9, z: 0.0 }
+    size: { width: 1.4, depth: 0.45 }
+    color_temperature: warm_white
+
+  - id: L_B
+    room: Room_B
+    type: ceiling_panel
+    position: { x: 0.0, y: 2.9, z: 0.0 }
+    size: { width: 1.5, depth: 0.5 }
+    color_temperature: warm_white
+
+  - id: L_C
+    room: Room_C
+    type: ceiling_panel
+    position: { x: 0.0, y: 2.9, z: 0.0 }
+    size: { width: 1.4, depth: 0.45 }
+    color_temperature: warm_white
+
+  - id: L_D
+    room: Room_D
+    type: ceiling_panel
+    position: { x: 0.0, y: 2.9, z: 0.0 }
+    size: { width: 1.2, depth: 0.4 }
+    color_temperature: dim_warm_white
+
+visual_defaults:
+  wall_height: 2.55
+  wall_thickness: 0.2
+  door_height: 2.15
+  floor_material: Floor_Carpet
+  interior_wall_material: Wall_Backrooms
+  exterior_void_material: Void_Black

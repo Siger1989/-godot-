@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/backrooms/props/furniture/MetalShelf_A.glb" id="1_2jvja"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_joboy"]
+size = Vector3(1.04, 1.82, 0.46)
+
+[node name="MetalShelf_A" type="Node3D" unique_id=275992851]
+metadata/natural_prop_id = "MetalShelf_A"
+metadata/natural_prop_category = "furniture"
+metadata/blocks_path = true
+
+[node name="Model" type="Node3D" parent="." unique_id=1992892852 instance=ExtResource("1_2jvja")]
+
+[node name="CollisionBody" type="StaticBody3D" parent="." unique_id=1503755890]
+
+[node name="Collision" type="CollisionShape3D" parent="CollisionBody" unique_id=1676494340]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.91, 0)
+shape = SubResource("BoxShape3D_joboy")

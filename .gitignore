@@ -1,8 +1,24 @@
+# Godot local cache
 .godot/
-3D模型/
-logs/*.log
-exports/web/*
-!exports/web/.gitkeep
-screenshots/*.png
-screenshots/*.png.import
-!screenshots/.gitkeep
+
+# Generated output and diagnostics
+builds/
+logs/
+artifacts/
+
+# Local tools and scratch folders
+.codex/
+codex_tools/
+godot后室新/
+新增资源/
+四房间MVP_Agent抗遗忘执行包/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.blend
+*.blend1
+__pycache__/
+*.pyc

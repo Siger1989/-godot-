@@ -1,9 +1,21 @@
-# Codex 工作规范
+# Codex Project Entry
 
-- 长时间解决不了问题时，去网上找其他办法并结合项目实际修正。
-- 长任务必须维护 `CURRENT_STATE.md`，记录当前进度、已改文件、验证结果和下一步。
-- 每次阶段性完成后必须更新 `HANDOFF.md` 或 `CURRENT_STATE.md`，再提交并推送到 GitHub。
-- 每次阶段性交付时必须提供当前可启动入口。默认给出并尽量启动 `run_game.bat`；如果用户要求分享给别人玩，再导出 Windows/Web 发布包。
-- 大量命令输出写入日志文件，只在回复里摘要关键错误和结果，避免刷满上下文。
-- 视觉、截图类问题只保留关键截图说明，避免反复堆积上下文。
-- 如果 Codex 出现上下文压缩、重连或卡住，重启后先读取 `CURRENT_STATE.md` 和 `HANDOFF.md` 再继续。
+This project uses documentation as the handoff layer between Codex threads.
+
+Before making changes, read these files in order:
+
+1. `docs/AGENT_START_HERE.md`
+2. `docs/PROGRESS.md`
+3. `docs/DECISIONS.md`
+4. `docs/FORBIDDEN_PATTERNS.md`
+5. The current phase in `docs/TASKS_PHASED.md`
+6. The matching acceptance items in `docs/ACCEPTANCE_CHECKLIST.md`
+
+Do not depend on long chat history as the source of truth. Treat committed or saved project files and the docs above as authoritative.
+
+Keep changes phase-scoped. After every completed task, update `docs/PROGRESS.md` with:
+
+- what changed
+- what validation passed
+- what remains blocked or pending
+
