@@ -106,9 +106,10 @@ All listed validations passed on 2026-05-06:
 - Target repository provided by user:
   - `https://github.com/Siger1989/-godot-`
 - The local Godot project folder is not a git repository.
-- Upload should use a temporary clone of the target repository.
-- Existing target repository contents should be removed except `.git`.
-- Copy only project-needed source content, including:
+- Upload used a temporary clone of the target repository:
+  - `E:\godot_publish_20260506\repo`
+- Existing target repository contents were removed except `.git`.
+- Copied only project-needed source content, including:
   - `addons`
   - `assets`
   - `data`
@@ -126,6 +127,9 @@ All listed validations passed on 2026-05-06:
   - `godot后室新`
   - `codex_tools`
   - Blender scratch files and Python caches
+- First push succeeded:
+  - commit: `4eefef9`
+  - remote update: `0c2b6af..4eefef9`
 
 ## Next Session Notes
 

@@ -16,6 +16,7 @@ Current progress:
 - Baked `FourRoomMVP.tscn`, `Test_ProcMazeMap.tscn`, and `Test_ProcMazeMap_NoCeilingPreview.tscn`.
 - Switched the project main scene to the large proc-maze scene and exported `builds/android/backrooms_proc_maze_mvp_debug.apk`.
 - Added a new handoff document for this pass and will include it in the GitHub upload.
+- Replaced and pushed the filtered project contents to `https://github.com/Siger1989/-godot-`.
 
 Files changed:
 - `CURRENT_STATE.md`
@@ -57,14 +58,18 @@ Commands run:
 - `BakeTestProcMazeNoCeilingPreview.gd` -> PASS, log `logs\bake_proc_maze_no_ceiling_preview_keyed_exit_20260506.log`.
 - Android export -> PASS, log `logs\apk_export_proc_maze_keyed_exit_20260506.log`.
 - `apksigner verify --verbose builds\android\backrooms_proc_maze_mvp_debug.apk` -> PASS, v2/v3 signatures verified.
+- Temporary clone to `E:\godot_publish_20260506\repo` -> PASS.
+- Filtered copy to the temporary clone excluding `.godot`, `logs`, `artifacts`, `builds`, `codex_tools`, nested projects, and unused import scratch folders -> PASS.
+- `git commit -m "Replace with current Godot proc maze project"` -> PASS, commit `4eefef9`.
+- `git push origin main` -> PASS, remote advanced `0c2b6af..4eefef9`.
 
 Validation result: PASS
 
 Current blocking issue:
-- GitHub update still needs a temporary clone of the provided remote and push.
+- None.
 
 Next step:
-- Replace/push the provided GitHub repository with filtered project files, including the handoff documents.
+- If needed, install/test `builds/android/backrooms_proc_maze_mvp_debug.apk` on device.
 
 ## 2026-05-06 MVP Direct Editable Monster Size Source
 
