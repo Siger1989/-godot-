@@ -48,7 +48,7 @@ Validation result:
 - APK package inspection: PASS, `assets/local_gdsync_keys.cfg` exists in the APK.
 - APK SHA256: `79D9975BEC53B1DF7ED922FF4CC5E426F9BF21882B478F53874F44739C6D8FF2`.
 - APK size: `280,661,167` bytes.
-- Git commit: `0f9904e` uploaded to `origin/main`.
+- Git commits uploaded to `origin/main`: gameplay commit `0f9904e`, handoff update `2b0a22d`.
 
 Current blocking issue:
 - Live phone testing is still needed for sprint feel, four-Nightmare pressure, and GD-Sync two-client behavior.

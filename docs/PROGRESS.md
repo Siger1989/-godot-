@@ -26,7 +26,8 @@
   - Size: `280,661,167` bytes
   - SHA256: `79D9975BEC53B1DF7ED922FF4CC5E426F9BF21882B478F53874F44739C6D8FF2`
 - Uploaded source/docs/scenes to GitHub:
-  - Commit: `0f9904e`
+  - Gameplay commit: `0f9904e`
+  - Handoff update commit: `2b0a22d`
   - Remote branch: `origin/main`
   - Local APK and `local_gdsync_keys.cfg` were not committed.
 
