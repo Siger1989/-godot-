@@ -11,13 +11,15 @@ config_version=5
 [application]
 
 config/name="Backrooms Proc Maze MVP"
-run/main_scene="res://scenes/tests/Test_ProcMazeMap.tscn"
+run/main_scene="res://scenes/ui/LoginMenu.tscn"
 config/features=PackedStringArray("4.6", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
 MCPRuntime="*uid://u32t2bci6bgw"
+GDSyncBootstrap="*res://scripts/gameplay/GDSyncBootstrap.gd"
+GameSession="*res://scripts/gameplay/GameSession.gd"
 
 [editor_plugins]
 

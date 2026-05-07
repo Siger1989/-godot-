@@ -1,6 +1,6 @@
 # Fresh Codex Session Prompt
 
-Project path: `E:\godot后室`
+Project path: `D:\godot后室`
 
 You are continuing the Backrooms Godot 4.6.2 Mobile-renderer prototype. Do not rely on chat history only. Start by reading these files in order:
 
@@ -20,7 +20,7 @@ git status --short
 git diff --stat
 ```
 
-This folder is currently not a git repository, so those commands are expected to report that. Still run them and record the result in `CURRENT_STATE.md`.
+This folder is now a git repository after the GitHub sync. Run those commands and record meaningful environment changes in `CURRENT_STATE.md`.
 
 Current accepted working target:
 
@@ -29,9 +29,12 @@ Current accepted working target:
 - Playable launcher: `run_proc_maze_test.bat`
 - Preview launcher: `run_proc_maze_no_ceiling_preview.bat`
 - MVP verification-room launcher: `run_mvp_room.bat`
+- Monster showcase/global transform launcher: `run_monster_showcase.bat`
 - Texture/UV tool launcher: `start_texture_tool.bat`
+- Godot launchers resolve the local Godot install through `_godot_env.bat`; do not hardcode another user's `C:\Users\...\Godot...` path.
 - Latest layout evidence: `artifacts/screenshots/test_proc_maze_layout.png`
 - Playable proc-maze lighting controls: press `ESC` in `run_proc_maze_test.bat`; click outside the panel to return to captured gameplay.
+- Monster source edits should go through `run_monster_showcase.bat` or direct edits under `scenes/mvp/FourRoomMVP.tscn/MonsterRoot`. Saving in the showcase updates the global source transform lines in `FourRoomMVP.tscn`.
 
 Current proc-maze validation summary:
 
@@ -98,7 +101,7 @@ Current visual-material baseline:
 Useful commands:
 
 ```powershell
-$godot='C:\Users\sigeryang\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.6.2-stable_win64_console.exe'
+$godot=(Get-Command Godot_v4.6.2-stable_win64_console.exe -ErrorAction Stop).Source
 & $godot --headless --path . --script res://scripts/tools/BakeTestProcMazeMap.gd
 & $godot --headless --path . --script res://scripts/tools/ValidateTestProcMazeMap.gd
 & $godot --headless --path . --script res://scripts/tools/ValidateProcMazePlayable.gd

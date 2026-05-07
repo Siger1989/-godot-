@@ -21,6 +21,9 @@ func _run() -> void:
 		_fail("scene root is not Node3D")
 		return
 	get_root().add_child(root)
+	if root.has_method("set"):
+		root.set("show_guidance_graffiti", true)
+		root.set("show_debug_map_markers", false)
 	if root.has_method("rebuild"):
 		var result: Dictionary = root.rebuild()
 		if not bool(result.get("ok", false)):

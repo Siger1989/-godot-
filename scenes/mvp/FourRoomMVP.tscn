@@ -2716,7 +2716,7 @@ metadata/monster_size_source = true
 metadata/editing_note = "Adjust one direct child per monster type in this FourRoomMVP scene. Other scenes read these saved transforms as the global size source. Runtime removes EditorSelectHandles only."
 
 [node name="Monster" type="CharacterBody3D" parent="MonsterRoot" unique_id=1755806070 instance=ExtResource("64_monster")]
-transform = Transform3D(-0.7789398, 0, 0.39762264, 0, 0.3871994, 0, -0.55077016, 0, -0.5623473, -1.1166995, 0.061522707, 7.074905)
+transform = Transform3D(-1, 0, 0, 0, 0.47, 0, 0, 0, -1, 0, -0.11, 7.0700002)
 velocity = Vector3(0.17210148, 0, 0.6785138)
 floor_snap_length = 0.28
 safe_margin = 0.07
@@ -2726,8 +2726,11 @@ metadata/mvp_test_monster = true
 metadata/monster_role = "normal"
 metadata/monster_size_source_id = "normal"
 
+metadata/monster_collision_box_size = Vector3(0.56, 0.57, 1.36)
+metadata/monster_collision_box_position = Vector3(0, 0.22, 0.86)
+metadata/monster_visual_yaw_degrees = -180
 [node name="Monster_Red_KeyBearer_MVP" type="CharacterBody3D" parent="MonsterRoot" unique_id=1568239739 groups=["red_monster"] instance=ExtResource("64_monster")]
-transform = Transform3D(-0.17009413, 0, 0.6776865, 0, 0.387199, 0, -0.9387029, 0, -0.122797646, 7.1689515, 0.052998774, 7.2158856)
+transform = Transform3D(-0.95, 0, 0, 0, 0.6, 0, 0, 0, -0.69, 7.1100001, -0.1, 7.2199998)
 velocity = Vector3(-0.24707545, 0, 0.6549456)
 floor_snap_length = 0.28
 safe_margin = 0.07
@@ -2739,14 +2742,17 @@ metadata/monster_role = "red"
 metadata/room_id = "Room_C"
 metadata/monster_size_source_id = "red_hunter"
 
+metadata/monster_collision_box_size = Vector3(0.67, 0.55, 1.58)
+metadata/monster_collision_box_position = Vector3(0, 0.32, 0.96)
+metadata/monster_visual_yaw_degrees = 180
 [node name="NightmareCreature_A_MVP" type="CharacterBody3D" parent="MonsterRoot" unique_id=1934769290 groups=["nightmare_monster"] instance=ExtResource("65_nightmare")]
-transform = Transform3D(0.038225245, 0, 0.42075568, 0, 0.5852417, 0, -0.69697946, 0, 0.023075989, 1.1945006, 0.27750033, 7.1850166)
+transform = Transform3D(-0.7, 0, 0, 0, 0.5896406, -0.0146578, 0, -0.0205907, -0.4197441, 0, 0.355, 7.1900001)
 velocity = Vector3(-0.5059938, -3.2000003, 0.28349644)
 floor_snap_length = 0.28
 safe_margin = 0.07
 script = ExtResource("49_oo7rf")
 monster_role = "nightmare"
-wander_speed = 0.58
+wander_speed = 1.15
 flee_speed = 2.85
 chase_speed = 2.85
 turn_speed = 10.0
@@ -2754,8 +2760,12 @@ eye_height = 0.72
 attack_range = 0.85
 attack_cooldown = 1.25
 investigate_reach_distance = 0.48
+nightmare_hearing_alert_time = 0.48
+nightmare_hearing_confirm_time = 0.42
+nightmare_locked_investigate_speed = 2.2
 monster_walk_footstep_interval = 0.74
 monster_run_footstep_interval = 0.46
+monster_footstep_volume_db = -21.0
 idle_animation = "Creature_armature|idle"
 walk_animation = "Creature_armature|walk"
 run_animation = "Creature_armature|Run"
@@ -2770,9 +2780,13 @@ metadata/display_height_meters = 1.29
 metadata/gameplay_status = "hearing_ai_active"
 metadata/monster_role = "nightmare"
 metadata/mvp_test_monster = true
+metadata/mvp_runtime_hearing_monster = true
 metadata/monster_size_source_id = "nightmare"
 metadata/default_size_source = "res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot/NightmareCreature_A_MVP"
 
+metadata/monster_collision_box_size = Vector3(0.85, 1.8200001, 1.08)
+metadata/monster_collision_box_position = Vector3(0, 0.91, 0)
+metadata/monster_visual_yaw_degrees = 180
 [node name="CameraRig" type="Node3D" parent="." unique_id=1880999252]
 transform = Transform3D(-4.371139e-08, 0.037631355, -0.9992685, 0, 0.9992685, 0.037631355, 1, 1.6449186e-09, -4.3679414e-08, -1.7975332, 1.0998074, -1.1006353e-16)
 script = ExtResource("10_camera")

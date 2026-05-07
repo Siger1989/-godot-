@@ -9,6 +9,7 @@ func _run() -> void:
 	if OS.get_environment("FORCE_MOBILE_CONTROLS") != "1":
 		_fail("run with FORCE_MOBILE_CONTROLS=1 so desktop validation uses the phone UI path")
 		return
+	get_root().size = Vector2i(1280, 720)
 	var packed := load(PLAYER_SCENE_PATH) as PackedScene
 	if packed == null:
 		_fail("missing player scene")
@@ -51,12 +52,65 @@ func _run() -> void:
 	if not bool(player.call("debug_mobile_sprint_button_visible")):
 		_fail("mobile sprint button is not visible when phone controls are forced")
 		return
+	if not player.has_method("debug_mobile_crouch_button_visible"):
+		_fail("player does not expose mobile crouch-button validation hook")
+		return
+	if not bool(player.call("debug_mobile_crouch_button_visible")):
+		_fail("mobile crouch button is not visible when phone controls are forced")
+		return
+	if not player.has_method("debug_mobile_settings_button_visible") or not bool(player.call("debug_mobile_settings_button_visible")):
+		_fail("mobile settings button is not visible when phone controls are forced")
+		return
+	if not player.has_method("debug_has_stamina_bar") or not bool(player.call("debug_has_stamina_bar")):
+		_fail("player stamina bar is missing")
+		return
+	var viewport_size := get_root().get_visible_rect().size
+	var sprint_rect := player.call("debug_get_mobile_sprint_button_rect") as Rect2
+	var crouch_rect := player.call("debug_get_mobile_crouch_button_rect") as Rect2
+	var settings_rect := player.call("debug_get_mobile_settings_button_rect") as Rect2
+	if sprint_rect.size.x < 150.0 or sprint_rect.size.y < 88.0:
+		_fail("mobile sprint button is still too small: %s" % str(sprint_rect))
+		return
+	if crouch_rect.size.x < 150.0 or crouch_rect.size.y < 88.0:
+		_fail("mobile crouch button is still too small: %s" % str(crouch_rect))
+		return
+	if viewport_size.x - sprint_rect.end.x < 120.0 or viewport_size.x - crouch_rect.end.x < 120.0:
+		_fail("mobile action buttons are too close to the right edge: sprint=%s crouch=%s viewport=%s" % [str(sprint_rect), str(crouch_rect), str(viewport_size)])
+		return
+	if settings_rect.position.x < viewport_size.x * 0.58:
+		_fail("mobile settings button is not in the right-side thumb/top area: %s" % str(settings_rect))
+		return
+	if not player.has_method("debug_mobile_touch_handled") or not player.has_method("debug_is_mobile_sprint_pressed"):
+		_fail("player does not expose sprint touch passthrough validation hooks")
+		return
+	var sprint_touch := InputEventScreenTouch.new()
+	sprint_touch.index = 7
+	sprint_touch.position = sprint_rect.get_center()
+	sprint_touch.pressed = true
+	var sprint_press_handled := bool(player.call("debug_mobile_touch_handled", sprint_touch))
+	if sprint_press_handled:
+		_fail("mobile sprint press should not consume the touch, so camera dragging can continue")
+		return
+	if not bool(player.call("debug_is_mobile_sprint_pressed")):
+		_fail("mobile sprint press did not latch sprint state")
+		return
+	var sprint_drag := InputEventScreenDrag.new()
+	sprint_drag.index = 7
+	sprint_drag.position = sprint_rect.get_center() + Vector2(-80.0, -10.0)
+	sprint_drag.relative = Vector2(-80.0, -10.0)
+	if bool(player.call("debug_mobile_touch_handled", sprint_drag)):
+		_fail("mobile sprint drag should pass through to camera view control")
+		return
+	sprint_touch.pressed = false
+	player.call("debug_mobile_touch_handled", sprint_touch)
+	if bool(player.call("debug_is_mobile_sprint_pressed")):
+		_fail("mobile sprint state did not release")
+		return
 	if not player.has_method("debug_get_mobile_stick_center") or not player.has_method("debug_get_mobile_joystick_radius"):
 		_fail("player does not expose mobile joystick layout validation hooks")
 		return
 	var stick_center := player.call("debug_get_mobile_stick_center") as Vector2
 	var stick_radius := float(player.call("debug_get_mobile_joystick_radius"))
-	var viewport_size := get_root().get_visible_rect().size
 	if stick_center.x < stick_radius * 2.25:
 		_fail("mobile joystick is too close to the left edge: center=%s radius=%s" % [str(stick_center), str(stick_radius)])
 		return
@@ -89,8 +143,40 @@ func _run() -> void:
 	if input_vector.x < 0.50 or input_vector.y < 0.70:
 		_fail("mobile joystick vector is not contributing to movement: %s" % str(input_vector))
 		return
+	var stamina_before := float(player.call("debug_get_stamina"))
+	player.call("debug_update_stamina", 1.0, true)
+	var stamina_after_sprint := float(player.call("debug_get_stamina"))
+	if stamina_after_sprint >= stamina_before - 10.0:
+		_fail("sprint stamina did not drain enough: before=%s after=%s" % [str(stamina_before), str(stamina_after_sprint)])
+		return
+	player.call("debug_update_stamina", 2.0, false)
+	var stamina_after_recover := float(player.call("debug_get_stamina"))
+	if stamina_after_recover <= stamina_after_sprint:
+		_fail("stamina did not recover while not sprinting: sprint=%s recover=%s" % [str(stamina_after_sprint), str(stamina_after_recover)])
+		return
+	player.call("debug_set_stamina", 0.0)
+	if not player.has_method("debug_update_stamina"):
+		_fail("missing stamina validation hook")
+		return
+	if not player.has_method("debug_set_mobile_crouch") or not player.has_method("debug_is_crouching"):
+		_fail("player does not expose crouch validation hooks")
+		return
+	player.call("debug_set_mobile_crouch", true)
+	if not bool(player.call("debug_is_crouching")):
+		_fail("mobile crouch toggle did not set crouching state")
+		return
+	if player.has_method("get_footstep_noise_radius") and float(player.call("get_footstep_noise_radius")) > 0.0:
+		_fail("crouch walk should be silent to hearing AI")
+		return
+	if player.has_method("get_detection_target_height"):
+		var crouch_height := float(player.call("get_detection_target_height"))
+		player.call("debug_set_mobile_crouch", false)
+		var stand_height := float(player.call("get_detection_target_height"))
+		if crouch_height >= stand_height:
+			_fail("crouch detection height was not lower than standing height: crouch=%s stand=%s" % [str(crouch_height), str(stand_height)])
+			return
 
-	print("MOBILE_CONTROLS_VALIDATION PASS input=%s sprint_button=true" % str(input_vector))
+	print("MOBILE_CONTROLS_VALIDATION PASS input=%s sprint_button=true crouch_button=true" % str(input_vector))
 	quit(0)
 
 func _fail(message: String) -> void:

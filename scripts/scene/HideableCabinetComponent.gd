@@ -130,6 +130,8 @@ func _enter_hide(actor: Node3D) -> bool:
 
 	if actor.has_method("set_interaction_locked"):
 		actor.call("set_interaction_locked", true)
+	if actor.has_method("set_hidden_in_hideable"):
+		actor.call("set_hidden_in_hideable", true, self)
 	_store_and_disable_collision_shapes(actor)
 	actor.global_position = stand_point.global_position
 	actor.visible = false
@@ -162,6 +164,8 @@ func _exit_hide() -> void:
 	_restore_collision_shapes()
 	if actor.has_method("set_interaction_locked"):
 		actor.call("set_interaction_locked", false)
+	if actor.has_method("set_hidden_in_hideable"):
+		actor.call("set_hidden_in_hideable", false, self)
 
 	if _camera != null:
 		_camera.global_transform = _stored_camera_global_transform

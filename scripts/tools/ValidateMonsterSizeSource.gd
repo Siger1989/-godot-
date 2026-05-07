@@ -115,6 +115,12 @@ func _run() -> void:
 		if not _is_near_vec3(alias_scale, source_scale, 0.001):
 			_fail("Template alias %s scale=%s does not match %s scale=%s." % [alias_id, alias_scale, source_id, source_scale])
 			return
+	if MonsterSizeSource.template_source_reference("red_hunter").contains("Monster_Red_KeyBearer_MVP"):
+		_fail("red_hunter still uses the old red key-bearer model source.")
+		return
+	if not _is_near_vec3(MonsterSizeSource.template_scale("red_hunter"), MonsterSizeSource.template_scale("normal"), 0.001):
+		_fail("red_hunter model scale no longer matches the normal monster model.")
+		return
 
 	print("MONSTER_SIZE_SOURCE_VALIDATION PASS source=%s editable_children=%d aliases=%d" % [
 		SOURCE_SCENE_PATH,

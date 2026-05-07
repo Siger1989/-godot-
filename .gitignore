@@ -5,6 +5,8 @@
 builds/
 logs/
 artifacts/
+local_gdsync_keys.cfg
+*.apk
 
 # Local tools and scratch folders
 .codex/

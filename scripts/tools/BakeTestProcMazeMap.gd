@@ -1,4 +1,4 @@
-﻿extends SceneTree
+extends SceneTree
 
 const SCENE_PATH := "res://scenes/tests/Test_ProcMazeMap.tscn"
 const TestProcMazeMapScript = preload("res://scripts/proc_maze/TestProcMazeMap.gd")
@@ -7,6 +7,11 @@ func _init() -> void:
 	var root = _load_or_create_root()
 	if root.get_script() == null:
 		root.set_script(TestProcMazeMapScript)
+	root.set("preview_show_feature_labels", false)
+	root.set("show_debug_map_markers", false)
+	root.set("show_guidance_graffiti", false)
+	root.set("rebuild_on_ready", false)
+	root.set("feature_preview_start_module_id", "")
 	if root.get_parent() == null:
 		get_root().add_child(root)
 	var result: Dictionary = root.rebuild()

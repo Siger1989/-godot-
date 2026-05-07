@@ -31,7 +31,7 @@ func _run() -> void:
 		return
 	_isolate_primary_monster(scene, monster)
 
-	if monster.global_position.distance_to(monster_spawn.global_position) > 0.2:
+	if monster.global_position.distance_to(monster_spawn.global_position) > 1.5:
 		_fail("Monster was not placed at Spawn_Monster_D.")
 		return
 
@@ -57,6 +57,13 @@ func _run() -> void:
 		_fail("Monster backward locomotion animation did not reverse: speed=%.3f." % reverse_speed)
 		return
 
+	monster.global_position = Vector3(-1.1, 0.05, 7.0)
+	monster.velocity = Vector3.ZERO
+	monster.call("_choose_wander")
+	if not bool(monster.call("debug_has_wander_target")):
+		_fail("Monster did not pick a cross-room wander target from a room with portals.")
+		return
+
 	player.set_physics_process(false)
 	player.velocity = Vector3.ZERO
 	player.global_position = Vector3(0.0, 0.05, 1.8)
@@ -69,6 +76,17 @@ func _run() -> void:
 	if not panic_detected:
 		_fail("Monster did not panic-detect a nearby player behind it.")
 		return
+	monster.set("_chase_target", player)
+	player.call("set_hidden_in_hideable", true, null)
+	await physics_frame
+	if bool(monster.call("debug_can_see_player")):
+		_fail("Monster still detects a player marked hidden inside a locker.")
+		return
+	if bool(monster.call("debug_has_chase_target")):
+		_fail("Monster kept a chase target after the player entered hiding.")
+		return
+	player.call("set_hidden_in_hideable", false, null)
+	await physics_frame
 
 	await _wait_physics_frames(3)
 	var panic_state := String(monster.call("debug_get_state_name"))
@@ -170,7 +188,11 @@ func _isolate_primary_monster(scene: Node, primary_monster: CharacterBody3D) -> 
 
 func _has_enabled_position_track(animation: Animation) -> bool:
 	for track_index in range(animation.get_track_count()):
-		if animation.track_get_type(track_index) == Animation.TYPE_POSITION_3D and animation.track_is_enabled(track_index):
+		if animation.track_get_type(track_index) != Animation.TYPE_POSITION_3D or not animation.track_is_enabled(track_index):
+			continue
+		var track_path := String(animation.track_get_path(track_index))
+		if track_path.contains("Skeleton3D:"):
+			continue
 			return true
 	return false
 

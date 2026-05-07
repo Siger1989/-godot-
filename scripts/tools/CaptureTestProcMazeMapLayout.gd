@@ -26,6 +26,7 @@ func _init() -> void:
 		_draw_edge(image, edge, node_map, bounds)
 	_draw_loop_overlays(image, graph, node_map, bounds)
 
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://artifacts/screenshots"))
 	var error = image.save_png(OUTPUT_PATH)
 	if error != OK:
 		push_error("TEST_PROC_MAZE_LAYOUT_SCREENSHOT FAIL save=%s" % str(error))
@@ -57,7 +58,9 @@ func _draw_edge(image: Image, edge: Dictionary, node_map: Dictionary, bounds: Re
 	var a = _node_center(node_map[String(edge.get("a", ""))])
 	var b = _node_center(node_map[String(edge.get("b", ""))])
 	var color = Color(0.2, 0.85, 0.25, 1.0)
-	if String(edge.get("kind", "")) == "macro_loop_b":
+	if String(edge.get("kind", "")) == "macro_loop_outer":
+		color = Color(1.0, 0.12, 0.06, 1.0)
+	elif String(edge.get("kind", "")) == "macro_loop_b":
 		color = Color(1.0, 0.52, 0.08, 1.0)
 	elif String(edge.get("kind", "")) == "main":
 		color = Color(0.18, 0.9, 0.35, 1.0)
@@ -72,7 +75,7 @@ func _draw_edge(image: Image, edge: Dictionary, node_map: Dictionary, bounds: Re
 func _draw_loop_overlays(image: Image, graph: Dictionary, node_map: Dictionary, bounds: Rect2i) -> void:
 	var macro_loop: Dictionary = graph.get("macro_loop", {})
 	if not macro_loop.is_empty():
-		_draw_route(image, _to_string_route(macro_loop.get("route_a", PackedStringArray())), node_map, bounds, Color(0.02, 1.0, 0.74, 1.0), 8)
+		_draw_route(image, _to_string_route(macro_loop.get("route_a", PackedStringArray())), node_map, bounds, Color(1.0, 0.12, 0.06, 1.0), 8)
 		_draw_route(image, _to_string_route(macro_loop.get("route_b", PackedStringArray())), node_map, bounds, Color(1.0, 0.52, 0.08, 1.0), 8)
 		_draw_node_dot(image, String(macro_loop.get("split_node", "")), node_map, bounds, Color(1.0, 0.24, 0.06, 1.0), 13)
 		_draw_node_dot(image, String(macro_loop.get("merge_node", "")), node_map, bounds, Color(0.72, 0.35, 1.0, 1.0), 13)

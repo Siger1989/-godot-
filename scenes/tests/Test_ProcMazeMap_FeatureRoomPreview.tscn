@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=4]
+
+[ext_resource type="Script" path="res://scripts/proc_maze/TestProcMazeMap.gd" id="1_feature_preview"]
+
+[node name="Test_ProcMazeMap_FeatureRoomPreview" type="Node3D"]
+script = ExtResource("1_feature_preview")
+enable_playable_test = true
+rebuild_on_ready = true
+feature_preview_start_module_id = "N05"

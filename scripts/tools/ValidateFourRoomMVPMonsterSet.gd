@@ -135,6 +135,9 @@ func _run() -> void:
 		if not nightmare_monster.is_in_group("nightmare_monster"):
 			_fail("%s is not in nightmare_monster group." % nightmare_monster.name)
 			return
+		if not bool(nightmare_monster.get_meta("mvp_runtime_hearing_monster", false)):
+			_fail("%s is not tagged as the MVP runtime hearing monster." % nightmare_monster.name)
+			return
 		if bool(nightmare_monster.call("debug_can_see_player")):
 			_fail("%s must not use vision against the player." % nightmare_monster.name)
 			return

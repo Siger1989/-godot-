@@ -14,6 +14,8 @@ const DOOR_REVEAL_WIDTH := DOOR_OPENING_WIDTH + DOOR_FRAME_TRIM_WIDTH * 2.0 + 0.
 const DOOR_REVEAL_EDGE_TOLERANCE := 0.025
 const LIGHT_WALL_CLEARANCE := 0.04
 const EPSILON := 0.001
+const WALL_FLOOR_BITE := 0.02
+const LOW_WALL_HEIGHT := 1.05
 
 func validate(scene_root: Node, graph: Dictionary, map_validation: Dictionary) -> Dictionary:
 	var issues: Array[String] = []
@@ -24,6 +26,14 @@ func validate(scene_root: Node, graph: Dictionary, map_validation: Dictionary) -
 		"active_light_count": 0,
 		"active_light_fixture_count": 0,
 		"active_light_source_count": 0,
+		"feature_anchor_count": 0,
+		"feature_pillar_count": 0,
+		"feature_low_wall_count": 0,
+		"feature_prop_count": 0,
+		"red_alarm_light_count": 0,
+		"red_alarm_attractor_count": 0,
+		"dark_zone_count": 0,
+		"world_ambient_energy": 0.0,
 		"fps": 0.0,
 		"draw_calls": 0,
 	}
@@ -37,15 +47,25 @@ func validate(scene_root: Node, graph: Dictionary, map_validation: Dictionary) -
 	_validate_generated_scales(scene_root, issues)
 	_validate_materials(scene_root, issues)
 	_validate_wall_heights(scene_root, issues)
+	_validate_wall_floor_bite(scene_root, issues)
 	_validate_door_alignment(scene_root, graph, issues, metrics)
 	_validate_door_reveal_clearance(scene_root, issues, metrics)
 	_validate_internal_large_rooms(scene_root, graph, issues)
 	_validate_ceiling_light_placement(scene_root, graph, issues)
+	_validate_feature_anchor_scene(scene_root, graph, issues, metrics)
+	_validate_dark_environment(scene_root, graph, issues, metrics)
 
 	metrics["has_overlap"] = _has_map_overlap(graph, issues)
 	metrics["active_light_count"] = _get_nodes_in_group(scene_root, "ceiling_light_panel").size()
 	metrics["active_light_fixture_count"] = _get_nodes_in_group(scene_root, "ceiling_light_panel").size()
 	metrics["active_light_source_count"] = _get_nodes_in_group(scene_root, "ceiling_light").size()
+	metrics["feature_anchor_count"] = _get_nodes_in_group(scene_root, "proc_feature_anchor").size()
+	metrics["feature_pillar_count"] = _get_nodes_in_group(scene_root, "proc_feature_pillar").size()
+	metrics["feature_low_wall_count"] = _get_nodes_in_group(scene_root, "proc_feature_low_wall").size()
+	metrics["feature_prop_count"] = _get_nodes_in_group(scene_root, "proc_feature_prop").size()
+	metrics["red_alarm_light_count"] = _get_nodes_in_group(scene_root, "proc_red_alarm_light").size()
+	metrics["red_alarm_attractor_count"] = _get_nodes_in_group(scene_root, "proc_red_alarm_attractor").size()
+	metrics["dark_zone_count"] = _get_nodes_in_group(scene_root, "proc_dark_zone").size()
 	metrics["fps"] = float(Performance.get_monitor(Performance.TIME_FPS))
 	metrics["draw_calls"] = int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	if not bool(map_validation.get("ok", false)):
@@ -75,7 +95,7 @@ func _validate_required_counts(scene_root: Node, graph: Dictionary, issues: Arra
 		issues.append("Scene portal count mismatch: %d expected %d." % [portal_count, edge_count])
 
 func _validate_generated_scales(scene_root: Node, issues: Array[String]) -> void:
-	var groups = ["proc_maze_module", "proc_wall_body", "proc_wall_opening", "proc_door_frame", "proc_portal", "floor_visual", "ceiling_light_panel", "proc_internal_wall"]
+	var groups = ["proc_maze_module", "proc_wall_body", "proc_wall_opening", "proc_door_frame", "proc_portal", "floor_visual", "ceiling_light_panel", "proc_internal_wall", "proc_feature_low_wall"]
 	for group_name in groups:
 		for node in _get_nodes_in_group(scene_root, group_name):
 			var node3d = node as Node3D
@@ -133,6 +153,25 @@ func _validate_wall_heights(scene_root: Node, issues: Array[String]) -> void:
 		var shape = collision.shape as BoxShape3D if collision != null else null
 		if shape == null or absf(shape.size.y - WALL_HEIGHT) > EPSILON:
 			issues.append("Internal wall height mismatch: %s" % _node_label(internal_wall))
+	for low_wall in _get_nodes_in_group(scene_root, "proc_feature_low_wall"):
+		var collision = low_wall.get_node_or_null("Collision") as CollisionShape3D
+		var shape = collision.shape as BoxShape3D if collision != null else null
+		if shape == null or absf(shape.size.y - LOW_WALL_HEIGHT) > EPSILON:
+			issues.append("Low wall height mismatch: %s" % _node_label(low_wall))
+
+func _validate_wall_floor_bite(scene_root: Node, issues: Array[String]) -> void:
+	for group_name in ["proc_wall_body", "proc_internal_wall", "proc_feature_low_wall"]:
+		for body_node in _get_nodes_in_group(scene_root, group_name):
+			var body := body_node as Node3D
+			if body == null:
+				continue
+			var collision = body.get_node_or_null("Collision") as CollisionShape3D
+			var shape = collision.shape as BoxShape3D if collision != null else null
+			if shape == null:
+				continue
+			var bottom_y: float = (_accumulated_position(body) + collision.position).y - shape.size.y * 0.5
+			if bottom_y > -WALL_FLOOR_BITE * 0.45:
+				issues.append("Wall/contact blocker is not bitten into the floor: %s bottom_y=%.3f." % [_node_label(body), bottom_y])
 
 func _validate_door_alignment(scene_root: Node, graph: Dictionary, issues: Array[String], metrics: Dictionary) -> void:
 	var expected_edges = {}
@@ -162,7 +201,7 @@ func _validate_door_alignment(scene_root: Node, graph: Dictionary, issues: Array
 
 func _validate_door_reveal_clearance(scene_root: Node, issues: Array[String], metrics: Dictionary) -> void:
 	var blockers: Array[Node3D] = []
-	for group_name in ["proc_wall_body", "proc_internal_wall"]:
+	for group_name in ["proc_wall_body", "proc_internal_wall", "proc_feature_low_wall"]:
 		for wall in _get_nodes_in_group(scene_root, group_name):
 			var wall3d = wall as Node3D
 			if wall3d != null:
@@ -274,10 +313,176 @@ func _validate_ceiling_light_placement(scene_root: Node, graph: Dictionary, issu
 			for light_source in lights_by_owner[owner_id]:
 				issues.append("Ceiling light `%s` has no matching visual panel." % _node_label(light_source as Node))
 
+func _validate_feature_anchor_scene(scene_root: Node, graph: Dictionary, issues: Array[String], metrics: Dictionary) -> void:
+	var feature_modules := {}
+	for module in _get_nodes_in_group(scene_root, "proc_feature_anchor"):
+		var module3d := module as Node3D
+		if module3d == null:
+			continue
+		feature_modules[String(module3d.get_meta("id", module3d.get_meta("owner_module_id", "")))] = module3d
+	var pillars_by_owner := _nodes_by_owner(scene_root, "proc_feature_pillar")
+	var low_walls_by_owner := _nodes_by_owner(scene_root, "proc_feature_low_wall")
+	var props_by_owner := _nodes_by_owner(scene_root, "proc_feature_prop")
+	var internal_by_owner := _nodes_by_owner(scene_root, "proc_internal_wall")
+	var red_lights_by_owner := _nodes_by_owner(scene_root, "proc_red_alarm_light")
+	var red_panels_by_owner := _nodes_by_owner(scene_root, "proc_red_alarm_panel")
+	var red_attractors_by_owner := _nodes_by_owner(scene_root, "proc_red_alarm_attractor")
+
+	for node in graph.get("nodes", []):
+		var node_dict: Dictionary = node
+		var node_id := String(node_dict.get("id", ""))
+		var feature := String(node_dict.get("feature_template", ""))
+		if bool(node_dict.get("red_alarm_extra", false)):
+			if (red_lights_by_owner.get(node_id, []) as Array).size() != 1:
+				issues.append("extra red alarm `%s` needs exactly one localized red alarm light." % node_id)
+			if (red_panels_by_owner.get(node_id, []) as Array).size() != 1:
+				issues.append("extra red alarm `%s` needs one visible red alarm panel." % node_id)
+			if (red_attractors_by_owner.get(node_id, []) as Array).size() != 1:
+				issues.append("extra red alarm `%s` needs one monster attractor area." % node_id)
+		if feature.is_empty():
+			continue
+		if not feature_modules.has(node_id):
+			issues.append("Feature anchor `%s` has no scene module group." % node_id)
+			continue
+		var module := feature_modules[node_id] as Node3D
+		if String(module.get_meta("feature_template", "")) != feature:
+			issues.append("Feature anchor `%s` scene metadata mismatch: %s." % [node_id, String(module.get_meta("feature_template", ""))])
+		match feature:
+			"pillar_hall":
+				var pillars: Array = pillars_by_owner.get(node_id, [])
+				if pillars.size() < 4 or pillars.size() > 9:
+					issues.append("pillar_hall `%s` must have 4-9 pillars; found=%d." % [node_id, pillars.size()])
+			"low_wall_maze_hall":
+				_validate_low_wall_hall(node_id, low_walls_by_owner.get(node_id, []), issues)
+			"box_heap_hall", "box_hall":
+				_validate_box_hall_props(node_id, props_by_owner.get(node_id, []), issues)
+			"dark_doorway_room":
+				if not _has_adjacent_dark_zone(node_id, graph, "Dark_Doorway_Interior"):
+					issues.append("dark_doorway_room `%s` must connect directly to Dark_Doorway_Interior." % node_id)
+			"split_hall", "side_chamber_hall":
+				if (internal_by_owner.get(node_id, []) as Array).is_empty():
+					issues.append("Feature anchor `%s` template `%s` needs internal structure." % [node_id, feature])
+			"red_alarm_hall":
+				if (red_lights_by_owner.get(node_id, []) as Array).size() != 1:
+					issues.append("red_alarm_hall `%s` needs exactly one localized red alarm light." % node_id)
+				if (red_panels_by_owner.get(node_id, []) as Array).size() != 1:
+					issues.append("red_alarm_hall `%s` needs one visible red alarm panel." % node_id)
+				if (red_attractors_by_owner.get(node_id, []) as Array).size() != 1:
+					issues.append("red_alarm_hall `%s` needs one monster attractor area." % node_id)
+			"maintenance_hall":
+				_validate_maintenance_props(node_id, props_by_owner.get(node_id, []), issues)
+			"large_split_hall", "large_side_chamber_hall", "hub_hall":
+				if (internal_by_owner.get(node_id, []) as Array).is_empty():
+					issues.append("Feature anchor `%s` template `%s` needs internal structure." % [node_id, feature])
+			_:
+				issues.append("Feature anchor `%s` has unsupported scene template `%s`." % [node_id, feature])
+
+func _validate_low_wall_hall(node_id: String, low_walls: Array, issues: Array[String]) -> void:
+	if low_walls.size() < 4 or low_walls.size() > 8:
+		issues.append("low_wall_maze_hall `%s` must use 4-8 half-height walls; found=%d." % [node_id, low_walls.size()])
+	var module_types := {}
+	for low_wall in low_walls:
+		var low_wall3d := low_wall as Node3D
+		if low_wall3d == null:
+			continue
+		module_types[String(low_wall3d.get_meta("low_wall_module", ""))] = true
+		var collision = low_wall3d.get_node_or_null("Collision") as CollisionShape3D
+		if collision == null or collision.shape == null:
+			issues.append("low_wall_maze_hall `%s` has a half-wall without collision: %s." % [node_id, _node_label(low_wall3d)])
+	if module_types.keys().size() < 3:
+		issues.append("low_wall_maze_hall `%s` needs varied low-wall modules; found=%d." % [node_id, module_types.keys().size()])
+
+func _has_adjacent_dark_zone(node_id: String, graph: Dictionary, required_dark_zone: String) -> bool:
+	var node_map := {}
+	for node in graph.get("nodes", []):
+		var node_dict: Dictionary = node
+		node_map[String(node_dict.get("id", ""))] = node_dict
+	for edge in graph.get("edges", []):
+		var a := String(edge.get("a", ""))
+		var b := String(edge.get("b", ""))
+		var other := ""
+		if a == node_id:
+			other = b
+		elif b == node_id:
+			other = a
+		if other.is_empty() or not node_map.has(other):
+			continue
+		if String((node_map[other] as Dictionary).get("dark_zone", "")) == required_dark_zone:
+			return true
+	return false
+
+func _validate_box_hall_props(node_id: String, props: Array, issues: Array[String]) -> void:
+	var box_props: Array[Node3D] = []
+	var has_stack := false
+	for prop in props:
+		var prop3d := prop as Node3D
+		if prop3d == null:
+			continue
+		var prop_id := String(prop3d.get_meta("proc_maze_prop_id", ""))
+		if prop_id.begins_with("Box_"):
+			box_props.append(prop3d)
+		if prop_id in ["Box_Stack_2_A", "Box_Stack_3_A"]:
+			has_stack = true
+	if box_props.size() < 3 or box_props.size() > 7:
+		issues.append("box_hall `%s` must use 3-7 irregular boxes; found=%d." % [node_id, box_props.size()])
+	if not has_stack:
+		issues.append("box_hall `%s` needs at least one visible box stack." % node_id)
+	if box_props.size() >= 3 and _props_are_grid_aligned(box_props):
+		issues.append("box_hall `%s` looks too warehouse-like: boxes are aligned in one row/grid." % node_id)
+
+func _validate_maintenance_props(node_id: String, props: Array, issues: Array[String]) -> void:
+	var cleaning_count := 0
+	var equipment_count := 0
+	for prop in props:
+		var prop3d := prop as Node3D
+		if prop3d == null:
+			continue
+		var prop_id := String(prop3d.get_meta("proc_maze_prop_id", ""))
+		if prop_id in ["Bucket_A", "Mop_A", "CleaningClothPile_A"]:
+			cleaning_count += 1
+		if prop_id in ["SmallCabinet_A", "ElectricBox_A", "MetalShelf_A", "Box_Small_A", "Box_Medium_A"]:
+			equipment_count += 1
+	if props.size() < 3 or props.size() > 7:
+		issues.append("maintenance_hall `%s` should stay sparse: feature props=%d." % [node_id, props.size()])
+	if cleaning_count < 1 or equipment_count < 1:
+		issues.append("maintenance_hall `%s` needs both cleaning and equipment/storage props." % node_id)
+
+func _validate_dark_environment(scene_root: Node, graph: Dictionary, issues: Array[String], metrics: Dictionary) -> void:
+	var world_environment := _find_first_world_environment(scene_root)
+	if world_environment == null or world_environment.environment == null:
+		issues.append("WorldEnvironment is missing for proc-maze darkness tuning.")
+	else:
+		var ambient_energy := world_environment.environment.ambient_light_energy
+		metrics["world_ambient_energy"] = ambient_energy
+		if ambient_energy > 0.04:
+			issues.append("WorldEnvironment ambient light is too high for distant darkness: %.3f." % ambient_energy)
+		if world_environment.environment.ambient_light_sky_contribution > 0.001:
+			issues.append("WorldEnvironment sky contribution must not lift dark rooms.")
+
+	var panels_by_owner := _nodes_by_owner(scene_root, "ceiling_light_panel")
+	var lights_by_owner := _nodes_by_owner(scene_root, "ceiling_light")
+	var dark_modules := {}
+	for module in _get_nodes_in_group(scene_root, "proc_dark_zone"):
+		var module3d := module as Node3D
+		if module3d != null:
+			dark_modules[String(module3d.get_meta("id", ""))] = module3d
+	for node in graph.get("nodes", []):
+		var node_dict: Dictionary = node
+		var node_id := String(node_dict.get("id", ""))
+		var dark_zone := String(node_dict.get("dark_zone", ""))
+		if dark_zone.is_empty():
+			continue
+		if not dark_modules.has(node_id):
+			issues.append("Dark zone `%s` has no proc_dark_zone scene module." % node_id)
+		if panels_by_owner.has(node_id) or lights_by_owner.has(node_id):
+			issues.append("Dark zone `%s` must not have local ceiling lights." % node_id)
+
 func _node_should_be_unlit(node: Dictionary) -> bool:
 	var tier = String(node.get("width_tier", ""))
 	var kind = String(node.get("space_kind", ""))
 	var module_type = String(node.get("type", ""))
+	if not String(node.get("dark_zone", "")).is_empty():
+		return true
 	if tier == "narrow_corridor":
 		return true
 	if kind in ["narrow_corridor", "l_turn", "junction", "offset_corridor"]:
@@ -421,6 +626,43 @@ func _node_label(node: Node) -> String:
 	if node.is_inside_tree():
 		return String(node.get_path())
 	return node.name
+
+func _nodes_by_owner(root: Node, group_name: String) -> Dictionary:
+	var result := {}
+	for node in _get_nodes_in_group(root, group_name):
+		var node3d := node as Node3D
+		if node3d == null:
+			continue
+		var owner_id := String(node3d.get_meta("owner_module_id", ""))
+		if owner_id.is_empty():
+			continue
+		var owner_nodes: Array = result.get(owner_id, [])
+		owner_nodes.append(node3d)
+		result[owner_id] = owner_nodes
+	return result
+
+func _props_are_grid_aligned(props: Array[Node3D]) -> bool:
+	var min_x := INF
+	var max_x := -INF
+	var min_z := INF
+	var max_z := -INF
+	for prop in props:
+		var position := _accumulated_position(prop)
+		min_x = minf(min_x, position.x)
+		max_x = maxf(max_x, position.x)
+		min_z = minf(min_z, position.z)
+		max_z = maxf(max_z, position.z)
+	return max_x - min_x < 0.35 or max_z - min_z < 0.35
+
+func _find_first_world_environment(root: Node) -> WorldEnvironment:
+	var world_environment := root as WorldEnvironment
+	if world_environment != null:
+		return world_environment
+	for child in root.get_children():
+		var found := _find_first_world_environment(child)
+		if found != null:
+			return found
+	return null
 
 func _get_nodes_in_group(root: Node, group_name: String) -> Array:
 	var result = []

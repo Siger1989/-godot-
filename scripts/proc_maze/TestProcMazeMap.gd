@@ -14,6 +14,7 @@ const CameraControllerScript = preload("res://scripts/camera/CameraController.gd
 const LightingControllerScript = preload("res://scripts/lighting/LightingController.gd")
 const LightingTuningPanelScript = preload("res://scripts/lighting/LightingTuningPanel.gd")
 const ForegroundOcclusionScript = preload("res://scripts/camera/ForegroundOcclusion.gd")
+const OnlineGameBridgeScript = preload("res://scripts/gameplay/OnlineGameBridge.gd")
 
 const PREVIEW_CELL_SIZE := 2.5
 
@@ -24,13 +25,23 @@ const PREVIEW_CELL_SIZE := 2.5
 @export var preview_without_ceiling := false
 @export var preview_keep_ceiling_lights := true
 @export var preview_full_map_camera := false
+@export var preview_show_feature_labels := false
+@export var show_debug_map_markers := false
+@export var show_guidance_graffiti := false
+@export var rebuild_on_ready := false
+@export var feature_preview_start_module_id := ""
 @export var last_result = {}
 
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-	if enable_playable_test:
+	if rebuild_on_ready:
+		call_deferred("_rebuild_for_runtime")
+	elif enable_playable_test:
 		call_deferred("_setup_playable_test")
+
+func _rebuild_for_runtime() -> void:
+	rebuild()
 
 func rebuild() -> Dictionary:
 	var registry = ModuleRegistry.new()
@@ -75,10 +86,18 @@ func rebuild() -> Dictionary:
 	builder.include_ceiling_lights = true
 	if preview_without_ceiling:
 		builder.include_ceiling_lights = preview_keep_ceiling_lights
+	builder.include_guidance_graffiti = show_guidance_graffiti
 	var build_summary = builder.build(self, graph, registry)
 	var scene_validator = SceneValidator.new()
 	var scene_validation = scene_validator.validate(self, graph, map_validation)
-	DebugView.new().build(self, graph, scene_validation)
+	if show_debug_map_markers or preview_full_map_camera:
+		DebugView.new().build(self, graph, scene_validation)
+	else:
+		_remove_visual_debug_nodes()
+	if preview_show_feature_labels:
+		_build_feature_preview_labels(graph)
+	else:
+		_remove_feature_preview_labels()
 	if enable_playable_test:
 		_setup_playable_test()
 	else:
@@ -117,6 +136,8 @@ func rebuild() -> Dictionary:
 		"normal_room_count": int(metrics.get("normal_room_count", 0)),
 		"large_width_count": int(metrics.get("large_width_count", 0)),
 		"hub_width_count": int(metrics.get("hub_width_count", 0)),
+		"feature_anchor_count": int(metrics.get("feature_anchor_count", 0)),
+		"dark_zone_count": int(metrics.get("dark_zone_count", 0)),
 		"entrance_to_exit_reachable": true,
 		"has_overlap": bool(scene_metrics.get("has_overlap", false)),
 		"has_door_to_wall": bool(scene_metrics.get("has_door_to_wall", false)),
@@ -126,8 +147,16 @@ func rebuild() -> Dictionary:
 		"active_light_count": int(scene_metrics.get("active_light_count", 0)),
 		"active_light_fixture_count": int(scene_metrics.get("active_light_fixture_count", scene_metrics.get("active_light_count", 0))),
 		"active_light_source_count": int(scene_metrics.get("active_light_source_count", scene_metrics.get("active_light_count", 0))),
+		"feature_pillar_count": int(scene_metrics.get("feature_pillar_count", 0)),
+		"feature_low_wall_count": int(scene_metrics.get("feature_low_wall_count", 0)),
+		"feature_prop_count": int(scene_metrics.get("feature_prop_count", 0)),
+		"red_alarm_light_count": int(scene_metrics.get("red_alarm_light_count", 0)),
+		"red_alarm_attractor_count": int(scene_metrics.get("red_alarm_attractor_count", 0)),
+		"world_ambient_energy": float(scene_metrics.get("world_ambient_energy", 0.0)),
 		"preview_without_ceiling": preview_without_ceiling,
 		"preview_full_map_camera": preview_full_map_camera,
+		"show_debug_map_markers": show_debug_map_markers,
+		"show_guidance_graffiti": show_guidance_graffiti,
 		"issues": scene_validation.get("issues", []),
 		"build_summary": build_summary,
 		"attempts": attempts,
@@ -167,6 +196,8 @@ func _print_result(result: Dictionary) -> void:
 		"normal_room_count",
 		"large_width_count",
 		"hub_width_count",
+		"feature_anchor_count",
+		"dark_zone_count",
 		"entrance_to_exit_reachable",
 		"has_overlap",
 		"has_door_to_wall",
@@ -175,6 +206,12 @@ func _print_result(result: Dictionary) -> void:
 		"draw_calls",
 		"active_light_count",
 		"active_light_source_count",
+		"feature_pillar_count",
+		"feature_low_wall_count",
+		"feature_prop_count",
+		"red_alarm_light_count",
+		"red_alarm_attractor_count",
+		"world_ambient_energy",
 	]:
 		if result.has(key):
 			print("%s=%s" % [key, str(result[key])])
@@ -189,6 +226,19 @@ func _remove_playable_test_nodes() -> void:
 		var child = get_node_or_null(child_name)
 		if child != null:
 			child.free()
+
+func _remove_visual_debug_nodes() -> void:
+	var level_root = get_node_or_null("LevelRoot") as Node3D
+	if level_root != null:
+		var debug_view = level_root.get_node_or_null("DebugView")
+		if debug_view != null:
+			debug_view.free()
+	_remove_feature_preview_labels()
+
+func _remove_feature_preview_labels() -> void:
+	var labels = get_node_or_null("FeaturePreviewLabels")
+	if labels != null:
+		labels.free()
 
 func _configure_full_map_preview_camera(graph: Dictionary) -> void:
 	var camera = get_node_or_null("Camera3D") as Camera3D
@@ -251,6 +301,14 @@ func _ensure_runtime_systems() -> void:
 	occlusion.set("camera_path", NodePath("../../CameraRig/Camera3D"))
 	occlusion.set("target_path", NodePath("../../PlayerRoot/Player"))
 
+	var online_bridge = systems.get_node_or_null("OnlineGameBridge")
+	if online_bridge == null:
+		online_bridge = Node.new()
+		online_bridge.name = "OnlineGameBridge"
+		systems.add_child(online_bridge)
+	online_bridge.process_priority = 50
+	online_bridge.set_script(OnlineGameBridgeScript)
+
 func _ensure_player() -> Node3D:
 	var player_root = _get_or_create_node3d(self, "PlayerRoot")
 	var player = player_root.get_node_or_null("Player") as Node3D
@@ -288,11 +346,13 @@ func _ensure_camera_rig() -> Node3D:
 func _place_player_at_entrance(player: Node3D) -> void:
 	if player == null:
 		return
-	var marker = _find_marker_by_type("Entrance")
-	if marker == null:
-		return
 	var player_parent = player.get_parent() as Node3D
-	var spawn_position = _get_root_relative_position(marker)
+	var spawn_position := _feature_preview_start_position()
+	if not spawn_position.is_finite():
+		var marker = _find_marker_by_type("Entrance")
+		if marker == null:
+			return
+		spawn_position = _get_root_relative_position(marker)
 	spawn_position.y = maxf(spawn_position.y, 0.05)
 	if player_parent != null:
 		player.position = spawn_position - _get_root_relative_position(player_parent)
@@ -338,63 +398,54 @@ func _choose_proc_maze_monster_spawns() -> Array[Dictionary]:
 	if candidates.is_empty():
 		return []
 	var entrance_position := _marker_position("Entrance")
-	var red_candidate: Dictionary = candidates[0]
-	var normal_a: Dictionary = candidates[min(1, candidates.size() - 1)]
-	var normal_b: Dictionary = candidates[min(2, candidates.size() - 1)]
-	var nightmare_a: Dictionary = candidates[min(3, candidates.size() - 1)]
-	var nightmare_b: Dictionary = candidates[min(4, candidates.size() - 1)]
-	var normal_a_position := _monster_spawn_position(normal_a, 0)
-	var normal_b_position := _monster_spawn_position(normal_b, 1)
-	var nightmare_a_position := _monster_spawn_position(nightmare_a, 2)
-	var nightmare_b_position := _monster_spawn_position(nightmare_b, 3)
-	var red_position := _monster_spawn_position(red_candidate, 4)
-	return [
-		{
-			"name": "Monster",
-			"template_id": "normal",
-			"role": "normal",
-			"attach_escape_key": false,
-			"position": normal_a_position,
-			"yaw": _yaw_facing_toward(normal_a_position, entrance_position),
-			"source_module_id": String(normal_a.get("id", "")),
-		},
-		{
-			"name": "Monster_Normal_B",
-			"template_id": "normal_b",
-			"role": "normal",
-			"attach_escape_key": false,
-			"position": normal_b_position,
-			"yaw": _yaw_facing_toward(normal_b_position, entrance_position),
-			"source_module_id": String(normal_b.get("id", "")),
-		},
+	var role_specs: Array[Dictionary] = [
 		{
 			"name": "NightmareCreature_A",
 			"template_id": "nightmare",
 			"role": "nightmare",
 			"attach_escape_key": false,
-			"position": nightmare_a_position,
-			"yaw": _yaw_facing_toward(nightmare_a_position, entrance_position),
-			"source_module_id": String(nightmare_a.get("id", "")),
 		},
 		{
 			"name": "NightmareCreature_B",
 			"template_id": "nightmare_b",
 			"role": "nightmare",
 			"attach_escape_key": false,
-			"position": nightmare_b_position,
-			"yaw": _yaw_facing_toward(nightmare_b_position, entrance_position),
-			"source_module_id": String(nightmare_b.get("id", "")),
 		},
 		{
-			"name": "Monster_Red_Hunter",
+			"name": "NightmareCreature_C",
+			"template_id": "nightmare",
+			"role": "nightmare",
+			"attach_escape_key": false,
+		},
+		{
+			"name": "NightmareCreature_D",
+			"template_id": "nightmare_b",
+			"role": "nightmare",
+			"attach_escape_key": false,
+		},
+		{
+			"name": "Monster_Red_Hunter_A",
 			"template_id": "red_hunter",
 			"role": "red",
 			"attach_escape_key": false,
-			"position": red_position,
-			"yaw": _yaw_facing_toward(red_position, entrance_position),
-			"source_module_id": String(red_candidate.get("id", "")),
+		},
+		{
+			"name": "Monster_Red_Hunter_B",
+			"template_id": "red_hunter",
+			"role": "red",
+			"attach_escape_key": false,
 		},
 	]
+	var result: Array[Dictionary] = []
+	for index in range(role_specs.size()):
+		var candidate: Dictionary = candidates[min(index, candidates.size() - 1)]
+		var position := _monster_spawn_position(candidate, index)
+		var spec: Dictionary = role_specs[index].duplicate()
+		spec["position"] = position
+		spec["yaw"] = _yaw_facing_toward(position, entrance_position)
+		spec["source_module_id"] = String(candidate.get("id", ""))
+		result.append(spec)
+	return result
 
 func _collect_monster_spawn_candidates() -> Array[Dictionary]:
 	var candidates: Array[Dictionary] = []
@@ -476,6 +527,27 @@ func _find_marker_by_type(marker_type: String) -> Node3D:
 			return marker_node
 	return null
 
+func _feature_preview_start_position() -> Vector3:
+	var module_id := feature_preview_start_module_id.strip_edges()
+	if module_id.is_empty():
+		return Vector3(INF, INF, INF)
+	var module := _find_module_by_id(module_id)
+	if module == null:
+		return Vector3(INF, INF, INF)
+	return _get_root_relative_position(module)
+
+func _find_module_by_id(module_id: String) -> Node3D:
+	var modules_root := get_node_or_null("LevelRoot/Geometry/Modules") as Node3D
+	if modules_root == null:
+		return null
+	for child in modules_root.get_children():
+		var module := child as Node3D
+		if module == null:
+			continue
+		if String(module.get_meta("id", "")) == module_id:
+			return module
+	return null
+
 func _configure_gameplay_cameras(camera_rig: Node3D) -> void:
 	var overview_camera = get_node_or_null("Camera3D") as Camera3D
 	if overview_camera != null:
@@ -487,6 +559,75 @@ func _configure_gameplay_cameras(camera_rig: Node3D) -> void:
 func _snap_camera_to_player(camera_rig: Node3D) -> void:
 	if camera_rig != null and camera_rig.is_inside_tree() and camera_rig.has_method("snap_to_target"):
 		camera_rig.snap_to_target()
+
+func _build_feature_preview_labels(graph: Dictionary) -> void:
+	var existing := get_node_or_null("FeaturePreviewLabels")
+	if existing != null:
+		existing.free()
+	var root := Node3D.new()
+	root.name = "FeaturePreviewLabels"
+	add_child(root)
+	var nodes: Array = graph.get("nodes", [])
+	for node in nodes:
+		var feature := String(node.get("feature_template", ""))
+		var dark_zone := String(node.get("dark_zone", ""))
+		if feature.is_empty() and dark_zone.is_empty():
+			continue
+		var module_id := String(node.get("id", ""))
+		var label_text := "%s %s" % [module_id, feature if not feature.is_empty() else dark_zone]
+		var color := Color(1.0, 0.72, 0.16) if not feature.is_empty() else Color(0.25, 0.65, 1.0)
+		_add_feature_preview_label(root, node, label_text, color)
+		_add_feature_preview_frame(root, node, color)
+
+func _add_feature_preview_label(parent: Node3D, node: Dictionary, label_text: String, color: Color) -> void:
+	var label := Label3D.new()
+	label.name = "FeatureLabel_%s" % String(node.get("id", ""))
+	label.text = label_text
+	label.position = _node_center_from_footprint(node) + Vector3(0.0, 3.1, 0.0)
+	label.pixel_size = 0.035
+	label.font_size = 72
+	label.outline_size = 10
+	label.modulate = color
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	parent.add_child(label)
+
+func _add_feature_preview_frame(parent: Node3D, node: Dictionary, color: Color) -> void:
+	var frame := MeshInstance3D.new()
+	frame.name = "FeatureFrame_%s" % String(node.get("id", ""))
+	frame.mesh = _feature_frame_mesh(node, color)
+	parent.add_child(frame)
+
+func _feature_frame_mesh(node: Dictionary, color: Color) -> ImmediateMesh:
+	var footprint: Dictionary = node.get("footprint", {})
+	var min_x := float(int(footprint.get("x", 0))) * PREVIEW_CELL_SIZE
+	var min_z := float(int(footprint.get("z", 0))) * PREVIEW_CELL_SIZE
+	var max_x := float(int(footprint.get("x", 0)) + int(footprint.get("w", 1))) * PREVIEW_CELL_SIZE
+	var max_z := float(int(footprint.get("z", 0)) + int(footprint.get("h", 1))) * PREVIEW_CELL_SIZE
+	var y := 2.72
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = color
+	var mesh := ImmediateMesh.new()
+	mesh.surface_begin(Mesh.PRIMITIVE_LINES, material)
+	var corners := [
+		Vector3(min_x, y, min_z),
+		Vector3(max_x, y, min_z),
+		Vector3(max_x, y, max_z),
+		Vector3(min_x, y, max_z),
+	]
+	for index in range(corners.size()):
+		mesh.surface_add_vertex(corners[index])
+		mesh.surface_add_vertex(corners[(index + 1) % corners.size()])
+	mesh.surface_end()
+	return mesh
+
+func _node_center_from_footprint(node: Dictionary) -> Vector3:
+	var footprint: Dictionary = node.get("footprint", {})
+	var x := float(int(footprint.get("x", 0))) * PREVIEW_CELL_SIZE
+	var z := float(int(footprint.get("z", 0))) * PREVIEW_CELL_SIZE
+	var w := float(int(footprint.get("w", 1))) * PREVIEW_CELL_SIZE
+	var h := float(int(footprint.get("h", 1))) * PREVIEW_CELL_SIZE
+	return Vector3(x + w * 0.5, 0.0, z + h * 0.5)
 
 func _get_root_relative_position(node: Node3D) -> Vector3:
 	var chain: Array[Node3D] = []

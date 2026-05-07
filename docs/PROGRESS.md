@@ -1,5 +1,580 @@
 # PROGRESS
 
+## Four Nightmares, Faster Sprint, Git Upload Prep, And APK V0.30
+
+2026-05-07:
+- Confirmed the formal large maze already contains four Nightmare hearing monsters:
+  - `NightmareCreature_A`
+  - `NightmareCreature_B`
+  - `NightmareCreature_C`
+  - `NightmareCreature_D`
+- Confirmed the formal pressure setup is four Nightmare monsters plus two red vision hunters.
+- Increased player sprint speed.
+  - `PlayerController.gd` sprint multiplier changed from `1.45` to `1.65`.
+  - Player sprint speed is now `4.29`.
+  - Current validated max monster speed is `3.40`.
+- Updated proc-maze monster validation.
+  - It requires exactly four Nightmare monsters.
+  - It requires every monster to keep cross-room patrol enabled.
+  - It requires player sprint speed to clearly exceed all monster movement speeds.
+- Updated `.gitignore`.
+  - `*.apk` is ignored so local APK artifacts are not pushed to GitHub.
+  - `local_gdsync_keys.cfg` remains ignored.
+- Exported a new local Android debug APK:
+  - Root APK: `backrooms_proc_maze_mvp_debug.apk`
+  - Build APK: `builds/android/backrooms_proc_maze_mvp_debug.apk`
+  - Size: `280,661,167` bytes
+  - SHA256: `79D9975BEC53B1DF7ED922FF4CC5E426F9BF21882B478F53874F44739C6D8FF2`
+
+Validation:
+- Godot parse: PASS.
+- `ValidateProcMazeMonsterKey.gd`: PASS, `nightmare=4`, `red=2`, `player_sprint=4.29`, `max_monster=3.40`.
+- `ValidateProcMazePlayable.gd`: PASS.
+- `ValidateNightmareHearingAI.gd`: PASS.
+- `ValidateMobileControls.gd`: PASS with `FORCE_MOBILE_CONTROLS=1`.
+- `--export-debug Android`: PASS, log `logs/export_android_debug_v030_20260507.log`.
+- APK signing verification: PASS, log `logs/apksigner_verify_root_v030_20260507.log`.
+- APK package inspection: PASS, `assets/local_gdsync_keys.cfg` exists.
+
+Remaining:
+- Needs live phone testing for sprint tuning, four-Nightmare pressure, and GD-Sync two-client behavior.
+- The packaged GD-Sync key remains small-scope test only and must stay out of Git.
+- Local APK artifacts are intentionally ignored and not uploaded to GitHub.
+
+## Nightmare Alert Fix, Surface Crawl, And APK V0.29
+
+2026-05-07:
+- Fixed Nightmare hearing state progression.
+  - Continuous player movement no longer keeps resetting the monster into `HEARING_ALERT` / `HEARING_CONFIRM`.
+  - A single heard footstep now progresses through alert/confirm and then into chase or investigation.
+  - During `CHASE`, repeated footstep noise updates the target/heard position without making the monster stop and stare.
+  - During `INVESTIGATE`, repeated footstep noise updates the last heard position and keeps the monster moving.
+- Added Nightmare wall/ceiling crawl visuals.
+  - Surface modes are now `FLOOR`, `WALL`, and `CEILING`.
+  - Wall and ceiling modes use `Creature_armature|crawl`.
+  - Ceiling mode inverts the visual model.
+  - Wall mode orients the visual model perpendicular to the wall normal.
+  - Navigation remains floor-based for stability while the visual model raycasts to walls/ceilings.
+- Added/updated validation.
+  - `ValidateNightmareHearingAI.gd` covers single-sound progression and no repeated pause reset during chase/investigate.
+  - `ValidateNightmareSurfaceCrawl.gd` covers ceiling inversion, wall perpendicular orientation, and crawl animation use.
+- Exported a new Android debug APK:
+  - Root APK: `backrooms_proc_maze_mvp_debug.apk`
+  - Build APK: `builds/android/backrooms_proc_maze_mvp_debug.apk`
+  - Size: `280,661,167` bytes
+  - SHA256: `44CF8AEF05891B425AAE6479B2285DDEF286EF3E218D695875066D10286D16E3`
+
+Validation:
+- Godot parse: PASS.
+- `ValidateNightmareSurfaceCrawl.gd`: PASS.
+- `ValidateNightmareHearingAI.gd`: PASS.
+- `ValidateMonsterAI.gd`: PASS.
+- `ValidateRedAlarmAttractionAI.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+- `ValidateLoginMenu.gd`: PASS.
+- `--export-debug Android`: PASS, log `logs/export_android_debug_v029_20260507.log`.
+- APK signing verification: PASS, log `logs/apksigner_verify_root_v029_20260507.log`.
+- APK package inspection: PASS, `assets/local_gdsync_keys.cfg` exists.
+
+Remaining:
+- Needs live visual testing on PC/phone to tune when wall crawl vs ceiling crawl is triggered in actual maze geometry.
+- The packaged GD-Sync key remains small-scope test only and should be removed before wider distribution.
+- The MCP runtime port `7777` warning still appears in headless validation logs but does not fail validation.
+
+## Login Touch Fix, Packaged GD-Sync Key, And APK V0.28
+
+2026-05-07:
+- Fixed the phone login touch path.
+  - Create/Join buttons now activate on press and release the input focus before doing room logic.
+  - The virtual keyboard is explicitly hidden when a mode button is pressed.
+  - Login layout is now one full-width `单人` button plus a second row with `创建房间` / `加入房间`.
+  - Buttons no longer overflow the compact input form width.
+- Updated login validation.
+  - It checks button/input rectangles do not overlap.
+  - It simulates tapping Create Room and Join Room.
+  - It fails if those taps leave the room-code input focused.
+  - It confirms host/join room state is configured through the UI touch path.
+- Remembered the future action/keyframe adjuster plan.
+  - Added `docs/ANIMATION_KEYFRAME_ADJUSTER_PLAN.md`.
+  - Added D097 to `docs/DECISIONS.md`.
+  - The plan uses per-keyframe contact constraints rather than global foot locking.
+- Packaged GD-Sync key for small-scope test APK use.
+  - Added local `local_gdsync_keys.cfg`.
+  - It remains gitignored.
+  - `export_presets.cfg` now includes `local_gdsync_keys.cfg` in the exported package.
+  - APK inspection confirms `assets/local_gdsync_keys.cfg` exists in the package.
+- Exported a new Android debug APK:
+  - Root APK: `backrooms_proc_maze_mvp_debug.apk`
+  - Build APK: `builds/android/backrooms_proc_maze_mvp_debug.apk`
+  - Size: `280,648,674` bytes
+  - SHA256: `2B83A451A7317821582BF213C2F4D2ABEBF26F01849915A77B27CD96D819382F`
+
+Validation:
+- Godot parse: PASS.
+- `ValidateLoginMenu.gd`: PASS.
+- `ValidateGDSyncIntegration.gd`: PASS.
+- `--export-debug Android`: PASS, log `logs/export_android_debug_v028_20260507.log`.
+- APK signing verification: PASS, log `logs/apksigner_verify_root_v028_20260507.log`.
+- APK package inspection: PASS, `assets/local_gdsync_keys.cfg` exists.
+
+Remaining:
+- Needs physical Android device testing for actual Create Room / Join Room flow and two-client GD-Sync behavior.
+- The packaged GD-Sync key is acceptable only for the current small-scope test build and should be removed before wider distribution.
+- The MCP runtime port `7777` warning still appears in headless validation logs but does not fail validation.
+
+## Login UI Scale, Hidden Formal Map Markers, And APK V0.26
+
+2026-05-07:
+- Enlarged the login UI again for phone readability/tapping while keeping the input fields compact and centered.
+  - Inputs: `320x76`, font size `34`.
+  - Mode buttons: `118x72`, font size `21`.
+  - Title, subtitle, and status text are also larger.
+- Hid formal playable map markers.
+  - The formal large maze no longer generates the `DebugView` route/label markers.
+  - The formal large maze no longer generates wall guidance graffiti arrows.
+  - The no-ceiling/full-map preview still enables debug markers and guidance graffiti for topology/debug work.
+- Re-baked:
+  - `scenes/tests/Test_ProcMazeMap.tscn`
+  - `scenes/tests/Test_ProcMazeMap_NoCeilingPreview.tscn`
+- Exported a new Android debug APK:
+  - Root APK: `backrooms_proc_maze_mvp_debug.apk`
+  - Build APK: `builds/android/backrooms_proc_maze_mvp_debug.apk`
+  - Size: `280,644,504` bytes
+  - SHA256: `90014E650602A21CDDC4E7F5ABA1AA44056A7F413484AABD74D98A5DE3112D24`
+
+Validation:
+- Godot parse: PASS.
+- `ValidateLoginMenu.gd`: PASS.
+- `ValidateGuidanceGraffiti.gd`: PASS when guidance graffiti is explicitly enabled for validation.
+- `BakeTestProcMazeMap.gd`: PASS.
+- `BakeTestProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidateTestProcMazeMap.gd`: PASS, confirms formal scene contains no debug map markers or guidance graffiti markers.
+- Formal scene marker scan: PASS, no `GuidanceArrow`, `DebugView`, `FeaturePreviewLabels`, `MacroRoute`, `SmallLoop_`, or `proc_guidance_graffiti` marker names remain in `Test_ProcMazeMap.tscn`.
+- `ValidateProcMazePlayable.gd`: PASS.
+- `ValidateProcMazeFeatureAnchors.gd`: PASS.
+- `ValidateProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidateMobileControls.gd`: PASS with `FORCE_MOBILE_CONTROLS=1`.
+- `ValidateRedAlarmAttractionAI.gd`: PASS.
+- `--export-debug Android`: PASS, log `logs/export_android_debug_v026_20260507.log`.
+- APK signing verification: PASS, log `logs/apksigner_verify_root_v026_20260507.log`.
+
+Remaining:
+- Needs physical Android device visual check for the larger login UI and confirmation that formal gameplay no longer shows glowing debug/route markers.
+- The MCP runtime port `7777` warning still appears in headless validation logs but does not fail validation.
+
+## Mobile Controls, Stamina, Alarm Lighting, And APK V0.25
+
+2026-05-07:
+- Improved phone controls.
+  - Enlarged the mobile joystick and sprint/crouch buttons.
+  - Moved sprint/crouch farther inward from the screen edge.
+  - Added a mobile `设置` button and runtime phone settings panel.
+  - The settings panel can adjust render scale, touch sensitivity, camera distance, and button size.
+  - While the settings panel is open, the joystick/sprint/crouch controls can be dragged to new positions and saved to `user://mobile_controls.cfg`.
+  - Sprint button touches no longer consume drag input, so holding sprint still allows camera/view dragging.
+- Added sprint stamina.
+  - Sprinting drains stamina.
+  - Walking/standing recovers stamina after a short delay.
+  - The player HUD now includes a stamina bar under health.
+- Adjusted the login menu for phone notch/safe-area comfort.
+  - Input fields are narrower, taller, and use larger text.
+  - Mode buttons are slightly narrower and taller.
+- Updated red alarm lighting behavior.
+  - Red alarm panels/lights are inactive and dark by default.
+  - Walking into the alarm area turns on audio and a stronger red room light.
+  - Active red light uses shadow casting and a room-scale limited range to reduce wall bleed.
+  - Alarm deactivation turns the red light and panel emission off again.
+- Re-baked:
+  - `scenes/tests/Test_ProcMazeMap.tscn`
+  - `scenes/tests/Test_ProcMazeMap_NoCeilingPreview.tscn`
+- Exported a new Android debug APK:
+  - Root APK: `backrooms_proc_maze_mvp_debug.apk`
+  - Build APK: `builds/android/backrooms_proc_maze_mvp_debug.apk`
+  - Size: `285,940,632` bytes
+  - SHA256: `C4A9FC79F8C24C44765C85B6225308424741608928C51D8A5DEEBC6EB039B67E`
+
+Validation:
+- `ValidateMobileControls.gd`: PASS, confirms larger/inset controls, settings button, stamina bar/drain/recovery, and sprint-touch drag passthrough.
+- `ValidateLoginMenu.gd`: PASS, confirms narrower/taller input fields and larger input font.
+- `ValidateRedAlarmAttractionAI.gd`: PASS, confirms alarm audio, inactive/active/off red light states, room-scale active light, route steering, stuck recovery, player override, and audio stop.
+- `BakeTestProcMazeMap.gd`: PASS.
+- `BakeTestProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidatePlayerCrouchPose.gd`: PASS.
+- `ValidateTestProcMazeMap.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+- `ValidatePlayerAnimation.gd`: PASS.
+- `ValidateProcMazeFeatureAnchors.gd`: PASS.
+- `ValidateProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidateMonsterAI.gd`: PASS.
+- `ValidateNightmareHearingAI.gd`: PASS.
+- `--export-debug Android`: PASS, log `logs/export_android_debug_v025_20260507.log`.
+- APK signing verification: PASS, logs `logs/apksigner_verify_v025_20260507.log` and `logs/apksigner_verify_root_v025_20260507.log`.
+
+Remaining:
+- Needs physical Android device playtest for actual thumb comfort, saved button positions, phone speaker alarm volume, performance at different render scales, and live GD-Sync online room behavior.
+- The MCP runtime port `7777` warning still appears in headless validation logs but does not fail validation.
+
+## Android Debug APK Export V0.24
+
+2026-05-07:
+- Built the Android debug APK from the formal `Android` export preset.
+  - Export output: `builds/android/backrooms_proc_maze_mvp_debug.apk`.
+  - Copied playable APK to project root: `backrooms_proc_maze_mvp_debug.apk`.
+- Prepared this machine's local Godot Android export environment.
+  - Installed Godot 4.6.2 Android export templates.
+  - Installed Android SDK command-line tools, platform-tools, build-tools 35.0.0, and Android platform 35 under `D:/GodotAndroid/sdk`.
+  - Generated the debug keystore at `D:/GodotAndroid/keystores/debug.keystore`.
+  - Configured Godot editor Android SDK/JDK paths for this Windows user.
+
+Validation:
+- `--export-debug Android`: PASS, log `logs/export_android_debug_final_20260507.log`.
+- APK signing verification: PASS, log `logs/apksigner_verify_final_20260507.log`.
+- Root APK size: `285,924,248` bytes.
+
+Remaining:
+- Needs device install/playtest for Android runtime performance, touch controls, GD-Sync online join/host behavior, and alarm audio volume on phone speakers.
+
+## Red Alarm Audio And Anti-Wall Pathing V0.23
+
+2026-05-07:
+- Added sound to red alarm attractors.
+  - `RedAlarmAttractor.gd` now creates a runtime `AudioStreamPlayer3D` named `RedAlarmAudio`.
+  - The alarm sound is a generated looping siren stream, so no external audio file is required.
+  - Alarm audio starts when the alarm activates and stops when the alarm deactivates after player exit/linger.
+- Improved monster routing when responding to red alarms.
+  - Generated split/offset large rooms now include internal navigation waypoints at the actual inner-door/gap location.
+  - When a monster and alarm are in the same room but an internal wall blocks the direct line, the monster targets the internal doorway waypoint first instead of running straight into the wall.
+  - Alarm pursuit now has stuck detection; if the monster stops making progress or hits a wall, it clears the stale alarm route and repaths.
+- Re-baked `Test_ProcMazeMap.tscn` and `Test_ProcMazeMap_NoCeilingPreview.tscn` so the saved scenes include the internal navigation waypoints.
+
+Validation:
+- `ValidateRedAlarmAttractionAI.gd`: PASS, confirms alarm audio plays/stops, cross-room alarm routing uses portal waypoints, same-room W47 routing uses `InternalNavWaypoint_W47_00`, stuck recovery clears stale route, and visible player overrides alarm response.
+- `BakeTestProcMazeMap.gd`: PASS.
+- `BakeTestProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidateTestProcMazeMap.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+- `ValidateMonsterAI.gd`: PASS.
+- `ValidateNightmareHearingAI.gd`: PASS.
+- `ValidateProcMazeFeatureAnchors.gd`: PASS.
+- `ValidateProcMazeNoCeilingPreview.gd`: PASS.
+- Forbidden-pattern scan: PASS for this change; the only match was the existing accepted guidance-graffiti transparency path in `ProcMazeSceneBuilder.gd`.
+
+Remaining:
+- Needs a first-person visual/audio pass in `run_game.bat` or `run_proc_maze_test.bat` to tune alarm volume and whether the siren is too sharp or too quiet.
+- This is still graph/waypoint steering, not full navmesh pathfinding.
+
+## Player Bone Crouch Pose And MVP Nightmare V0.22
+
+2026-05-07:
+- Reworked crouch so it is no longer a compressed/scaled player model.
+  - `ModelRoot.scale` is kept at the standing value while crouching.
+  - Crouch now applies a procedural skeleton pose to hips, spine, upper legs, lower legs, and feet.
+  - The collision capsule still shrinks and lowers, so crouch has the expected gameplay collision effect.
+  - The crouch pose is re-applied after animation updates so the skeleton pose is visible instead of being overwritten by the animation player.
+- Updated `ValidatePlayerCrouchPose.gd` so any `ModelRoot` compression fails validation; it now requires bone-pose changes plus collision lowering.
+- Made the MVP hearing monster explicit:
+  - `NightmareCreature_A_MVP` in `FourRoomMVP.tscn` is tagged with `metadata/mvp_runtime_hearing_monster = true`.
+  - `ValidateFourRoomMVPMonsterSet.gd` now requires that tag.
+
+Validation:
+- `ValidatePlayerCrouchPose.gd`: PASS, confirms C key drives a skeleton crouch pose without `ModelRoot` scale changes.
+- `ValidateFourRoomMVPMonsterSet.gd`: PASS, confirms MVP contains one runtime Nightmare hearing monster.
+- `ValidateMobileControls.gd`: PASS, confirms phone crouch toggle still works.
+- `ValidatePlayerAnimation.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+- Forbidden-pattern scan: PASS for this change; only existing accepted transparency usages/debug validation references were reported.
+
+Remaining:
+- Needs a non-headless visual pass in `run_game.bat` or `run_mvp_room.bat` to tune the exact bone angles if the crouch silhouette needs adjustment.
+
+## Formal Launcher And GD-Sync Online Flow V0.20
+
+2026-05-07:
+- Cleaned the root launcher set.
+  - Removed `run_feature_anchor_map.bat`, `run_feature_room_preview.bat`, `open_monster_size_source.bat`, and `open_mvp_monster_room.bat`.
+  - Added `run_game.bat` as the formal player-facing launcher.
+  - `run_game.bat` uses the `project.godot` main scene instead of a debug `--scene` override.
+- Confirmed the formal game flow:
+  - `project.godot` main scene remains `res://scenes/ui/LoginMenu.tscn`.
+  - Login menu single-player, host, and join all target `res://scenes/tests/Test_ProcMazeMap.tscn`.
+- Added GD-Sync runtime integration.
+  - Added the GD-Sync addon under `addons/GD-Sync`.
+  - Added `GDSyncBootstrap` autoload to configure keys and lazily create `/root/GDSync`.
+  - Updated `GameSession` so host/join waits for GD-Sync lobby creation/join before entering the maze.
+  - Added `OnlineGameBridge` to the formal proc-maze runtime systems for first-pass remote player transform display.
+  - Patched copied GD-Sync runtime scripts to explicitly preload `ENUMS`, avoiding first-run class-cache compile failures.
+- Added project structure documentation.
+  - Updated `README.md`.
+  - Added `docs/PROJECT_STRUCTURE.md`.
+  - Added key policy in `docs/DECISIONS.md`: do not commit GD-Sync private keys.
+
+Validation:
+- `ValidateProjectLaunchers.gd`: PASS.
+- `ValidateGDSyncIntegration.gd`: PASS, including runtime client instantiation with test keys.
+- `ValidateLoginMenu.gd`: PASS.
+- `ValidateTestProcMazeMap.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+
+Remaining:
+- Live online service validation still requires real GD-Sync keys in local config or ProjectSettings and two running clients.
+- Current online bridge synchronizes basic remote-player position/rotation display only. Monster AI, alarms, pickups, health, and authoritative game-state sync still need a dedicated multiplayer authority pass.
+- Existing headless Godot runs still print the MCP runtime port warning on `7777`; it did not fail validation.
+
+## Game Over And Locker Target Loss V0.19
+
+2026-05-06:
+- Added real game-over behavior to the player health system.
+  - When health reaches `0`, the player is marked dead and `game_over=true`.
+  - A `GameOverLayer` appears with a restart button.
+  - Dead players stop movement/audio updates, hide interaction prompts, and make monsters drop the player target.
+- Added a shared hiding signal for lockers/cabinets.
+  - Entering a hideable sets `hidden_from_monsters=true`.
+  - Exiting clears that hidden state after restoring player transform/visibility/collision.
+  - Hidden players make no footstep noise and expose only a tiny detection height.
+- Updated monster AI target handling.
+  - `forget_target(target)` clears chase/threat/heard/seen memory for that target.
+  - Vision, hearing, chase, attack, and red-alarm visible-player checks treat hidden players as unavailable.
+  - A pending monster attack no longer damages the player after the player has hidden.
+
+Validation:
+- `ValidatePlayerHealthBar.gd`: PASS, confirms zero health creates game-over UI.
+- `ValidateHideableLocker.gd`: PASS, confirms locker enter/exit toggles hidden state.
+- `ValidateMonsterAI.gd`: PASS, confirms hidden players are not seen and monster target is cleared.
+- `ValidateNightmareHearingAI.gd`: PASS, confirms hidden players are not heard.
+- `ValidateRedAlarmAttractionAI.gd`: PASS.
+- `ValidateFourRoomMVPMonsterSet.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+
+Remaining:
+- Needs a first-person pass for Game Over UI readability and hide/lose-target feel in the actual room.
+- Existing headless Godot runs still print the MCP runtime port warning on `7777`; it did not fail validation.
+- Final wrap-up instruction from user: after the current planned work is fully finished and validated, update the handoff docs, then commit and upload/push to GitHub.
+
+## Red Alarm Routed Attraction Fix V0.18
+
+2026-05-06:
+- Fixed red-alarm attraction pathing.
+  - Monsters no longer use the alarm coordinate as a direct straight-line target across walls.
+  - They now build a route through the generated portal/room graph and move toward the next doorway waypoint first.
+- Fixed proc-maze room lookup for AI routing.
+  - Generated proc-maze portals are keyed by room ids like `W42`/`W47`; AI now returns those room ids when available.
+  - Legacy/MVP area ids still work as fallback.
+- While a monster is responding to an alarm, a visible player takes priority and switches the monster to chase/attack.
+- Updated red alarm lifetime:
+  - It stays active while the player remains in the alarm trigger.
+  - After the player leaves, it lingers briefly (`3.5s`) and then stops.
+- Added `ValidateRedAlarmAttractionAI.gd`.
+
+Validation:
+- `ValidateRedAlarmAttractionAI.gd`: PASS, confirms portal waypoint route, player visibility override, and alarm stop after exit linger.
+- `ValidateTestProcMazeMap.gd`: PASS.
+- `ValidateNightmareHearingAI.gd`: PASS.
+- `ValidateMonsterAI.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+
+Remaining:
+- Needs a first-person visual pass to tune `linger_after_player_exit`, alarm radius, and whether the route waypoint looks natural in the exact red-alarm rooms.
+
+## Login Menu And Mode Selection V0.17
+
+2026-05-06:
+- Added `scenes/ui/LoginMenu.tscn` as the new project main scene.
+- Added `scripts/ui/LoginMenu.gd` with:
+  - Player name input.
+  - Room code input.
+  - `单人`, `创建房间`, `加入房间` buttons.
+  - Status text for desktop/mobile crouch controls.
+- Added `scripts/gameplay/GameSession.gd` autoload.
+  - Stores mode selection (`single`, `host`, `join`), player name, and room code.
+  - Generates host room codes and normalizes join room codes.
+  - Marks online selection as pending service integration; no API key is hardcoded.
+- Updated desktop crouch binding to `C` only.
+- Kept the mobile crouch button from V0.16.
+
+Validation:
+- `ValidateLoginMenu.gd`: PASS, `main_scene=res://scenes/ui/LoginMenu.tscn`, `crouch=C`.
+- `ValidateMobileControls.gd`: PASS, sprint and crouch buttons visible.
+- `ValidateTestProcMazeMap.gd`: PASS after the main-scene switch.
+
+Remaining:
+- Real GDS networking is still pending service API integration and secure key handling.
+- APK export is still blocked by missing local Android export templates / SDK / keystore setup.
+
+## Red Alarm Attraction, Escape Branch, Monster Pressure V0.16
+
+2026-05-06:
+- Updated the proc-maze generator to `proc_maze_fixed_layout_v0.16_red_alarm_escape_branch`.
+- Added a west/left bypass branch around `W47 red_alarm_hall`:
+  - Main left route still passes through `W47`.
+  - New bypass loop is `W42 -> W48 -> W49 -> W44`, giving the player a real escape/branch option near the red-alarm choke.
+- Added red-alarm gameplay without inflating feature-room count:
+  - `W47` remains the feature `red_alarm_hall`.
+  - `N12` and `B24` now receive extra red alarm panels/lights/attractors.
+  - `red_alarm_light_count=3`, `red_alarm_attractor_count=3`.
+- Added `scripts/gameplay/RedAlarmAttractor.gd`.
+  - Player proximity activates the alarm.
+  - Active alarms pulse linked red lights.
+  - Monsters inside the alarm radius prioritize moving to the alarm target.
+- Proc-maze monster pressure is now:
+  - `4` Nightmare hearing monsters.
+  - `2` red-role vision monsters.
+  - `0` normal filler monsters.
+- Red-role monster visual source now uses the normal monster model:
+  - `red_hunter` and `red_key_bearer` map to `MonsterRoot/Monster`.
+  - Red-role AI/group behavior remains intact.
+  - Red body tint is now opt-in via `red_role_tint_visual=false` default.
+- Nightmare AI update:
+  - Longer alert/confirm lock-on timing.
+  - Confirmed sound near the player enters chase.
+  - Sound-locked investigate speed is raised but remains below player sprint speed.
+  - Attack recovery is longer so the player has a pull-away window.
+  - Added first-pass ceiling ambush visual behavior during close sound-locked chase.
+- Player update:
+  - Added crouch/silent movement.
+  - Crouch lowers detection target height and produces no footstep noise.
+  - Mobile controls now include both sprint and crouch toggle buttons.
+- Re-baked `Test_ProcMazeMap.tscn` and `Test_ProcMazeMap_NoCeilingPreview.tscn`.
+- Updated layout screenshot: `artifacts/screenshots/test_proc_maze_layout.png`.
+
+Validation:
+- `ValidateTestProcMazeMap.gd`: PASS, `rooms=47`, `loops=5`, `small_loops=3`, `features=7`, `dark_zones=7`, `red_lights=3`, `red_attractors=3`.
+- `BakeTestProcMazeMap.gd`: PASS.
+- `BakeTestProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidateProcMazeMonsterKey.gd`: PASS, `monsters=6`, `nightmare=4`, `red=2`, `normal=0`, `red_model=normal`.
+- `ValidateMobileControls.gd`: PASS, sprint and crouch buttons visible when forced.
+- `ValidateNightmareHearingAI.gd`: PASS, `HEARING_ALERT -> HEARING_CONFIRM -> CHASE`, ceiling ambush metadata active.
+- `ValidateMonsterSizeSource.gd`: PASS, red hunter source no longer uses old red key-bearer model.
+- `ValidateProcMazePlayable.gd`: PASS.
+- `ValidateProcMazeFeatureAnchors.gd`: PASS.
+- `ValidateProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidateProcMazeProps.gd`: PASS.
+- `ValidateProcMazeFeaturePreviewEntrypoints.gd`: PASS.
+- `ValidateMonsterAI.gd`: PASS.
+- `CaptureTestProcMazeMapLayout.gd`: PASS.
+- Android debug APK export attempted and blocked by machine setup:
+  - Missing Godot Android export templates.
+  - Missing configured debug keystore.
+  - Missing configured Java SDK path.
+  - Missing configured Android SDK path.
+  - Log: `logs\export_android_v016_20260506.log`.
+
+Remaining:
+- Needs first-person visual pass with `run_proc_maze_test.bat` for alarm lure feel, crouch/half-wall hiding feel, and Nightmare ceiling ambush readability.
+- Online mode and APK export are still pending. The GDS key must be handled through local/non-committed config or environment, not hardcoded in committed files.
+
+## Proc-Maze Macro Loop, Anchor Rooms, Darkness Layout
+
+2026-05-06:
+- Reworked the playable proc-maze layout to `proc_maze_fixed_layout_v0.12_macro_loop_anchor_rooms_darkness`.
+- The map now has 37 nodes with one declared macro loop: split `N05`, route A length `10`, route B length `9`, merge `N12`, macro cycle length `17`, plus two declared small loops and four dead ends.
+- Route A is the tighter/darker side: long corridor, L-turn, dark doorway room, `Dark_Doorway_Interior`, narrow corridor, and L-shaped pre-merge room.
+- Route B is the larger/feature side: side chamber hall, low-wall maze hall, normal connector, L-room turn, and merge choke.
+- Increased strong feature rooms to seven while keeping ordinary rooms the majority:
+  - `pillar_hall`
+  - `low_wall_maze_hall`
+  - `box_heap_hall`
+  - `dark_doorway_room`
+  - `split_hall`
+  - `side_chamber_hall`
+  - `red_alarm_hall`
+- Feature room signatures now include the required fields: `feature_room_type`, `main_feature`, `door_layout`, `light_profile`, `prop_group`, and `gameplay_role`.
+- Added actual feature geometry and validation for:
+  - 5 irregular full-height pillars.
+  - 5 half-height collision walls with varied low-wall module metadata.
+  - 5 irregular box-heap props.
+  - 1 localized red alarm panel/light.
+  - Sparse side-chamber props.
+- Added/required dark-zone templates: `Dark_Doorway_Interior`, `Dark_Corridor_End`, `Dark_Turn_Corner`, `Dark_BackRoom`, and `NoLight_Room`.
+- Tightened distant darkness through real lighting changes, not black/gray overlays:
+  - Ambient energy is now `0.028`, sky contribution remains `0.0`, exposure adjustment remains disabled.
+  - Ceiling light range is reduced and attenuation raised so light falls off faster through doorways and corridors.
+  - Dark zones receive no local ceiling lights.
+- Improved contact feel without baseboards:
+  - Solid walls, internal walls, pillars, and half-height walls now bite `0.02m` into the floor.
+  - Existing contact-shadow material remains the contact-darkening path; no skirting/baseboard geometry was added.
+- Debug view labels now call out `SPLIT A`, `ROUTE A`, `ROUTE B`, `MERGE B`, small loops, dead ends, feature templates, and dark-zone names.
+- Re-baked `scenes/tests/Test_ProcMazeMap.tscn` and `scenes/tests/Test_ProcMazeMap_NoCeilingPreview.tscn`.
+- Updated `run_feature_room_preview.bat` / `Test_ProcMazeMap_FeatureRoomPreview.tscn` to start at `N05` pillar-hall macro split.
+- Validation passed:
+  - `ValidateTestProcMazeMap.gd`
+  - `ValidateProcMazeFeatureAnchors.gd`
+  - `ValidateProcMazeNoCeilingPreview.gd`
+  - `ValidateProcMazeProps.gd`
+  - `ValidateProcMazeFeaturePreviewEntrypoints.gd`
+  - `ValidateProcMazePlayable.gd`
+- Forbidden-pattern search completed with no new door-mask/cutline, black/gray overlay, or `visited_rooms` shortcut implementation.
+
+## Nightmare Animation Selection And Grounding
+
+2026-05-06:
+- Analyzed all 22 imported Nightmare animations.
+- Current gameplay action set is limited to five clips: `idle`, `walk`, `Run`, `attack_1`, and `death_1`.
+- `hit_1` and `roar` remain optional future clips; crawl/eating/jump/extra attack variants are not used by current AI and are hidden from the Nightmare showcase animation picker.
+- Fixed animation root-locking so skeleton position tracks remain enabled; only non-skeleton position tracks are eligible for root-motion locking.
+- Added per-animation visual ground offsets in `MonsterSizeSource.gd`, but removed the hard per-frame runtime/showcase snap after it overrode the user-authored source Y and pulled the preview model into the floor.
+- Nightmare now preserves the saved source height (`离地Y`) and only applies the selected animation's small visual offset when switching clips; collision, AI direction, and root transform stay unchanged.
+- Added `InspectNightmareAnimationGrounding.gd`, `InspectNightmareAnimationTracks.gd`, and `ValidateNightmareAnimationGrounding.gd`.
+- Validation passed after removing hard snap: `ValidateNightmareAnimationGrounding.gd` (`imported=22`, `checked=5`, `bottom_min=-0.003`, `bottom_max=0.187`), `ValidateMonsterShowcase.gd`, `ValidateMonsterSizeSource.gd`, `ValidateNightmareHearingAI.gd`, `ValidateFourRoomMVPMonsterSet.gd`, and `ValidateProcMazeMonsterKey.gd`.
+
+## Footstep Sound Replacement
+
+2026-05-06:
+- Replaced `player_footstep_01.wav`, `player_footstep_02.wav`, `monster_footstep_01.wav`, and `monster_footstep_02.wav` with processed CC0 OpenGameArt source material.
+- Kept existing asset filenames and script paths unchanged, so player and monster controllers still load the same resources.
+- Final files are mono 44.1 kHz WAV: player steps are lighter/shorter; monster steps are lower and heavier.
+- Added `assets/audio/FOOTSTEP_SOURCES.md` with source URLs, CC0 license notes, and processing notes.
+- Backed up previous footstep wavs under `artifacts/backups/footsteps_before_replace_20260506/`.
+- Fixed `MonsterSizeSource.gd` visual-yaw metadata lookup to avoid missing-meta errors that showed up during validation.
+- Lowered the replacement footsteps after listening feedback: player footstep playback is now `-24 dB`, monster footstep playback is now `-21 dB`; AI hearing radius was not changed.
+- Validation passed: Godot headless import, `ValidateNightmareHearingAI.gd`, `ValidateFourRoomMVPMonsterSet.gd`, `ValidateMonsterShowcase.gd`, `ValidateNightmareAnimationGrounding.gd`, and `ValidateProcMazeMonsterKey.gd`.
+
+## Scene-Wide Monster Patrol, Staged Hearing, Player Health HUD
+
+2026-05-06:
+- Updated `MonsterController.gd` so wandering monsters prefer cross-room portal targets when scene `Areas` and `Portals` are available, instead of only walking a random direction inside the current room.
+- Raised default patrol speed to the normal walk-speed path and updated the active Nightmare source overrides from `0.58` to `1.15`.
+- Added Nightmare hearing states `HEARING_ALERT` and `HEARING_CONFIRM`: first sound makes it stop/face the sound, the next changed sound starts a short confirmation, then it locks the last heard position and investigates there.
+- Kept the immediate attack path for Nightmare when an audible target is already inside attack range.
+- Added a top-left player health HUD and player health API: `receive_damage`, `heal`, `is_dead`, and debug health hooks.
+- Added `ValidatePlayerHealthBar.gd` and updated `ValidateNightmareHearingAI.gd`/`ValidateMonsterAI.gd` to cover staged hearing and cross-room wander target selection.
+- Validation passed: `ValidateNightmareHearingAI.gd`, `ValidateMonsterAI.gd`, `ValidatePlayerHealthBar.gd`, `ValidateFourRoomMVPMonsterSet.gd`, `ValidateProcMazeMonsterKey.gd`, and `ValidateMonsterSizeSource.gd`.
+
+## Monster Showcase Global Transform Editor
+
+2026-05-06:
+- Fixed the direction calibration workflow so `整体朝向Y` rotates the monster root / AI / collision direction, while the new `模型前方Y` control rotates only `ModelRoot` visual facing.
+- Added a blue model-facing direction marker separate from the green fixed world `-Z` target and the orange AI/collision forward marker.
+- Renamed direction labels so the orange marker is explicitly `游戏正面 / AI移动攻击方向`; blue is `模型脸朝向 / 只影响外观`.
+- Saving from the showcase now also writes `metadata/monster_visual_yaw_degrees`; generated monsters and direct FourRoomMVP runtime monsters apply that visual offset globally.
+- Validation passed after the fix: `ValidateMonsterShowcase.gd`, `ValidateMonsterSizeSource.gd`, `ValidateFourRoomMVPMonsterSet.gd`, and `ValidateProcMazeMonsterKey.gd`.
+
+2026-05-06:
+- Added `run_monster_showcase.bat` to open a dedicated monster display/editor scene.
+- Added `scenes/tests/Test_MonsterShowcase.tscn` with `scripts/tools/MonsterShowcaseController.gd`.
+- The showcase displays the current global monster sources: normal monster, red hunter, and Nightmare hearing monster.
+- The selected monster is displayed at the floor center for review while the saved source X/Z position remains editable in the controls.
+- Controls include monster selection, X/Y/Z source position, ground snap, yaw/pitch/roll, uniform or per-axis scale, collision box center/size, camera orbit/focus, animation selection/playback/speed, reset from global source, and save-current/save-all global writes.
+- The UI now separates the fixed green target direction `world -Z` from the orange actual runtime forward direction `-global_transform.basis.z`, showing yaw and delta in degrees.
+- The showcase instantiates the real `OldOfficeDoor_A` beside the centered monster as a scale reference.
+- Added `scripts/tools/MonsterSourceTransformStore.gd` so saving from the showcase updates the selected `transform = Transform3D(...)` line plus `metadata/monster_collision_box_*` values in `res://scenes/mvp/FourRoomMVP.tscn/MonsterRoot`, preserving the existing global size-source workflow.
+- `MonsterSizeSource.gd` now applies saved collision-box metadata to spawned monsters, and `MonsterSizeSourceRuntime.gd` applies the same metadata to direct `FourRoomMVP` monsters at runtime.
+- Added `scripts/tools/ValidateMonsterShowcase.gd`.
+- Validation passed: `ValidateMonsterShowcase.gd`, `ValidateMonsterSizeSource.gd`, `ValidateFourRoomMVPMonsterSet.gd`, and `ValidateProcMazeMonsterKey.gd`, including the new centered preview, reference door, and collision controls.
+- Forbidden-pattern search passed for this change; matches were existing foreground/grime/graffiti/plugin cases, not new visibility mask logic.
+
+## Company PC Godot Environment Match
+
+2026-05-06:
+- Added `_godot_env.bat` so root Godot launchers resolve the current machine's Godot install from `GODOT_GUI_EXE` / `GODOT_CONSOLE_EXE`, the current user's WinGet package directory, or `PATH`.
+- Updated `open_monster_size_source.bat`, `run_mvp_room.bat`, `run_proc_maze_test.bat`, `run_proc_maze_no_ceiling_preview.bat`, and `run_resource_showcase.bat` to stop using the old hardcoded `C:\Users\sigeryang\...\Godot...` path.
+- Updated `start_texture_tool.bat` to fail clearly when `codex_tools\texture_tool\texture_tool_server.py` is missing; that helper folder was excluded from the filtered GitHub project copy.
+- Updated `docs/CODEX_FRESH_SESSION_PROMPT.md` from the old `E:\godot后室` / hardcoded Godot path to the current `D:\godot后室` and dynamic `Get-Command Godot_v4.6.2-stable_win64_console.exe` workflow.
+- Added the current project path `[D:/godot后室]` to the local Godot project list at `%APPDATA%\Godot\projects.cfg`; backup saved as `projects.cfg.bak_20260506_env_match`.
+- Removed stale local Godot project-list entries for the old `D:/godot后室/backrooms_mobile_demo` and `D:/godot后室/backrooms-mobile-demo-(4.2)` folders; second backup saved as `projects.cfg.bak_20260506_env_match_prune`.
+- Ran Godot 4.6.2 editor headless once to generate the local `.godot/imported` cache after the fresh GitHub pull.
+- Validation passed: `ValidateProcMazePlayable.gd` after import, log `logs/env_match_validate_proc_maze_playable_after_import_20260506.log`.
+- Local note: Android export is not matched yet on this company PC because `D:\GodotAndroid`, Java/JDK, Android SDK, `adb`, and `apksigner` are currently missing.
+
 ## MVP Direct Editable Monster Size Source
 
 2026-05-06:
@@ -1431,3 +2006,148 @@ Phase 3 未通过运行验收前，不要做：
 - 临时端口 `8766` HTML/API 冒烟测试：PASS。
 - Edge 无头截图：`artifacts/screenshots/texture_tool_webgl_preview_wait_20260504.png`。
 - 已关闭旧的 `8765` 贴图工具服务，重新双击 `start_texture_tool.bat` 会加载新版。
+
+## Proc Maze Feature Anchors And Dark Zones - 2026-05-06
+
+Current objective:
+- Add memorable large-space anchor rooms to the 30-45 node proc-maze map and make distant corridors/doorways fall into real low-light darkness instead of being evenly lit.
+
+Current progress:
+- Updated proc-maze generator version to `proc_maze_fixed_layout_v0.11_feature_anchors_dark_zones`.
+- Added `feature_template` and `dark_zone` node metadata; feature templates are folded into `room_signature`.
+- Current 36-node layout now uses 5 feature anchors: `N05` hub_hall, `N15` large_split_hall, `B24` large_side_chamber_hall, `B28` pillar_hall, `B30` box_hall.
+- Implemented `pillar_hall` as 5 irregular full-height collision pillars that break line of sight without becoming a parking-lot grid.
+- Implemented `box_hall` as an asymmetric side pile of 5 boxes, avoiding row/grid warehouse layout and keeping the special marker center clear.
+- Implemented `maintenance_hall` prop support with sparse cleaning/equipment props; it is available to the builder but not selected in the current fixed 36-node map because active feature anchors are capped at 5.
+- Added 5 dark-zone modules: `Dark_Corridor_End`, `Dark_Alcove`, `Dark_Doorway_Interior`, `Dark_BackRoom`, and `Dark_Turn_Corner`.
+- Dark-zone modules skip local ceiling lights and are tagged with `proc_dark_zone`.
+- Reduced proc-maze ambient/light spill: ambient energy `0.035`, ceiling light range `4.4`, distributed range `3.4`, higher attenuation, sky contribution disabled, exposure/adjustment/GI-style lift disabled via environment settings.
+- Added map and scene validation for feature-anchor count, priority placement, `room_signature` participation, real pillar counts, non-warehouse box piles, maintenance prop composition, dark-zone no-light policy, and low ambient.
+- Added `scripts/tools/ValidateProcMazeFeatureAnchors.gd`.
+- Restored 2 hideable lockers in non-feature hub rooms after excluding feature rooms from generic prop clutter.
+
+Files changed:
+- `scripts/proc_maze/MapGraphGenerator.gd`
+- `scripts/proc_maze/MapValidator.gd`
+- `scripts/proc_maze/ProcMazeSceneBuilder.gd`
+- `scripts/proc_maze/SceneValidator.gd`
+- `scripts/proc_maze/TestProcMazeMap.gd`
+- `scripts/tools/ValidateTestProcMazeMap.gd`
+- `scripts/tools/ValidateProcMazeFeatureAnchors.gd`
+- `CURRENT_STATE.md`
+- `docs/PROGRESS.md`
+
+Validation result: PASS
+
+Validation evidence:
+- `ValidateTestProcMazeMap.gd`: PASS, 36 rooms, 5 feature anchors, 5 dark zones, 25 light panels, 33 light sources, ambient `0.035`, no overlap, no door-to-wall, no door reveal blocker.
+- `ValidateProcMazeFeatureAnchors.gd`: PASS, features=5, dark_zones=5, pillars=5, feature_props=5, box_props=5, ambient=0.035.
+- `ValidateProcMazeProps.gd`: PASS, total=31, floor=22, wall=9, hideable=2, modules=18.
+- `ValidateProcMazePlayable.gd`: PASS, player moved from start without being blocked.
+- `ValidateProcMazeNoCeilingPreview.gd`: PASS, no-ceiling debug preview still builds with 36 floors, 338 walls, 39 openings, 39 frames, 33 light sources.
+
+Current blocking issue:
+- No automated blocker. Some Godot headless runs still print ObjectDB/resource cleanup warnings after PASS; exit code remains 0.
+
+Next step:
+- Open/run the proc-maze scene visually and judge whether the 5 selected anchors are memorable enough in actual gameplay framing. If one more template variety is needed, swap one non-critical active anchor to `maintenance_hall` while keeping the 3-5 total cap.
+
+## Monster Showcase Runtime Ground Sync - 2026-05-06
+
+Goal:
+- Fix the mismatch where Nightmare looked acceptable in the monster adjustment scene but floated in `FourRoomMVP` and the generated proc-maze runtime.
+
+Changes:
+- Corrected the active Nightmare source collision metadata in `scenes/mvp/FourRoomMVP.tscn`.
+  - `metadata/monster_collision_box_position` is now `Vector3(0, 0.91, 0)` for the `1.82m` high box, so the collision bottom is tied to the runtime root floor.
+- Updated `scripts/tools/MonsterShowcaseController.gd`.
+  - Added debug APIs for visible bottom, collision bottom, root-relative collision bottom, and game-floor visible bottom.
+  - `G` / `贴地` now also snaps the collision box bottom to the root floor before applying visual placement.
+- Updated `scripts/tools/ValidateMonsterShowcase.gd`.
+  - Showcase validation now catches a Nightmare collision box that would force runtime body lifting/floating.
+- Added `scripts/tools/ValidateMonsterRuntimeGroundSync.gd`.
+  - It instantiates Nightmare through the global `MonsterSizeSource`, samples the five gameplay animations, and validates game-floor visible bottom values.
+
+Validation:
+- `ValidateMonsterRuntimeGroundSync.gd`: PASS, `collision_root_error=0.008`, `visible_floor_bottom_min=0.041`, `visible_floor_bottom_max=0.083`.
+- `ValidateMonsterShowcase.gd`: PASS.
+- `ValidateNightmareAnimationGrounding.gd`: PASS.
+- `ValidateFourRoomMVPMonsterSet.gd`: PASS.
+- `ValidateProcMazeMonsterKey.gd`: PASS.
+
+Remaining:
+- Needs a visual run in `run_mvp_room.bat` / `run_proc_maze_test.bat` to confirm the centimeter-level foot/body contact reads well in camera framing.
+
+## Feature Anchor Map Launcher - 2026-05-06
+
+Goal:
+- Provide a clearly named root launcher for the proc-maze feature-anchor / dark-zone map.
+
+Changes:
+- Added `run_feature_anchor_map.bat`.
+- It launches `res://scenes/tests/Test_ProcMazeMap.tscn`, the same generated test scene that contains the current `pillar_hall`, `box_hall`, split/side/hub feature halls, and dark-zone lighting pass.
+- Kept `run_proc_maze_test.bat` as the existing generic proc-maze launcher.
+
+Validation:
+- Static check passed: launcher exists and points at `Test_ProcMazeMap.tscn`.
+
+Remaining:
+- Visual inspection still happens by double-clicking `run_feature_anchor_map.bat`.
+
+## Feature Anchor Preview Visibility Fix - 2026-05-06
+
+Goal:
+- Make the feature-anchor map changes visible in the launchable scenes, not just present in generator code or hidden by a high full-map camera.
+
+Changes:
+- Re-baked `scenes/tests/Test_ProcMazeMap.tscn` and `scenes/tests/Test_ProcMazeMap_NoCeilingPreview.tscn`.
+- Updated `scripts/proc_maze/TestProcMazeMap.gd`.
+  - Added `preview_show_feature_labels` for no-ceiling debug labels and wire frames over feature anchors/dark zones.
+  - Added `feature_preview_start_module_id` for starting the player inside a chosen module.
+  - Added `rebuild_on_ready` for lightweight runtime preview scenes.
+- Updated bake scripts so the no-ceiling preview persists feature/dark-zone labels.
+- Added `scenes/tests/Test_ProcMazeMap_FeatureRoomPreview.tscn`.
+  - It starts directly in `B28 pillar_hall`.
+- Added `run_feature_room_preview.bat`.
+  - This is the close-up inspection entry for the feature rooms.
+- Added `scripts/tools/ValidateProcMazeFeaturePreviewEntrypoints.gd`.
+
+Validation:
+- `BakeTestProcMazeMap.gd`: PASS.
+- `BakeTestProcMazeNoCeilingPreview.gd`: PASS.
+- `ValidateProcMazeFeaturePreviewEntrypoints.gd`: PASS, player starts near `B28` (`distance=0.164`).
+- `ValidateProcMazeFeatureAnchors.gd`: PASS, `features=5`, `dark_zones=5`, `pillars=5`, `box_props=5`, ambient `0.035`.
+- `ValidateTestProcMazeMap.gd`: PASS.
+- `ValidateProcMazeNoCeilingPreview.gd`: PASS.
+
+Remaining:
+- Visual review: use `run_feature_room_preview.bat` for close-up first, then `run_proc_maze_no_ceiling_preview.bat` for labeled overview.
+## Proc Maze Bilateral Feature Macro Loop V0.15 - 2026-05-06
+
+Goal:
+- Make the west/left macro-loop route feel like a real alternate route with comparable content density, not a simple connector line.
+
+Changes:
+- Updated generator version to `proc_maze_fixed_layout_v0.15_bilateral_feature_macro_loop`.
+- Kept the true outer macro loop from `N00` to `N17`, with route A rendered red in debug and layout captures.
+- Rebalanced feature placement:
+  - Left route now has `W41 side_chamber_hall`, `W47 red_alarm_hall` with `Dark_Alcove`, and `W46 split_hall`.
+  - Right/inner route still keeps the pillar, low-wall, dark-doorway, and box-heap anchors.
+  - Total active feature anchors remains `7`.
+- Increased the internal-large-room validator cap to `6` because this version intentionally gives the left route real large-space volume.
+- Re-baked `Test_ProcMazeMap.tscn` and `Test_ProcMazeMap_NoCeilingPreview.tscn`.
+- Updated `CaptureTestProcMazeMapLayout.gd` so route A is red and the screenshot folder is created automatically.
+- Generated `artifacts/screenshots/test_proc_maze_layout.png`.
+
+Validation:
+- `ValidateTestProcMazeMap.gd`: PASS, `rooms=45`, `macro_cycle=28`, `macro_a=10`, `macro_b=20`, `features=7`, `dark_zones=7`, `overlap=false`, `door_to_wall=false`.
+- `ValidateProcMazeNoCeilingPreview.gd`: PASS, `floors=45`, `walls=418`, `openings=48`, `lights=36`.
+- `ValidateProcMazeFeatureAnchors.gd`: PASS, `features=7`, `dark_zones=7`, `pillars=5`, `low_walls=5`, `red_lights=1`.
+- `ValidateProcMazeProps.gd`: PASS, `total=41`, `floor=25`, `wall=16`, `hideable=3`.
+- `ValidateProcMazeFeaturePreviewEntrypoints.gd`: PASS.
+- `ValidateProcMazePlayable.gd`: PASS.
+- `CaptureTestProcMazeMapLayout.gd`: PASS.
+- Forbidden-pattern search: PASS.
+
+Remaining:
+- Needs first-person visual review with `run_proc_maze_test.bat` or `run_feature_anchor_map.bat`, especially the feel of `W41`, `W47`, and `W46` on the left route.

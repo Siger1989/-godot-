@@ -12,6 +12,11 @@ func _init() -> void:
 	root.set("preview_without_ceiling", true)
 	root.set("preview_keep_ceiling_lights", true)
 	root.set("preview_full_map_camera", true)
+	root.set("preview_show_feature_labels", true)
+	root.set("show_debug_map_markers", true)
+	root.set("show_guidance_graffiti", true)
+	root.set("rebuild_on_ready", false)
+	root.set("feature_preview_start_module_id", "")
 	if root.get_parent() == null:
 		get_root().add_child(root)
 

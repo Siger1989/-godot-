@@ -1,5 +1,65 @@
 # DECISIONS閿濇粌鍑＄涵顔款吇閹垛偓閺堫垰鍠呯粵?
+
+## D098: Nightmare hearing cannot be held in alert by continuous movement
+
+Current accepted rules:
+
+- A Nightmare hearing alert is a short reaction window only. Continuous player movement must not keep resetting `HEARING_ALERT` or `HEARING_CONFIRM`.
+- After a single heard footstep, the Nightmare turns/listens briefly, confirms, then moves to the last heard point or chases if the player remains close to that heard point.
+- While already in `CHASE`, repeated footstep noise only updates the target/heard position and must not return the monster to a standing hearing pause.
+- While in `INVESTIGATE`, repeated footstep noise updates the last heard position and keeps the monster moving instead of restarting a stare/listen loop.
+- Nightmare surface ambush visuals use real surface modes: `FLOOR`, `WALL`, and `CEILING`. Wall and ceiling modes must use the crawl animation, orient the visual model perpendicular to the wall normal, and invert the model on ceilings.
+- The current implementation keeps the navigation body on the floor for stability, while the Nightmare visual model raycasts to nearby walls/ceilings and transforms to the matched surface.
+
+## D097: Future action editor uses contact constraints, not global foot locking
+
+Current accepted planning note:
+
+- The future action/keyframe adjuster is only a plan, not an active implementation task.
+- The plan is saved in `docs/ANIMATION_KEYFRAME_ADJUSTER_PLAN.md`.
+- The tool should edit a few gameplay key poses per action, then let the tool/runtime handle interpolation, timing, contacts, and event frames.
+- Do not model this as a global "feet on ground" lock. Jump, leap, wall crawl, ceiling run, and drop attack actions need per-keyframe contact constraints.
+- Contact modes include none, ground, wall, ceiling, and custom contact points.
+- First useful scope should be the Nightmare hearing monster, with actions such as idle, walk, run, alert/listen, attack, jump, jump attack, climb wall, ceiling run, ceiling drop attack, hurt, and death.
 閺堫剚鏋冩禒鍓佹暏娴滃酣妲诲?Agent 閸欏秴顦查弨鐟板綁鐠侯垳鍤庨妴鍌炴珟闂堢偟鏁ら幋閿嬫绾喛顩﹀Ч鍌︾礉閸氾箑鍨稉宥堫洣閹恒劎鐐曟潻娆庣昂閸愬磭鐡ラ妴?
+## D096: Zero health ends the run and lockers break monster target lock
+
+Current accepted rules:
+
+- Player health reaching `0` is a real game-over state, not only a HUD change.
+- Game over must set `game_over=true`, keep `dead=true`, stop player movement, hide normal interaction prompts, release mouse capture, and show a restart UI.
+- Hideables are responsible for toggling the player's `hidden_from_monsters` state through `set_hidden_in_hideable`.
+- A hidden player produces no footstep noise, exposes only a tiny detection height, and should not receive monster damage from attacks that resolve after the hide succeeds.
+- Monster AI must treat hidden players like unavailable targets for vision, Nightmare hearing, chase, attack, and red-alarm visible-player override.
+- Entering a locker/cabinet must call `forget_target(player)` on monsters so existing chase/heard/seen memory is cleared immediately.
+- Exiting a locker restores normal detectability after the player transform, visibility, collision, and interaction lock have been restored.
+
+## D095: Monster patrols are scene-wide and Nightmare hearing is staged
+
+Current accepted rules:
+
+- Monster wandering should prefer cross-room portal targets when `LevelRoot/Areas` and `LevelRoot/Portals` are available, so patrols drift through the scene instead of staying in one room.
+- Patrol/wander movement uses the normal walk speed path. The active Nightmare source no longer uses the old very slow `0.58` patrol speed.
+- Nightmare hearing must be staged: first audible footstep enters `HEARING_ALERT` and turns toward the sound, a later/changed sound enters `HEARING_CONFIRM`, then it locks the last heard position and moves there through `INVESTIGATE`.
+- Nightmare still attacks immediately if the audible target is already inside attack range, and it still does not use player vision.
+- Nightmare ground gameplay uses `Creature_armature|idle`, `Creature_armature|walk`, `Creature_armature|Run`, `Creature_armature|attack_1`, and `Creature_armature|death_1`; wall/ceiling surface movement additionally uses `Creature_armature|crawl`. `hit_1` and `roar` remain optional future clips; eating/jump/extra attacks are not current gameplay actions.
+- Nightmare visual grounding must preserve the user-authored source height. Skeletal position tracks stay enabled, only non-skeleton root-motion position tracks may be locked, and `ModelRoot` may receive only the selected animation's small visual ground offset. Do not reintroduce a hard per-frame bottom-to-floor snap because it can pull the showcase/runtime model into the floor.
+- The player owns a top-left health HUD and `receive_damage`/`heal`/`is_dead` health API. MVP/debug immortal metadata blocks lethal health loss but still leaves the HUD visible.
+
+## D094: Monster showcase edits the global source transforms
+
+Current accepted rules:
+
+- `run_monster_showcase.bat` opens `res://scenes/tests/Test_MonsterShowcase.tscn`, an interactive monster display and transform editor.
+- The showcase must display the three global source monster types: normal, red hunter, and Nightmare.
+- The showcase displays the selected monster at the floor center for review, while preserving the saved source X/Z position in the controls.
+- The showcase can adjust position, Y ground relationship, yaw/pitch/roll, uniform or per-axis scale, collision box center/size, and can play available model animations for review.
+- The fixed green target direction is world `-Z`; the orange displayed forward direction is the runtime monster-controller / collision direction `-global_transform.basis.z`, with yaw and delta shown separately.
+- Model-facing calibration is separate from root yaw: `模型前方Y` rotates only `ModelRoot` visual orientation and saves as `metadata/monster_visual_yaw_degrees`, so the user can correct a model's visible front without moving the AI/collision forward direction.
+- The showcase includes the actual `OldOfficeDoor_A` door beside the centered monster as a scale reference.
+- Saving from the showcase writes the corresponding `transform = Transform3D(...)` line, `metadata/monster_visual_yaw_degrees`, and `metadata/monster_collision_box_*` values in `res://scenes/mvp/FourRoomMVP.tscn` under `MonsterRoot`.
+- Do not create a second monster-size source. `MonsterSizeSource.gd` must continue reading from `FourRoomMVP.tscn/MonsterRoot`.
+
 ## D093: FourRoomMVP is the direct editable monster-size source
 
 Current accepted rules:
@@ -1042,3 +1102,23 @@ The texture tool should include an immediate model-context preview, not only fla
 The preview should be a real browser WebGL 3D sample, not a CSS-only fake perspective. It may stay lightweight and local, but it should support drag rotation, wheel zoom, live UV changes, and selected-material application to wall/floor/ceiling/door/light sample surfaces.
 
 The tool may open Windows Explorer for source convenience, but only through validated project-contained material and texture paths. Do not add arbitrary path-opening endpoints.
+
+## D063: Formal launcher and online key policy
+
+The formal player-facing launcher is `run_game.bat`. It must run the project main scene from `project.godot` instead of overriding a debug scene with `--scene`.
+
+The root launchers are now grouped by purpose:
+
+- formal play: `run_game.bat`;
+- direct large-maze debug: `run_proc_maze_test.bat`;
+- layout preview: `run_proc_maze_no_ceiling_preview.bat`;
+- focused debug/showcase tools: `run_monster_showcase.bat`, `run_resource_showcase.bat`, `run_mvp_room.bat`, `start_texture_tool.bat`.
+
+The removed confusing launchers must not be restored unless the user explicitly asks for that workflow again:
+
+- `run_feature_anchor_map.bat`;
+- `run_feature_room_preview.bat`;
+- `open_monster_size_source.bat`;
+- `open_mvp_monster_room.bat`.
+
+Online mode uses GD-Sync through `GDSyncBootstrap`, `GameSession`, and `OnlineGameBridge`. GD-Sync keys are loaded from local settings, environment variables, or `local_gdsync_keys.cfg`. The private key must not be committed to Git or written into `project.godot`.

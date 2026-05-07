@@ -57,10 +57,10 @@ func _add_macro_route_markers(parent: Node3D, macro_loop: Dictionary, node_map: 
 		return
 	var route_a = _to_string_route(macro_loop.get("route_a", PackedStringArray()))
 	var route_b = _to_string_route(macro_loop.get("route_b", PackedStringArray()))
-	_add_route_markers(parent, route_a, "MacroRouteA", Color(0.05, 1.0, 0.78), node_map, 0.22)
+	_add_route_markers(parent, route_a, "MacroRouteA", Color(1.0, 0.12, 0.06), node_map, 0.22)
 	_add_route_markers(parent, route_b, "MacroRouteB", Color(1.0, 0.52, 0.08), node_map, 0.30)
-	_add_route_name_label(parent, route_a, "MACRO A", Color(0.05, 1.0, 0.78), node_map, 3.55)
-	_add_route_name_label(parent, route_b, "MACRO B", Color(1.0, 0.52, 0.08), node_map, 3.75)
+	_add_route_name_label(parent, route_a, "MACRO A OUTER LOOP", Color(1.0, 0.12, 0.06), node_map, 3.55)
+	_add_route_name_label(parent, route_b, "MACRO B INNER ROUTE", Color(1.0, 0.52, 0.08), node_map, 3.75)
 
 func _add_small_loop_markers(parent: Node3D, small_loops: Array, node_map: Dictionary) -> void:
 	for i in range(small_loops.size()):
@@ -149,29 +149,39 @@ func _add_issue_labels(parent: Node3D, issues: Array, node_map: Dictionary) -> v
 
 func _node_role_text(node: Dictionary, macro_loop: Dictionary) -> String:
 	var node_id = String(node.get("id", ""))
+	var suffix := _feature_or_dark_suffix(node)
 	if node_id == String(macro_loop.get("split_node", "")):
-		return "SPLIT"
+		return "SPLIT A%s" % suffix
 	if node_id == String(macro_loop.get("merge_node", "")):
-		return "MERGE"
+		return "MERGE B%s" % suffix
 	if _route_contains_internal(_to_string_route(macro_loop.get("route_a", PackedStringArray())), node_id):
-		return "MACRO A"
+		return "ROUTE A%s" % suffix
 	if _route_contains_internal(_to_string_route(macro_loop.get("route_b", PackedStringArray())), node_id):
-		return "MACRO B"
+		return "ROUTE B%s" % suffix
 	if bool(node.get("is_entrance", false)):
 		return "START"
 	if bool(node.get("is_exit", false)):
 		return "EXIT"
-	if bool(node.get("is_special", false)):
-		return "SPECIAL"
-	if bool(node.get("is_hub", false)):
-		return "HUB"
 	if bool(node.get("is_dead_end", false)):
-		return "DEAD"
+		return "DEAD END%s" % suffix
+	if bool(node.get("is_special", false)):
+		return "SPECIAL%s" % suffix
+	if bool(node.get("is_hub", false)):
+		return "HUB%s" % suffix
 	if bool(node.get("is_long_corridor", false)):
-		return "LONG"
+		return "LONG%s" % suffix
 	if bool(node.get("is_main_path", false)):
-		return "MAIN"
-	return "BRANCH"
+		return "MAIN%s" % suffix
+	return "BRANCH%s" % suffix
+
+func _feature_or_dark_suffix(node: Dictionary) -> String:
+	var feature := String(node.get("feature_template", ""))
+	if not feature.is_empty():
+		return "\n%s" % feature
+	var dark_zone := String(node.get("dark_zone", ""))
+	if not dark_zone.is_empty():
+		return "\n%s" % dark_zone
+	return ""
 
 func _node_color(node: Dictionary, macro_loop: Dictionary) -> Color:
 	var node_id = String(node.get("id", ""))
@@ -180,7 +190,7 @@ func _node_color(node: Dictionary, macro_loop: Dictionary) -> Color:
 	if node_id == String(macro_loop.get("merge_node", "")):
 		return Color(0.75, 0.42, 1.0)
 	if _route_contains_internal(_to_string_route(macro_loop.get("route_a", PackedStringArray())), node_id):
-		return Color(0.05, 1.0, 0.78)
+		return Color(1.0, 0.12, 0.06)
 	if _route_contains_internal(_to_string_route(macro_loop.get("route_b", PackedStringArray())), node_id):
 		return Color(1.0, 0.52, 0.08)
 	if bool(node.get("is_entrance", false)):
@@ -199,6 +209,8 @@ func _node_color(node: Dictionary, macro_loop: Dictionary) -> Color:
 
 func _edge_color(edge: Dictionary) -> Color:
 	var kind = String(edge.get("kind", ""))
+	if kind == "macro_loop_outer":
+		return Color(1.0, 0.12, 0.06)
 	if kind == "macro_loop_b":
 		return Color(1.0, 0.52, 0.08)
 	if kind == "main":

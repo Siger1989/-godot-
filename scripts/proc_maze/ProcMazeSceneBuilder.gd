@@ -7,6 +7,7 @@ const DoorFrameVisualScript = preload("res://scripts/scene/DoorFrameVisual.gd")
 const WallOpeningBodyScript = preload("res://scripts/scene/WallOpeningBody.gd")
 const GeneratedMeshRules = preload("res://scripts/scene/GeneratedMeshRules.gd")
 const ContactShadowMaterial = preload("res://scripts/visual/ContactShadowMaterial.gd")
+const RedAlarmAttractorScript = preload("res://scripts/gameplay/RedAlarmAttractor.gd")
 const WallMaterial = preload("res://materials/backrooms_wall.tres")
 const FloorMaterial = preload("res://materials/backrooms_floor.tres")
 const CeilingMaterial = preload("res://materials/backrooms_ceiling.tres")
@@ -90,29 +91,39 @@ const CEILING_Y := WALL_HEIGHT + CEILING_THICKNESS * 0.5
 const CEILING_LIGHT_PANEL_SIZE := Vector3(1.2, 0.08, 0.7)
 const CEILING_LIGHT_PANEL_Y := WALL_HEIGHT - CEILING_LIGHT_PANEL_SIZE.y * 0.5 + 0.01
 const CEILING_LIGHT_Y := WALL_HEIGHT - 0.26
-const CEILING_LIGHT_ENERGY := 1.18
-const CEILING_LIGHT_RANGE := 6.2
-const CEILING_LIGHT_ATTENUATION := 0.92
+const CEILING_LIGHT_ENERGY := 1.05
+const CEILING_LIGHT_RANGE := 3.85
+const CEILING_LIGHT_ATTENUATION := 1.65
 const CEILING_LIGHT_DISTRIBUTED_MIN_LENGTH := 1.75
 const CEILING_LIGHT_SOURCE_SPACING := 1.45
 const CEILING_LIGHT_SOURCE_END_MARGIN := 0.55
 const CEILING_LIGHT_MAX_SOURCES := 4
 const CEILING_LIGHT_DISTRIBUTED_TOTAL_ENERGY_MULTIPLIER := 1.22
-const CEILING_LIGHT_DISTRIBUTED_RANGE := 4.7
-const CEILING_LIGHT_DISTRIBUTED_ATTENUATION := 1.05
+const CEILING_LIGHT_DISTRIBUTED_RANGE := 3.05
+const CEILING_LIGHT_DISTRIBUTED_ATTENUATION := 1.75
 const CEILING_LIGHT_SHADOW_BIAS := 0.02
 const CEILING_LIGHT_SHADOW_NORMAL_BIAS := 0.35
 const CEILING_LIGHT_SHADOW_OPACITY := 1.0
 const CEILING_LIGHT_WALL_CLEARANCE := 0.16
 const WORLD_AMBIENT_COLOR := Color(1.0, 0.9, 0.66)
-const WORLD_AMBIENT_ENERGY := 0.07
+const WORLD_AMBIENT_ENERGY := 0.028
 const WORLD_BACKGROUND_COLOR := Color(0.015, 0.014, 0.012)
 const INTERNAL_PASSAGE_WIDTH := 1.60
 const STATIC_GEOMETRY_LAYER := 1 << 0
 const ACTOR_LIGHT_LAYER := 1 << 8
+const WALL_FLOOR_BITE := 0.02
+const WALL_CONTACT_Y := WALL_Y - WALL_FLOOR_BITE
+const LOW_WALL_HEIGHT := 1.05
+const LOW_WALL_THICKNESS := 0.18
+const LOW_WALL_Y := LOW_WALL_HEIGHT * 0.5 - WALL_FLOOR_BITE
+const RED_ALARM_LIGHT_COLOR := Color(1.0, 0.08, 0.035)
+const RED_ALARM_LIGHT_ENERGY := 2.85
+const RED_ALARM_LIGHT_RANGE := 8.2
+const RED_ALARM_LIGHT_ATTENUATION := 1.55
 
 var include_ceilings := true
 var include_ceiling_lights := true
+var include_guidance_graffiti := false
 var _surface_material_cache: Dictionary = {}
 var _guidance_material_cache: Dictionary = {}
 var _guidance_tinted_texture_cache: Dictionary = {}
@@ -159,7 +170,9 @@ func build(scene_root: Node3D, graph: Dictionary, registry) -> Dictionary:
 	_create_markers(markers_root, node_map)
 	var prop_summary := _create_proc_maze_props(props_root, nodes, opening_specs)
 	var keyed_exit_summary := _create_keyed_outer_exit(doors_root, props_root, markers_root, nodes, node_map, keyed_exit_spec)
-	var guidance_summary := _create_guidance_graffiti(guidance_root, nodes, edges, node_map, opening_specs)
+	var guidance_summary := {"total": 0}
+	if include_guidance_graffiti:
+		guidance_summary = _create_guidance_graffiti(guidance_root, nodes, edges, node_map, opening_specs)
 	_create_overview_camera(scene_root, node_map)
 
 	return {
@@ -171,6 +184,7 @@ func build(scene_root: Node3D, graph: Dictionary, registry) -> Dictionary:
 		"prop_count": int(prop_summary.get("total", 0)),
 		"floor_prop_count": int(prop_summary.get("floor", 0)),
 		"wall_prop_count": int(prop_summary.get("wall", 0)),
+		"feature_prop_count": int(prop_summary.get("feature", 0)),
 		"hideable_prop_count": int(prop_summary.get("hideable", 0)),
 		"guidance_graffiti_count": int(guidance_summary.get("total", 0)),
 		"active_light_count": _get_nodes_in_group(level_root, "ceiling_light_panel").size(),
@@ -214,6 +228,9 @@ func _create_module(modules_root: Node3D, areas_root: Node3D, lights_root: Node3
 	module_root.set_meta("type", String(node.get("type", "")))
 	module_root.set_meta("space_kind", String(node.get("space_kind", "")))
 	module_root.set_meta("room_signature", String(node.get("room_signature", "")))
+	module_root.set_meta("feature_template", String(node.get("feature_template", "")))
+	module_root.set_meta("dark_zone", String(node.get("dark_zone", "")))
+	module_root.set_meta("red_alarm_extra", bool(node.get("red_alarm_extra", false)))
 	module_root.set_meta("shape_cells", node.get("shape_cells", []))
 	module_root.set_meta("area_id", String(node.get("area_id", "")))
 	module_root.set_meta("footprint", node.get("footprint", {}))
@@ -223,6 +240,10 @@ func _create_module(modules_root: Node3D, areas_root: Node3D, lights_root: Node3
 	module_root.set_meta("is_dead_end", bool(node.get("is_dead_end", false)))
 	module_root.set_meta("is_long_corridor", bool(node.get("is_long_corridor", false)))
 	module_root.set_meta("is_special", bool(node.get("is_special", false)))
+	if not String(node.get("feature_template", "")).is_empty():
+		module_root.add_to_group("proc_feature_anchor", true)
+	if not String(node.get("dark_zone", "")).is_empty():
+		module_root.add_to_group("proc_dark_zone", true)
 	modules_root.add_child(module_root)
 
 	var rect = _rect(node)
@@ -235,6 +256,9 @@ func _create_module(modules_root: Node3D, areas_root: Node3D, lights_root: Node3
 	if include_ceilings:
 		_create_ceiling(module_root, "Ceiling_%s" % module_id, node, center, String(node.get("area_id", "")))
 	_create_internal_structure(module_root, node, center, size, door_reveals)
+	_create_feature_structure(module_root, lights_root, node, center, size)
+	if bool(node.get("red_alarm_extra", false)) and String(node.get("feature_template", "")) != "red_alarm_hall":
+		_create_red_alarm_feature(module_root, lights_root, module_id, center, size)
 	_create_area_node(areas_root, node, adjacency.get(module_id, []))
 	if include_ceiling_lights:
 		var light_layout = _ceiling_light_layout(node, center, size)
@@ -336,14 +360,191 @@ func _create_internal_structure(parent: Node3D, node: Dictionary, center: Vector
 		var suffix = String(wall_spec.get("suffix", "Part_%02d" % index))
 		_create_internal_wall(parent, module_id, suffix, wall_spec["position"], wall_spec["size"])
 		index += 1
+	_create_internal_navigation_waypoints(parent, node, size)
+
+func _create_internal_navigation_waypoints(parent: Node3D, node: Dictionary, size: Vector2) -> void:
+	var module_id := String(node.get("id", ""))
+	var index := 0
+	for spec in _internal_navigation_waypoint_specs(node, size):
+		var waypoint := Node3D.new()
+		waypoint.name = "InternalNavWaypoint_%s_%02d" % [module_id, index]
+		waypoint.position = spec.get("position", Vector3.ZERO)
+		waypoint.set_meta("owner_module_id", module_id)
+		waypoint.set_meta("area_id", String(node.get("area_id", "")))
+		waypoint.set_meta("navigation_role", String(spec.get("role", "internal_passage")))
+		waypoint.add_to_group("proc_internal_navigation_waypoint", true)
+		waypoint.add_to_group("proc_maze_generated", true)
+		parent.add_child(waypoint)
+		index += 1
+
+func _internal_navigation_waypoint_specs(node: Dictionary, size: Vector2) -> Array[Dictionary]:
+	var module_type := String(node.get("module_id", ""))
+	if module_type == "large_room_split_ns":
+		var gap_center := -size.x * 0.16
+		return [
+			{"position": Vector3(gap_center, 0.05, 0.0), "role": "split_ns_inner_door"},
+		]
+	if module_type == "large_room_split_ew":
+		var gap_center := size.y * 0.14
+		return [
+			{"position": Vector3(0.0, 0.05, gap_center), "role": "split_ew_inner_door"},
+		]
+	if module_type == "large_room_offset_inner_door":
+		var offset := minf(size.y * 0.18, CELL_SIZE * 0.35)
+		return [
+			{"position": Vector3(0.0, 0.05, offset), "role": "offset_inner_door"},
+		]
+	return []
 
 func _create_internal_wall(parent: Node3D, module_id: String, suffix: String, local_position: Vector3, size: Vector3) -> void:
 	var wall_name = "InternalWall_%s_%s" % [module_id, suffix]
-	var wall = _create_box_body(parent, wall_name, local_position, size, _wall_material_instance(wall_name, local_position), true, false)
+	var contact_position := _wall_contact_position(local_position)
+	var wall = _create_box_body(parent, wall_name, contact_position, size, _wall_material_instance(wall_name, contact_position), true, false)
 	wall.set_meta("owner_module_id", module_id)
 	wall.set_meta("wall_height", WALL_HEIGHT)
+	wall.set_meta("floor_bite_m", WALL_FLOOR_BITE)
 	wall.add_to_group("proc_internal_wall", true)
 	wall.add_to_group("foreground_occluder", true)
+
+func _create_feature_structure(parent: Node3D, lights_parent: Node3D, node: Dictionary, center: Vector3, size: Vector2) -> void:
+	var feature := String(node.get("feature_template", ""))
+	var module_id := String(node.get("id", ""))
+	match feature:
+		"pillar_hall":
+			var index := 0
+			for pillar_spec in _feature_pillar_specs(size):
+				var suffix := String(pillar_spec.get("suffix", "Pillar_%02d" % index))
+				_create_feature_pillar(parent, module_id, feature, suffix, pillar_spec["position"], pillar_spec["size"])
+				index += 1
+		"low_wall_maze_hall":
+			var index := 0
+			for low_wall_spec in _feature_low_wall_specs(size):
+				var suffix := String(low_wall_spec.get("suffix", "LowWall_%02d" % index))
+				_create_feature_low_wall(parent, module_id, feature, suffix, low_wall_spec["position"], low_wall_spec["size"], String(low_wall_spec.get("module", "")))
+				index += 1
+		"red_alarm_hall":
+			_create_red_alarm_feature(parent, lights_parent, module_id, center, size)
+		_:
+			return
+
+func _create_feature_pillar(parent: Node3D, module_id: String, feature: String, suffix: String, local_position: Vector3, size: Vector3) -> void:
+	var pillar_name := "FeaturePillar_%s_%s" % [module_id, suffix]
+	var pillar := _create_box_body(parent, pillar_name, local_position, size, _wall_material_instance(pillar_name, local_position), true, false)
+	pillar.set_meta("owner_module_id", module_id)
+	pillar.set_meta("feature_template", feature)
+	pillar.set_meta("wall_height", WALL_HEIGHT)
+	pillar.set_meta("floor_bite_m", WALL_FLOOR_BITE)
+	pillar.add_to_group("proc_feature_anchor_geometry", true)
+	pillar.add_to_group("proc_feature_pillar", true)
+	pillar.add_to_group("proc_internal_wall", true)
+	pillar.add_to_group("foreground_occluder", true)
+
+func _create_feature_low_wall(parent: Node3D, module_id: String, feature: String, suffix: String, local_position: Vector3, size: Vector3, low_wall_module: String) -> void:
+	var wall_name := "FeatureLowWall_%s_%s" % [module_id, suffix]
+	var wall := _create_box_body(parent, wall_name, local_position, size, _wall_material_instance(wall_name, local_position), true, true)
+	wall.set_meta("owner_module_id", module_id)
+	wall.set_meta("feature_template", feature)
+	wall.set_meta("low_wall_module", low_wall_module)
+	wall.set_meta("wall_height", LOW_WALL_HEIGHT)
+	wall.set_meta("floor_bite_m", WALL_FLOOR_BITE)
+	wall.add_to_group("proc_feature_anchor_geometry", true)
+	wall.add_to_group("proc_feature_low_wall", true)
+	wall.add_to_group("proc_half_wall", true)
+	wall.add_to_group("foreground_occluder", true)
+
+func _create_red_alarm_feature(parent: Node3D, lights_parent: Node3D, module_id: String, center: Vector3, size: Vector2) -> void:
+	var local_position := Vector3(-size.x * 0.5 + 0.08, 1.62, -size.y * 0.18)
+	var panel := MeshInstance3D.new()
+	panel.name = "RedAlarmPanel_%s" % module_id
+	var panel_mesh := BoxMesh.new()
+	panel_mesh.size = Vector3(0.08, 0.24, 0.42)
+	panel.mesh = panel_mesh
+	panel.material_override = _red_alarm_material(false)
+	panel.layers = STATIC_GEOMETRY_LAYER
+	panel.set_meta("owner_module_id", module_id)
+	panel.set_meta("feature_template", "red_alarm_hall")
+	panel.add_to_group("proc_feature_anchor_geometry", true)
+	panel.add_to_group("proc_red_alarm_panel", true)
+	parent.add_child(panel)
+	panel.position = local_position
+
+	var light := OmniLight3D.new()
+	light.name = "RedAlarmLight_%s" % module_id
+	light.light_color = RED_ALARM_LIGHT_COLOR
+	light.light_energy = 0.0
+	light.visible = false
+	light.omni_range = clampf(maxf(size.x, size.y) * 0.82, 6.2, RED_ALARM_LIGHT_RANGE)
+	light.omni_attenuation = RED_ALARM_LIGHT_ATTENUATION
+	light.shadow_enabled = true
+	light.shadow_bias = CEILING_LIGHT_SHADOW_BIAS
+	light.shadow_normal_bias = CEILING_LIGHT_SHADOW_NORMAL_BIAS
+	light.shadow_opacity = 0.65
+	light.light_cull_mask = STATIC_GEOMETRY_LAYER | ACTOR_LIGHT_LAYER
+	light.shadow_caster_mask = STATIC_GEOMETRY_LAYER | ACTOR_LIGHT_LAYER
+	light.set_meta("owner_module_id", module_id)
+	light.set_meta("feature_template", "red_alarm_hall")
+	light.set_meta("lighting_policy", "localized_red_alarm")
+	light.set_meta("inactive_red_alarm_energy", 0.0)
+	light.set_meta("active_red_alarm_energy", RED_ALARM_LIGHT_ENERGY)
+	light.set_meta("active_red_alarm_range", light.omni_range)
+	light.set_meta("active_red_alarm_attenuation", RED_ALARM_LIGHT_ATTENUATION)
+	light.add_to_group("proc_red_alarm_light", true)
+	lights_parent.add_child(light)
+	light.position = center + local_position + Vector3(0.34, 0.0, 0.0)
+
+	var attractor := Area3D.new()
+	attractor.name = "RedAlarmAttractor_%s" % module_id
+	attractor.set_script(RedAlarmAttractorScript)
+	attractor.set_meta("owner_module_id", module_id)
+	attractor.set_meta("feature_template", "red_alarm_hall")
+	attractor.add_to_group("proc_red_alarm_attractor", true)
+	parent.add_child(attractor)
+	attractor.position = Vector3(0.0, 0.55, 0.0)
+
+func _feature_pillar_specs(size: Vector2) -> Array[Dictionary]:
+	var max_x := maxf(size.x * 0.5 - 0.72, 0.65)
+	var max_z := maxf(size.y * 0.5 - 0.72, 0.65)
+	var raw_specs: Array[Dictionary] = [
+		{"suffix": "IrregularA", "offset": Vector2(-0.68, -0.52), "footprint": Vector2(0.46, 0.62)},
+		{"suffix": "IrregularB", "offset": Vector2(0.38, -0.68), "footprint": Vector2(0.58, 0.46)},
+		{"suffix": "IrregularC", "offset": Vector2(-0.16, 0.08), "footprint": Vector2(0.50, 0.50)},
+		{"suffix": "IrregularD", "offset": Vector2(0.70, 0.42), "footprint": Vector2(0.48, 0.66)},
+		{"suffix": "IrregularE", "offset": Vector2(-0.62, 0.68), "footprint": Vector2(0.62, 0.48)},
+	]
+	var result: Array[Dictionary] = []
+	for spec in raw_specs:
+		var offset: Vector2 = spec["offset"]
+		var footprint: Vector2 = spec["footprint"]
+		result.append({
+			"suffix": String(spec["suffix"]),
+			"position": Vector3(clampf(offset.x * max_x, -max_x, max_x), WALL_CONTACT_Y, clampf(offset.y * max_z, -max_z, max_z)),
+			"size": Vector3(footprint.x, WALL_HEIGHT, footprint.y),
+		})
+	return result
+
+func _feature_low_wall_specs(size: Vector2) -> Array[Dictionary]:
+	var max_x := maxf(size.x * 0.5 - 0.9, 0.75)
+	var max_z := maxf(size.y * 0.5 - 0.9, 0.75)
+	var raw_specs: Array[Dictionary] = [
+		{"suffix": "Straight", "module": "low_wall_straight", "position": Vector3(-max_x * 0.28, LOW_WALL_Y, -max_z * 0.36), "size": Vector3(2.65, LOW_WALL_HEIGHT, LOW_WALL_THICKNESS)},
+		{"suffix": "Baffle", "module": "low_wall_baffle", "position": Vector3(max_x * 0.30, LOW_WALL_Y, -max_z * 0.05), "size": Vector3(LOW_WALL_THICKNESS, LOW_WALL_HEIGHT, 2.10)},
+		{"suffix": "CornerA", "module": "low_wall_corner", "position": Vector3(-max_x * 0.48, LOW_WALL_Y, max_z * 0.28), "size": Vector3(LOW_WALL_THICKNESS, LOW_WALL_HEIGHT, 1.75)},
+		{"suffix": "CornerB", "module": "low_wall_l_shape", "position": Vector3(-max_x * 0.29, LOW_WALL_Y, max_z * 0.50), "size": Vector3(1.55, LOW_WALL_HEIGHT, LOW_WALL_THICKNESS)},
+		{"suffix": "Cluster", "module": "low_wall_cluster", "position": Vector3(max_x * 0.45, LOW_WALL_Y, max_z * 0.42), "size": Vector3(1.35, LOW_WALL_HEIGHT, LOW_WALL_THICKNESS)},
+	]
+	return raw_specs
+
+func _red_alarm_material(active: bool = false) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(0.38, 0.025, 0.018) if active else Color(0.055, 0.045, 0.038)
+	material.emission_enabled = active
+	material.emission = RED_ALARM_LIGHT_COLOR if active else Color.BLACK
+	material.emission_energy_multiplier = 2.2 if active else 0.0
+	material.roughness = 0.72
+	return material
+
+func _wall_contact_position(position: Vector3) -> Vector3:
+	return Vector3(position.x, position.y - WALL_FLOOR_BITE, position.z)
 
 func _trim_internal_wall_specs_for_door_reveals(wall_specs: Array[Dictionary], center: Vector3, door_reveals: Array) -> Array[Dictionary]:
 	if wall_specs.is_empty() or door_reveals.is_empty():
@@ -470,9 +671,11 @@ func _create_solid_boundary_wall(parent: Node3D, boundary_key: String, gx: int, 
 		visual_size = size
 		visual_size.x += WALL_CORNER_VISUAL_OVERLAP * 2.0
 	var wall_name = "Wall_%s" % boundary_key.replace(":", "_")
-	var wall = _create_box_body(parent, wall_name, Vector3(center.x, WALL_Y, center.z), size, _wall_material_instance(wall_name, Vector3(center.x, WALL_Y, center.z)), true, false, visual_size)
+	var wall_position := Vector3(center.x, WALL_CONTACT_Y, center.z)
+	var wall = _create_box_body(parent, wall_name, wall_position, size, _wall_material_instance(wall_name, wall_position), true, false, visual_size)
 	wall.set_meta("boundary_key", boundary_key)
 	wall.set_meta("wall_height", WALL_HEIGHT)
+	wall.set_meta("floor_bite_m", WALL_FLOOR_BITE)
 	wall.set_meta("corner_visual_overlap", WALL_CORNER_VISUAL_OVERLAP)
 	wall.add_to_group("proc_wall_body", true)
 	wall.add_to_group("foreground_occluder", true)
@@ -957,10 +1160,21 @@ func _create_proc_maze_props(parent: Node3D, nodes: Array, opening_specs: Dictio
 		"total": 0,
 		"floor": 0,
 		"wall": 0,
+		"feature": 0,
 		"hideable": 0,
 	}
 	for index in range(nodes.size()):
 		var node: Dictionary = nodes[index]
+		var feature_prop_ids := _place_feature_prop_group(parent, node, "feature_group_%02d" % index)
+		for feature_prop_id in feature_prop_ids:
+			summary["feature"] = int(summary["feature"]) + 1
+			summary["floor"] = int(summary["floor"]) + 1
+			summary["total"] = int(summary["total"]) + 1
+			if feature_prop_id == "HideLocker_A":
+				summary["hideable"] = int(summary["hideable"]) + 1
+		if not String(node.get("feature_template", "")).is_empty():
+			continue
+
 		var wall_prop_id := _wall_prop_id_for_node(node, index)
 		if wall_prop_id != "" and int(summary["wall"]) < PROC_PROP_MAX_WALL:
 			if _place_wall_prop(parent, node, opening_specs, wall_prop_id, "wall_detail_%02d" % index):
@@ -994,8 +1208,8 @@ func _wall_prop_id_for_node(node: Dictionary, index: int) -> String:
 		if selector in [0, 1, 4, 6]:
 			return ["ElectricBox_A", "Pipe_Straight_A", "Vent_Wall_A", "Pipe_Corner_A"][selector % 4]
 		return ""
-	if selector in [0, 4]:
-		return ["Vent_Wall_A", "ElectricBox_A"][int(selector / 4)]
+	if selector in [0, 2, 4]:
+		return ["Vent_Wall_A", "Pipe_Straight_A", "ElectricBox_A"][int(selector / 2)]
 	return ""
 
 func _floor_prop_ids_for_node(node: Dictionary, index: int) -> Array[String]:
@@ -1029,7 +1243,7 @@ func _floor_prop_ids_for_node(node: Dictionary, index: int) -> Array[String]:
 			2:
 				return ["SmallCabinet_A", "Box_Medium_A"]
 			_:
-				return []
+				return ["HideLocker_A"]
 	if kind in ["l_room", "recognizable_room", "special", "normal_room", "room_wide"]:
 		match selector % 5:
 			0:
@@ -1045,6 +1259,55 @@ func _floor_prop_ids_for_node(node: Dictionary, index: int) -> Array[String]:
 	if selector in [1, 5]:
 		return ["Box_Medium_A", "Box_Small_A"]
 	return []
+
+func _place_feature_prop_group(parent: Node3D, node: Dictionary, placement_group: String) -> Array[String]:
+	var prop_specs := _feature_prop_specs_for_node(node)
+	if prop_specs.is_empty():
+		return []
+	var center := _node_center_world(node)
+	var feature := String(node.get("feature_template", ""))
+	var placed: Array[String] = []
+	for index in range(prop_specs.size()):
+		var spec: Dictionary = prop_specs[index]
+		var prop_id := String(spec.get("prop_id", ""))
+		var local_position: Vector3 = spec.get("local_position", Vector3.ZERO)
+		var position := center + local_position
+		var instance := _instantiate_proc_prop(parent, prop_id, node, placement_group, position, float(spec.get("yaw", 0.0)))
+		if instance == null:
+			continue
+		instance.add_to_group("proc_feature_prop", true)
+		instance.set_meta("feature_template", feature)
+		instance.set_meta("feature_prop_role", String(spec.get("role", feature)))
+		instance.set_meta("feature_layout", String(spec.get("layout", feature)))
+		instance.set_meta("placement_surface", "floor")
+		placed.append(prop_id)
+	return placed
+
+func _feature_prop_specs_for_node(node: Dictionary) -> Array[Dictionary]:
+	match String(node.get("feature_template", "")):
+		"box_heap_hall", "box_hall":
+			return [
+				{"prop_id": "Box_Stack_3_A", "local_position": Vector3(1.15, 0.0, 0.45), "yaw": 0.32, "role": "irregular_box_pile", "layout": "asymmetric_side_pile"},
+				{"prop_id": "Box_Stack_2_A", "local_position": Vector3(1.65, 0.0, -0.32), "yaw": -0.46, "role": "irregular_box_pile", "layout": "asymmetric_side_pile"},
+				{"prop_id": "Box_Medium_A", "local_position": Vector3(0.72, 0.0, 1.22), "yaw": 1.05, "role": "loose_box", "layout": "asymmetric_side_pile"},
+				{"prop_id": "Box_Small_A", "local_position": Vector3(1.95, 0.0, 0.92), "yaw": -0.85, "role": "loose_box", "layout": "asymmetric_side_pile"},
+				{"prop_id": "Box_Medium_A", "local_position": Vector3(0.20, 0.0, 1.75), "yaw": 0.18, "role": "loose_box", "layout": "asymmetric_side_pile"},
+			]
+		"side_chamber_hall":
+			return [
+				{"prop_id": "Box_Small_A", "local_position": Vector3(1.35, 0.0, -1.48), "yaw": 0.44, "role": "side_chamber_leftover", "layout": "sparse_side_chamber"},
+				{"prop_id": "Chair_Old_A", "local_position": Vector3(0.42, 0.0, -1.72), "yaw": -0.72, "role": "side_chamber_leftover", "layout": "sparse_side_chamber"},
+			]
+		"maintenance_hall":
+			return [
+				{"prop_id": "SmallCabinet_A", "local_position": Vector3(-1.05, 0.0, 0.82), "yaw": 0.35, "role": "equipment_storage", "layout": "maintenance_side_cluster"},
+				{"prop_id": "Bucket_A", "local_position": Vector3(-1.58, 0.0, 0.16), "yaw": -0.22, "role": "cleaning", "layout": "maintenance_side_cluster"},
+				{"prop_id": "Mop_A", "local_position": Vector3(-1.42, 0.0, -0.54), "yaw": 0.74, "role": "cleaning", "layout": "maintenance_side_cluster"},
+				{"prop_id": "CleaningClothPile_A", "local_position": Vector3(-0.62, 0.0, -0.18), "yaw": -0.35, "role": "cleaning", "layout": "maintenance_side_cluster"},
+				{"prop_id": "Box_Small_A", "local_position": Vector3(1.04, 0.0, -0.72), "yaw": 1.12, "role": "leftover_box", "layout": "maintenance_side_cluster"},
+			]
+		_:
+			return []
 
 func _place_floor_prop_group(parent: Node3D, node: Dictionary, opening_specs: Dictionary, prop_ids: Array[String], placement_group: String) -> Array[String]:
 	var candidates := _solid_wall_candidates_for_node(node, opening_specs)
@@ -1090,6 +1353,8 @@ func _instantiate_proc_prop(parent: Node3D, prop_id: String, node: Dictionary, p
 	instance.set_meta("owner_module_id", String(node.get("id", "")))
 	instance.set_meta("space_kind", String(node.get("space_kind", "")))
 	instance.set_meta("width_tier", String(node.get("width_tier", "")))
+	instance.set_meta("feature_template", String(node.get("feature_template", "")))
+	instance.set_meta("dark_zone", String(node.get("dark_zone", "")))
 	instance.set_meta("placement_group", placement_group)
 	instance.set_meta("proc_maze_prop_id", prop_id)
 	if bool(instance.get_meta("blocks_path", false)):
@@ -1330,6 +1595,8 @@ func _should_skip_ceiling_light(node: Dictionary) -> bool:
 	var tier = String(node.get("width_tier", ""))
 	var kind = String(node.get("space_kind", ""))
 	var module_type = String(node.get("type", ""))
+	if not String(node.get("dark_zone", "")).is_empty():
+		return true
 	if tier == "narrow_corridor":
 		return true
 	if kind in ["narrow_corridor", "l_turn", "junction", "offset_corridor"]:
@@ -1339,6 +1606,8 @@ func _should_skip_ceiling_light(node: Dictionary) -> bool:
 	return false
 
 func _unlit_reason(node: Dictionary) -> String:
+	if not String(node.get("dark_zone", "")).is_empty():
+		return "unlit_dark_zone_%s" % String(node.get("dark_zone", ""))
 	if _should_skip_ceiling_light(node):
 		return "unlit_narrow_or_complex_corridor"
 	return "unlit_no_safe_ceiling_light_position"
@@ -1374,6 +1643,12 @@ func _ceiling_light_candidate_score(node: Dictionary, center: Vector3, size: Vec
 		var wall_rect = _local_xz_rect(wall_position, Vector2(wall_size.x, wall_size.z)).grow(CEILING_LIGHT_WALL_CLEARANCE)
 		if panel_rect.intersects(wall_rect, true):
 			return -INF
+	for pillar_spec in _feature_pillar_specs_for_node(node, size):
+		var pillar_position: Vector3 = pillar_spec["position"]
+		var pillar_size: Vector3 = pillar_spec["size"]
+		var pillar_rect = _local_xz_rect(pillar_position, Vector2(pillar_size.x, pillar_size.z)).grow(CEILING_LIGHT_WALL_CLEARANCE)
+		if panel_rect.intersects(pillar_rect, true):
+			return -INF
 
 	var distance_penalty = Vector2(local_position.x, local_position.z).length() * 0.18
 	var corridor_bonus = 0.0
@@ -1404,6 +1679,11 @@ func _world_xz_inside_occupied_cells(node: Dictionary, world_xz: Vector2) -> boo
 
 func _local_xz_rect(position: Vector3, size: Vector2) -> Rect2:
 	return Rect2(Vector2(position.x - size.x * 0.5, position.z - size.y * 0.5), size)
+
+func _feature_pillar_specs_for_node(node: Dictionary, size: Vector2) -> Array[Dictionary]:
+	if String(node.get("feature_template", "")) == "pillar_hall":
+		return _feature_pillar_specs(size)
+	return []
 
 func _internal_wall_specs(node: Dictionary, size: Vector2) -> Array[Dictionary]:
 	var module_type = String(node.get("module_id", ""))
@@ -1491,6 +1771,11 @@ func _create_world_environment(parent: Node3D) -> void:
 	environment.ambient_light_color = WORLD_AMBIENT_COLOR
 	environment.ambient_light_energy = WORLD_AMBIENT_ENERGY
 	environment.ambient_light_sky_contribution = 0.0
+	environment.set("adjustment_enabled", false)
+	environment.set("tonemap_exposure", 1.0)
+	environment.set("sdfgi_enabled", false)
+	environment.set("ssao_enabled", false)
+	environment.set("ssil_enabled", false)
 	var world_environment = WorldEnvironment.new()
 	world_environment.name = "WorldEnvironment"
 	world_environment.environment = environment

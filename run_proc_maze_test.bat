@@ -4,9 +4,14 @@ setlocal
 set "PROJECT_DIR=%~dp0"
 if "%PROJECT_DIR:~-1%"=="\" set "PROJECT_DIR=%PROJECT_DIR:~0,-1%"
 set "SCENE=res://scenes/tests/Test_ProcMazeMap.tscn"
-set "GODOT_EXE=C:\Users\sigeryang\AppData\Local\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe\Godot_v4.6.2-stable_win64_console.exe"
 set "LOG_DIR=%PROJECT_DIR%\logs"
 set "LOG_FILE=%LOG_DIR%\run_proc_maze_test.log"
+
+call "%PROJECT_DIR%\_godot_env.bat"
+if errorlevel 1 (
+    pause
+    exit /b 1
+)
 
 if not exist "%PROJECT_DIR%\project.godot" (
     echo project.godot was not found in:
@@ -15,9 +20,9 @@ if not exist "%PROJECT_DIR%\project.godot" (
     exit /b 1
 )
 
-if not exist "%GODOT_EXE%" (
-    echo Godot 4.6.2 was not found at:
-    echo %GODOT_EXE%
+if not exist "%GODOT_CONSOLE_EXE%" (
+    echo Godot console executable was not found at:
+    echo %GODOT_CONSOLE_EXE%
     pause
     exit /b 1
 )
@@ -29,7 +34,7 @@ echo Project: %PROJECT_DIR%
 echo Scene: %SCENE%
 echo Log: %LOG_FILE%
 echo.
-"%GODOT_EXE%" --path "%PROJECT_DIR%" --scene "%SCENE%" --log-file "%LOG_FILE%"
+"%GODOT_CONSOLE_EXE%" --path "%PROJECT_DIR%" --scene "%SCENE%" --log-file "%LOG_FILE%"
 
 set "EXIT_CODE=%ERRORLEVEL%"
 echo.

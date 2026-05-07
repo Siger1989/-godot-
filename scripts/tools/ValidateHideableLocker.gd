@@ -176,6 +176,12 @@ func _validate_interaction_flow() -> bool:
 	if not bool(locker.call("is_occupied")):
 		_fail("Interaction prompt button did not enter the locker.")
 		return false
+	if player.has_method("is_hidden_from_monsters") and not bool(player.call("is_hidden_from_monsters")):
+		_fail("Player was not marked hidden from monsters after entering the locker.")
+		return false
+	if not bool(player.get_meta("hidden_from_monsters", false)):
+		_fail("Player hidden_from_monsters metadata was not set after entering the locker.")
+		return false
 	if not _validate_peek_mask(locker):
 		return false
 	var locker_exit_button := locker.get_node_or_null("HideLockerExitButtonLayer/ExitHideButton") as Button
@@ -189,6 +195,9 @@ func _validate_interaction_flow() -> bool:
 	await process_frame
 	if bool(locker.call("is_occupied")):
 		_fail("Locker exit button did not leave the hiding state.")
+		return false
+	if player.has_method("is_hidden_from_monsters") and bool(player.call("is_hidden_from_monsters")):
+		_fail("Player stayed hidden from monsters after exiting the locker.")
 		return false
 	if locker.get_node_or_null("HideLockerExitButtonLayer") != null:
 		_fail("Locker exit button layer was not removed after leaving.")

@@ -1,14 +1,15 @@
 extends SceneTree
 
 const SCENE_PATH := "res://scenes/tests/Test_ProcMazeMap.tscn"
-const EXPECTED_MONSTER_COUNT := 5
+const EXPECTED_MONSTER_COUNT := 6
 const MonsterSizeSource = preload("res://scripts/monster/MonsterSizeSource.gd")
 const TEMPLATE_BY_PROC_MONSTER := {
-	"Monster": "normal",
-	"Monster_Normal_B": "normal_b",
 	"NightmareCreature_A": "nightmare",
 	"NightmareCreature_B": "nightmare_b",
-	"Monster_Red_Hunter": "red_hunter",
+	"NightmareCreature_C": "nightmare",
+	"NightmareCreature_D": "nightmare_b",
+	"Monster_Red_Hunter_A": "red_hunter",
+	"Monster_Red_Hunter_B": "red_hunter",
 }
 
 func _init() -> void:
@@ -36,24 +37,38 @@ func _run() -> void:
 	if monster_root == null:
 		_fail("MonsterRoot is missing")
 		return
+	var player := root.get_node_or_null("PlayerRoot/Player") as Node3D
+	if player == null:
+		_fail("PlayerRoot/Player is missing")
+		return
 	var monsters := _monster_children(monster_root)
 	if monsters.size() != EXPECTED_MONSTER_COUNT:
 		_fail("unexpected monster count: %d" % monsters.size())
 		return
 
-	var red_monster: Node3D = null
+	var red_monsters: Array[Node3D] = []
 	var normal_count := 0
 	var nightmare_count := 0
+	var max_monster_speed := 0.0
 	for monster in monsters:
 		var monster_scale := monster.transform.basis.get_scale()
-		var template_id := String(TEMPLATE_BY_PROC_MONSTER.get(String(monster.name), "normal"))
+		if not TEMPLATE_BY_PROC_MONSTER.has(String(monster.name)):
+			_fail("unexpected proc-maze monster name: %s" % monster.name)
+			return
+		var template_id := String(TEMPLATE_BY_PROC_MONSTER[String(monster.name)])
 		var expected_scale := MonsterSizeSource.template_scale(template_id)
 		if not _is_near_vec3(monster_scale, expected_scale, 0.001):
 			_fail("monster scale does not match MonsterSizeSource: %s scale=%s expected=%s" % [monster.name, monster_scale, expected_scale])
 			return
+		if not bool(monster.get("wander_cross_room_enabled")):
+			_fail("monster cross-room patrol is disabled: %s" % monster.name)
+			return
+		max_monster_speed = maxf(max_monster_speed, float(monster.get("flee_speed")))
+		max_monster_speed = maxf(max_monster_speed, float(monster.get("chase_speed")))
+		max_monster_speed = maxf(max_monster_speed, float(monster.get("nightmare_locked_investigate_speed")))
 		var role := String(monster.get_meta("monster_role", "normal"))
 		if role == "red":
-			red_monster = monster
+			red_monsters.append(monster)
 		elif role == "nightmare":
 			nightmare_count += 1
 			if not monster.is_in_group("nightmare_monster"):
@@ -67,34 +82,41 @@ func _run() -> void:
 				return
 		else:
 			normal_count += 1
-	if red_monster == null:
-		_fail("red monster is missing")
+	if red_monsters.size() != 2:
+		_fail("expected two red vision monsters, found %d" % red_monsters.size())
 		return
-	if normal_count != 2:
-		_fail("expected two normal monsters, found %d" % normal_count)
+	if normal_count != 0:
+		_fail("expected zero normal filler monsters in proc maze pressure test, found %d" % normal_count)
 		return
-	if nightmare_count != 2:
-		_fail("expected two nightmare monsters, found %d" % nightmare_count)
+	if nightmare_count != 4:
+		_fail("expected four nightmare monsters, found %d" % nightmare_count)
 		return
-	if not red_monster.is_in_group("red_monster"):
-		_fail("red monster is not in red_monster group")
-		return
-	if bool(red_monster.get("attach_escape_key")) or bool(red_monster.get_meta("has_escape_key", false)):
-		_fail("red hunter must not carry the escape key")
-		return
-	if not _has_red_body_material(red_monster):
-		_fail("red monster body material is not visibly red")
-		return
-	if red_monster.get_node_or_null("ChestEscapeKey") != null:
-		_fail("red hunter still has a chest key visual")
+	for red_monster in red_monsters:
+		if not red_monster.is_in_group("red_monster"):
+			_fail("red monster is not in red_monster group: %s" % red_monster.name)
+			return
+		if bool(red_monster.get("attach_escape_key")) or bool(red_monster.get_meta("has_escape_key", false)):
+			_fail("red hunter must not carry the escape key: %s" % red_monster.name)
+			return
+		if red_monster.get_node_or_null("ChestEscapeKey") != null:
+			_fail("red hunter still has a chest key visual: %s" % red_monster.name)
+			return
+		if not _is_near_vec3(red_monster.transform.basis.get_scale(), MonsterSizeSource.template_scale("normal"), 0.001):
+			_fail("red hunter no longer uses normal monster model scale: %s" % red_monster.name)
+			return
+
+	var player_sprint_speed := float(player.get("move_speed")) * float(player.get("sprint_multiplier"))
+	if player_sprint_speed <= max_monster_speed + 0.25:
+		_fail("player sprint speed must clearly exceed all monster speeds: player=%.2f monster=%.2f" % [player_sprint_speed, max_monster_speed])
 		return
 
-	print("PROC_MAZE_MONSTER_KEY_VALIDATION PASS monsters=%d normal=%d nightmare=%d red=%s carries_key=false scale=%s" % [
+	print("PROC_MAZE_MONSTER_KEY_VALIDATION PASS monsters=%d normal=%d nightmare=%d red=%d carries_key=false red_model=normal player_sprint=%.2f max_monster=%.2f" % [
 		monsters.size(),
 		normal_count,
 		nightmare_count,
-		red_monster.name,
-		MonsterSizeSource.template_scale("normal"),
+		red_monsters.size(),
+		player_sprint_speed,
+		max_monster_speed,
 	])
 	quit(0)
 
@@ -105,21 +127,6 @@ func _monster_children(monster_root: Node) -> Array[Node3D]:
 		if monster != null:
 			result.append(monster)
 	return result
-
-func _has_red_body_material(root: Node) -> bool:
-	for node in _all_nodes(root):
-		var mesh := node as MeshInstance3D
-		if mesh == null:
-			continue
-		if not String(mesh.get_path()).contains("ModelRoot"):
-			continue
-		var material := mesh.material_override as StandardMaterial3D
-		if material == null:
-			continue
-		var color := material.albedo_color
-		if color.r > 0.55 and color.g < 0.18 and color.b < 0.16:
-			return true
-	return false
 
 func _gold_key_mesh_count(root: Node) -> int:
 	var count := 0

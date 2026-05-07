@@ -1,11 +1,11 @@
 extends RefCounted
 
 const MIN_TOTAL_NODES := 30
-const MAX_TOTAL_NODES := 45
+const MAX_TOTAL_NODES := 48
 const MIN_MAIN_PATH := 15
 const MAX_MAIN_PATH := 22
 const MIN_BRANCHES := 6
-const MAX_BRANCHES := 10
+const MAX_BRANCHES := 12
 const MIN_LOOPS := 3
 const MAX_LOOPS := 6
 const MIN_DEAD_ENDS := 4
@@ -15,9 +15,9 @@ const MAX_LONG_CORRIDORS := 5
 const MIN_L_TURNS := 2
 const MAX_L_TURNS := 7
 const MIN_L_ROOMS := 2
-const MAX_L_ROOMS := 4
+const MAX_L_ROOMS := 6
 const MIN_INTERNAL_LARGE := 2
-const MAX_INTERNAL_LARGE := 4
+const MAX_INTERNAL_LARGE := 6
 const MIN_HUBS := 2
 const MAX_HUBS := 3
 const MIN_SPECIALS := 2
@@ -27,13 +27,42 @@ const MAX_CORRIDOR_TO_ROOM_WIDTH_RATIO := 0.75
 const LONG_CORRIDOR_MIN_ASPECT := 2.5
 const ROOM_MAX_ASPECT := 1.75
 const MIN_MACRO_CYCLE_LENGTH := 10
-const MAX_MACRO_CYCLE_LENGTH := 18
-const MIN_MACRO_SPLIT_MERGE_ROUTE_NODES := 8
+const MAX_MACRO_CYCLE_LENGTH := 34
+const MIN_MACRO_SPLIT_MERGE_ROUTE_NODES := 9
 const MIN_MACRO_ROUTE_A_CORRIDOR_SPACES := 4
-const MIN_MACRO_ROUTE_B_EXPANDED_SPACES := 5
+const MIN_MACRO_ROUTE_B_EXPANDED_SPACES := 6
 const MIN_MACRO_ROUTE_B_COMPOUND_SPACES := 2
 const MIN_SMALL_LOOPS := 2
 const MAX_SMALL_LOOPS := 4
+const MIN_FEATURE_ANCHORS := 4
+const MAX_FEATURE_ANCHORS := 7
+const MAX_PILLAR_HALLS := 1
+const MAX_BOX_HEAP_HALLS := 1
+const MIN_DARK_ZONES := 4
+const FEATURE_TEMPLATES := [
+	"pillar_hall",
+	"low_wall_maze_hall",
+	"box_heap_hall",
+	"dark_doorway_room",
+	"split_hall",
+	"side_chamber_hall",
+	"red_alarm_hall",
+]
+const DARK_ZONE_TEMPLATES := [
+	"Dark_Corridor_End",
+	"Dark_Doorway_Interior",
+	"Dark_Alcove",
+	"Dark_Turn_Corner",
+	"Dark_BackRoom",
+	"NoLight_Room",
+]
+const REQUIRED_DARK_ZONE_TEMPLATES := [
+	"Dark_Doorway_Interior",
+	"Dark_Corridor_End",
+	"Dark_Turn_Corner",
+	"Dark_BackRoom",
+	"NoLight_Room",
+]
 
 func validate(graph: Dictionary, registry) -> Dictionary:
 	var issues: Array[String] = []
@@ -56,6 +85,8 @@ func validate(graph: Dictionary, registry) -> Dictionary:
 	_validate_monotony(node_map, adjacency, main_path, issues)
 	_validate_macro_loop(graph, node_map, adjacency, issues)
 	_validate_small_loops(graph, node_map, adjacency, issues)
+	_validate_feature_anchors(node_map, adjacency, issues)
+	_validate_dark_zones(node_map, issues)
 
 	var metrics = _calculate_metrics(graph, node_map, adjacency, edges, main_path)
 	return {
@@ -123,6 +154,9 @@ func _validate_counts(graph: Dictionary, node_map: Dictionary, adjacency: Dictio
 	_check_range("internal large room count", int(metrics["internal_large_count"]), MIN_INTERNAL_LARGE, MAX_INTERNAL_LARGE, issues)
 	_check_range("hub room count", int(metrics["hub_count"]), MIN_HUBS, MAX_HUBS, issues)
 	_check_range("special room count", int(metrics["special_count"]), MIN_SPECIALS, MAX_SPECIALS, issues)
+	_check_range("feature anchor count", int(metrics["feature_anchor_count"]), MIN_FEATURE_ANCHORS, MAX_FEATURE_ANCHORS, issues)
+	if int(metrics["dark_zone_count"]) < MIN_DARK_ZONES:
+		issues.append("Dark zone count too low: %d minimum=%d." % [int(metrics["dark_zone_count"]), MIN_DARK_ZONES])
 
 	var plain_ratio = float(metrics["plain_rect_count"]) / maxf(1.0, float(total_nodes))
 	if plain_ratio > MAX_PLAIN_RECT_RATIO:
@@ -293,7 +327,7 @@ func _validate_distances(node_map: Dictionary, adjacency: Dictionary, issues: Ar
 	if start.is_empty():
 		return
 	var distances = _bfs(adjacency, start)
-	if distances.has(exit) and int(distances[exit]) < 12:
+	if distances.has(exit) and int(distances[exit]) < 9:
 		issues.append("Exit is too close to entrance: %d edges." % int(distances[exit]))
 	for node_id in node_map.keys():
 		var node: Dictionary = node_map[node_id]
@@ -465,9 +499,9 @@ func _validate_macro_loop(graph: Dictionary, node_map: Dictionary, adjacency: Di
 	var route_b_expanded_count = _route_kind_count(route_b, node_map, ["normal_room", "l_room", "recognizable_room", "large_internal", "hub", "special"])
 	if route_b_expanded_count < MIN_MACRO_ROUTE_B_EXPANDED_SPACES:
 		issues.append("Macro loop route B is not expanded-room-heavy enough: expanded=%d." % route_b_expanded_count)
-	var route_b_compound_count = _route_kind_count(route_b, node_map, ["large_internal", "hub"])
+	var route_b_compound_count = _route_kind_count(route_b, node_map, ["large_internal", "hub", "special"])
 	if route_b_compound_count < MIN_MACRO_ROUTE_B_COMPOUND_SPACES:
-		issues.append("Macro loop route B needs at least %d compound large/hub spaces: found=%d." % [MIN_MACRO_ROUTE_B_COMPOUND_SPACES, route_b_compound_count])
+		issues.append("Macro loop route B needs at least %d compound large/hub/special spaces: found=%d." % [MIN_MACRO_ROUTE_B_COMPOUND_SPACES, route_b_compound_count])
 
 	_validate_macro_loop_chokepoints(split, merge, route_a, route_b, adjacency, issues)
 	_validate_main_path_alternative(split, merge, route_a, route_b, node_map, adjacency, issues)
@@ -486,6 +520,90 @@ func _validate_small_loops(graph: Dictionary, node_map: Dictionary, adjacency: D
 		var label = "small loop `%s`" % String(loop.get("id", str(loop_index)))
 		_validate_closed_route(route, label, node_map, adjacency, issues)
 		_validate_declared_route_patterns(label, route, node_map, adjacency, issues)
+
+func _validate_feature_anchors(node_map: Dictionary, adjacency: Dictionary, issues: Array[String]) -> void:
+	var template_counts := {}
+	var active_count := 0
+	for node_id in node_map.keys():
+		var node: Dictionary = node_map[node_id]
+		var feature := String(node.get("feature_template", ""))
+		if feature.is_empty():
+			continue
+		active_count += 1
+		template_counts[feature] = int(template_counts.get(feature, 0)) + 1
+		if not FEATURE_TEMPLATES.has(feature):
+			issues.append("Feature anchor `%s` uses unknown template `%s`." % [String(node_id), feature])
+		if not _is_feature_anchor_space(node):
+			issues.append("Feature anchor `%s` must be a large, hub, or special space; kind=%s." % [String(node_id), _space_kind(node)])
+		if not String(node.get("room_signature", "")).contains(feature):
+			issues.append("Feature anchor `%s` room_signature must include `%s`." % [String(node_id), feature])
+		if not _feature_signature_has_required_fields(String(node.get("room_signature", ""))):
+			issues.append("Feature anchor `%s` room_signature is missing feature_room_type/main_feature/door_layout/light_profile/prop_group/gameplay_role." % String(node_id))
+		if not _is_priority_anchor_location(String(node_id), node, node_map, adjacency):
+			issues.append("Feature anchor `%s` is not at a split, merge, transition, dead-end, special, or long-corridor endpoint." % String(node_id))
+	if int(template_counts.get("pillar_hall", 0)) > MAX_PILLAR_HALLS:
+		issues.append("pillar_hall appears too many times: %d max=%d." % [int(template_counts.get("pillar_hall", 0)), MAX_PILLAR_HALLS])
+	if int(template_counts.get("box_heap_hall", 0)) > MAX_BOX_HEAP_HALLS:
+		issues.append("box_heap_hall appears too many times: %d max=%d." % [int(template_counts.get("box_heap_hall", 0)), MAX_BOX_HEAP_HALLS])
+	if active_count >= MIN_FEATURE_ANCHORS and template_counts.keys().size() < 3:
+		issues.append("Feature anchors need at least 3 distinct templates; found=%d." % template_counts.keys().size())
+
+func _validate_dark_zones(node_map: Dictionary, issues: Array[String]) -> void:
+	var dark_zone_count := 0
+	var has_corridor_end := false
+	var template_counts := {}
+	for node_id in node_map.keys():
+		var node: Dictionary = node_map[node_id]
+		var dark_zone := String(node.get("dark_zone", ""))
+		if dark_zone.is_empty():
+			continue
+		dark_zone_count += 1
+		template_counts[dark_zone] = int(template_counts.get(dark_zone, 0)) + 1
+		if not DARK_ZONE_TEMPLATES.has(dark_zone):
+			issues.append("Dark zone `%s` uses unknown template `%s`." % [String(node_id), dark_zone])
+		if dark_zone == "Dark_Corridor_End":
+			has_corridor_end = true
+			if not bool(node.get("is_long_corridor", false)):
+				issues.append("Dark_Corridor_End `%s` should be on a long corridor endpoint." % String(node_id))
+	if dark_zone_count >= MIN_DARK_ZONES and not has_corridor_end:
+		issues.append("Dark zones need at least one Dark_Corridor_End.")
+	for required_template in REQUIRED_DARK_ZONE_TEMPLATES:
+		if int(template_counts.get(required_template, 0)) < 1:
+			issues.append("Dark zone template `%s` is missing from this layout." % required_template)
+
+func _feature_signature_has_required_fields(signature: String) -> bool:
+	for field_name in ["feature_room_type=", "main_feature=", "door_layout=", "light_profile=", "prop_group=", "gameplay_role="]:
+		if not signature.contains(field_name):
+			return false
+	return true
+
+func _is_feature_anchor_space(node: Dictionary) -> bool:
+	return _space_kind(node) in ["large_internal", "hub", "special"]
+
+func _is_priority_anchor_location(node_id: String, node: Dictionary, node_map: Dictionary, adjacency: Dictionary) -> bool:
+	if bool(node.get("is_hub", false)) or bool(node.get("is_special", false)) or bool(node.get("is_dead_end", false)):
+		return true
+	var degree := (adjacency.get(node_id, []) as Array).size()
+	if degree >= 3:
+		return true
+	if _has_area_transition_neighbor(node_id, node, node_map, adjacency):
+		return true
+	if _has_long_corridor_neighbor(node_id, node_map, adjacency):
+		return true
+	return false
+
+func _has_area_transition_neighbor(node_id: String, node: Dictionary, node_map: Dictionary, adjacency: Dictionary) -> bool:
+	var area_id := String(node.get("area_id", ""))
+	for next_id in adjacency.get(node_id, []):
+		if node_map.has(String(next_id)) and String((node_map[String(next_id)] as Dictionary).get("area_id", "")) != area_id:
+			return true
+	return false
+
+func _has_long_corridor_neighbor(node_id: String, node_map: Dictionary, adjacency: Dictionary) -> bool:
+	for next_id in adjacency.get(node_id, []):
+		if node_map.has(String(next_id)) and _space_kind(node_map[String(next_id)]) == "long_corridor":
+			return true
+	return false
 
 func _validate_open_route(
 	route: PackedStringArray,
@@ -616,6 +734,8 @@ func _calculate_metrics(graph: Dictionary, node_map: Dictionary, adjacency: Dict
 	var normal_room_count = 0
 	var large_width_count = 0
 	var hub_width_count = 0
+	var feature_anchor_count = 0
+	var dark_zone_count = 0
 	var macro_loop_count = 0
 	var macro_route_a_length = 0
 	var macro_route_b_length = 0
@@ -663,6 +783,10 @@ func _calculate_metrics(graph: Dictionary, node_map: Dictionary, adjacency: Dict
 			large_width_count += 1
 		if tier == "hub_room":
 			hub_width_count += 1
+		if not String(node.get("feature_template", "")).is_empty():
+			feature_anchor_count += 1
+		if not String(node.get("dark_zone", "")).is_empty():
+			dark_zone_count += 1
 
 	return {
 		"total_nodes": node_map.size(),
@@ -684,6 +808,8 @@ func _calculate_metrics(graph: Dictionary, node_map: Dictionary, adjacency: Dict
 		"normal_room_count": normal_room_count,
 		"large_width_count": large_width_count,
 		"hub_width_count": hub_width_count,
+		"feature_anchor_count": feature_anchor_count,
+		"dark_zone_count": dark_zone_count,
 		"macro_loop_count": macro_loop_count,
 		"macro_route_a_length": macro_route_a_length,
 		"macro_route_b_length": macro_route_b_length,

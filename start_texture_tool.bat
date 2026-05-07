@@ -12,6 +12,15 @@ if errorlevel 1 (
 echo Starting Backrooms texture tool...
 echo Browser URL: http://127.0.0.1:8765
 echo Close this window when you are done.
+
+if not exist "codex_tools\texture_tool\texture_tool_server.py" (
+    echo Texture tool server was not found:
+    echo %CD%\codex_tools\texture_tool\texture_tool_server.py
+    echo This helper was excluded from the GitHub project copy. Restore codex_tools before using this launcher.
+    pause
+    exit /b 1
+)
+
 python codex_tools\texture_tool\texture_tool_server.py
 
 endlocal
